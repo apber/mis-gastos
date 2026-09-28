@@ -233,6 +233,7 @@ form.f textarea{min-height:70px;resize:vertical}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
+const APP_VERSION="1.2";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -326,7 +327,7 @@ function proximos(nMeses=12){
 const LS="mis-gastos-v1",LSMETA="mis-gastos-meta";
 let meta={ultimoRespaldo:"",nombreBase:""};
 function initStore(){
-  try{const r=localStorage.getItem(LS);if(r){const d=JSON.parse(r);state={gastos:d.gastos||[],tasas:d.tasas||state.tasas,vars:d.vars||{},modificado:d.modificado||0}}}catch(e){}
+  try{const r=localStorage.getItem(LS);if(r){const d=JSON.parse(r);state={gastos:d.gastos||[],tasas:d.tasas||state.tasas,vars:d.vars||{},presupuestos:d.presupuestos||{},config:d.config||{},modificado:d.modificado||0}}}catch(e){}
   try{const m=localStorage.getItem(LSMETA);if(m)meta={...meta,...JSON.parse(m)}}catch(e){}
   const saveAll=()=>{state.modificado=Date.now();guardarLocal();scheduleSync()};
   store={kind:"local",saveRegistro:saveAll,saveMes:saveAll};
@@ -356,6 +357,130 @@ async function actualizarTasas(forzar){
   }catch(e){tasasEstado="error"}
   render();
 }
+/* ---------- presupuestos ---------- */
+const pres=()=>state.presupuestos||(state.presupuestos={});
+function estadoPres(k){
+  const d=keyToDate(k),esAct=k===mkey(today),dias=eom(d).getDate(),hoy=esAct?today.getDate():dias;
+  const gasto={};varsMes(k).forEach(v=>{gasto[v.categoria]=(gasto[v.categoria]||0)+toCLP(v.monto,v.moneda)});
+  const lista=Object.entries(pres()).filter(([c,m])=>m>0&&c!=="__total").map(([c,m])=>{const g=gasto[c]||0;return {c,m,g,pct:g/m,proy:esAct&&hoy>2?g/hoy*dias:null,color:VCAT_COLOR[c]||VCAT_COLOR.Otro}});
+  const tot=pres().__total>0?{c:"Total variables",m:pres().__total,g:totalVar(k),color:"var(--primary)"}:null;
+  if(tot){tot.pct=tot.g/tot.m;tot.proy=esAct&&hoy>2?tot.g/hoy*dias:null}
+  return {lista:lista.sort((a,b)=>b.pct-a.pct),tot};
+}
+const presColor=p=>p>=1?"var(--bad)":p>=.8?"var(--warn)":"var(--good)";
+function presFila(x){
+  const p=Math.min(x.pct,1)*100,resto=x.m-x.g;
+  return `<li><span>${esc(x.c)}</span><b style="color:${presColor(x.pct)}">${clp(x.g)} <span style="color:var(--ink-3);font-weight:600">de ${clp(x.m)}</span></b>
+    <div class="bar"><i style="width:${p}%;background:${presColor(x.pct)}"></i></div>
+    <span class="hint" style="grid-column:1/-1">${resto>=0?`Te quedan ${clp(resto)}`:`Te pasaste por ${clp(-resto)}`}${x.proy!=null&&x.proy>x.m&&x.pct<1?` · a este ritmo llegarás a ${clp(x.proy)}`:""}</span></li>`;
+}
+function cardPresupuestos(k,compacto){
+  const {lista,tot}=estadoPres(k);const todas=(tot?[tot]:[]).concat(lista);
+  if(!todas.length)return compacto?"":`<section class="card"><h2>Presupuestos</h2><p class="sub">Define cuánto quieres gastar al mes en cada categoría y la app te avisará cuando te acerques al límite.</p><button class="btn-s" data-editpres>Definir presupuestos</button></section>`;
+  const mostrar=compacto?todas.filter(x=>x.pct>=.8):todas;
+  if(compacto&&!mostrar.length)return "";
+  return `<section class="card"><div class="card-head"><div><h2>Presupuestos</h2><p class="sub">${compacto?"Categorías cerca o sobre el límite":MESES[keyToDate(k).getMonth()]+" "+keyToDate(k).getFullYear()}</p></div>${compacto?`<button class="btn-s" data-tab="mov" style="padding:6px 12px;font-size:13px">Ver</button>`:`<button class="btn-s" data-editpres style="padding:6px 12px;font-size:13px">Editar</button>`}</div>
+    <ul class="hbars">${mostrar.map(presFila).join("")}</ul></section>`;
+}
+function openPresForm(){
+  const pr=pres();const val=v=>v>0?Math.round(v):"";
+  openSheet(`<h3 style="margin:0 0 6px;font-size:20px">Presupuestos mensuales</h3><p class="sub" style="margin:0 0 14px">Deja en blanco las categorías sin presupuesto. Te avisaremos al llegar al 80% y al 100%.</p>
+  <form class="f" id="pForm">
+    <label class="full">Total de gastos variables<input name="__total" inputmode="numeric" placeholder="Sin límite" value="${val(pr.__total)}"></label>
+    ${VCATS.map(c=>`<label>${esc(c)}<input name="${esc(c)}" inputmode="numeric" placeholder="—" value="${val(pr[c])}"></label>`).join("")}
+    <div class="full actions"><button class="btn-p grow" type="submit">Guardar</button><button class="btn-s" type="button" data-close>Cancelar</button></div>
+  </form>`);
+  $("#pForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target);const n={};
+    for(const [k,v] of f.entries()){const m=numIn(v);if(m>0)n[k]=m}
+    state.presupuestos=n;store.saveRegistro();closeSheet();render();toast("Presupuestos guardados")});
+}
+/* aviso al registrar un gasto si cruza 80% o 100% */
+function avisoPresupuesto(cat,k,antes){
+  const pr=pres();const msgs=[];
+  const revisar=(nombre,lim,a,d)=>{if(!(lim>0))return;const pa=a/lim,pd=d/lim;
+    if(pa<1&&pd>=1)msgs.push(`Te pasaste del presupuesto de ${nombre}: ${clp(d)} de ${clp(lim)}`);
+    else if(pa<.8&&pd>=.8)msgs.push(`Llevas el ${ui.oculto?"":Math.round(pd*100)+"% "}del presupuesto de ${nombre}`)};
+  const g=c=>varsMes(k).filter(v=>v.categoria===c).reduce((a,v)=>a+toCLP(v.monto,v.moneda),0);
+  revisar(cat,pr[cat],antes.cat,g(cat));revisar("gastos variables",pr.__total,antes.tot,totalVar(k));
+  return msgs;
+}
+/* ---------- avisos de pagos próximos ---------- */
+const diasAviso=()=>Number((state.config||{}).diasAviso)||7;
+function proximosCobros(nDias){
+  const out=[];const hoy0=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  for(let i=0;i<=nDias;i++){const d=new Date(hoy0);d.setDate(d.getDate()+i);const ultimo=eom(d).getDate();
+    state.gastos.forEach(g=>{const c=calc(g);if(c.pp<1)return;const dia=Math.min(Number(g.dia)||1,ultimo);
+      if(g.estado==="Activa"&&d.getDate()===dia&&(g.modalidad==="Mensual"||g.mesCobro===MESES[d.getMonth()]))out.push({g,d,i,v:c.pp,tipo:g.modalidad==="Anual"?"Pago anual":"Cobro mensual"});
+      if(g.estado==="Pausada"&&g.proximoPago&&iso(d)===g.proximoPago)out.push({g,d,i,v:c.pp,tipo:"Se reactiva"})});}
+  return out;
+}
+const cuando=i=>i===0?"Hoy":i===1?"Mañana":`En ${i} días`;
+function cardAvisos(){
+  const n=diasAviso(),list=proximosCobros(n);
+  if(!list.length)return "";
+  const total=list.reduce((a,x)=>a+x.v,0);
+  return `<section class="card"><div class="card-head"><div><h2>Próximos cobros</h2><p class="sub">${list.length} en los próximos ${n} días, ${clp(total)} en total</p></div></div>
+    <ul class="list">${list.slice(0,5).map(x=>`<li><button class="row btn" data-open="${x.g.id}"><div class="day"><b>${x.d.getDate()}</b><span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${cuando(x.i)} · ${x.tipo}</div></div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>
+    ${list.length>5?`<p class="sub" style="margin:6px 0 0">Y ${list.length-5} más.</p>`:""}</section>`;
+}
+/* exportar cobros fijos a un calendario (.ics) */
+function generarICS(){
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Mis gastos//ES","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Mis gastos"];
+  const icsEsc=t=>String(t).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");
+  const f=d=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const monto=g=>{const c=calc(g);return "$"+Math.round(c.pp).toLocaleString("es-CL")};
+  const ev=(uidx,inicio,titulo,desc,rrule)=>{const fin=new Date(inicio);fin.setDate(fin.getDate()+1);
+    L.push("BEGIN:VEVENT","UID:"+uidx+"@mis-gastos","DTSTAMP:"+stamp,"DTSTART;VALUE=DATE:"+f(inicio),"DTEND;VALUE=DATE:"+f(fin),"SUMMARY:"+icsEsc(titulo),"DESCRIPTION:"+icsEsc(desc));
+    if(rrule)L.push("RRULE:"+rrule);
+    L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsEsc(titulo),"TRIGGER:-PT15H","END:VALARM","END:VEVENT")};
+  let n=0;
+  state.gastos.forEach(g=>{const dia=Math.min(Math.max(Number(g.dia)||1,1),31);const c=calc(g);if(c.pp<1)return;
+    const dias=Array.from({length:dia-27},(_,i)=>28+i).join(",");
+    const diaRule=dia>28?`BYMONTHDAY=${dias};BYSETPOS=-1`:`BYMONTHDAY=${dia}`;
+    const desc=`${g.categoria}${g.medio?" · "+g.medio:""}${g.cuenta?" · "+g.cuenta:""}. Monto aproximado: puede variar con la UF o el tipo de cambio.`;
+    if(g.estado==="Activa"&&g.modalidad==="Mensual"){const ini=new Date(today.getFullYear(),today.getMonth(),Math.min(dia,eom(today).getDate()));
+      ev("m-"+g.id,ini,`Cobro: ${g.nombre} (${monto(g)})`,desc,`FREQ=MONTHLY;${diaRule}`);n++}
+    else if(g.estado==="Activa"&&g.modalidad==="Anual"&&MESES.includes(g.mesCobro)){const mi=MESES.indexOf(g.mesCobro);const ini=new Date(today.getFullYear(),mi,Math.min(dia,new Date(today.getFullYear(),mi+1,0).getDate()));
+      ev("a-"+g.id,ini,`Pago anual: ${g.nombre} (${monto(g)})`,desc,`FREQ=YEARLY;BYMONTH=${mi+1};${diaRule}`);n++}
+    else if(g.estado==="Pausada"&&g.proximoPago){ev("r-"+g.id,parseD(g.proximoPago),`Se reactiva: ${g.nombre} (${monto(g)})`,desc,null);n++}});
+  L.push("END:VCALENDAR");
+  const plegar=l=>{const out=[];let x=l;while(new TextEncoder().encode(x).length>73){let i=Math.min(x.length,70);while(new TextEncoder().encode(x.slice(0,i)).length>73)i--;out.push(x.slice(0,i));x=" "+x.slice(i)}out.push(x);return out.join("\r\n")};
+  return {texto:L.map(plegar).join("\r\n"),n};
+}
+async function exportarCalendario(){
+  const {texto,n}=generarICS();if(!n){toast("No hay cobros fijos para exportar");return}
+  const file=new File([texto],"Mis gastos - cobros.ics",{type:"text/calendar"});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Cobros de Mis gastos"});return}}catch(e){if(e&&e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=file.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
+  toast(`${n} cobros exportados`);
+}
+/* ---------- registro rápido ---------- */
+const PALABRAS=[
+  [/jumbo|l[ií]der|unimarc|tottus|santa isabel|acuenta|mayorista|supermercado|feria|verduler/,"Supermercado"],
+  [/almuerzo|desayuno|once|cena|caf[eé]|restaurant|sushi|pizza|burger|rappi|pedidos ?ya|uber eats|comida|starbucks|completo|empanada/,"Comida y restaurantes"],
+  [/uber|didi|cabify|metro|bip|micro|bus|taxi|bencina|copec|shell|petrobras|aramco|peaje|tag|estacionamiento|autopista|pasaje/,"Transporte"],
+  [/sodimac|easy|ferreter|luz|enel|agua|aguas andinas|gas|metrogas|abastible|lipigas|internet|arriendo|gasto com[uú]n|aseo|lavander/,"Hogar"],
+  [/farmacia|cruz verde|salcobrand|ahumada|m[eé]dico|doctor|cl[ií]nica|consulta|dentista|examen|isapre|fonasa|remedio/,"Salud"],
+  [/cine|concierto|teatro|bar|juego|entrada|evento|m[uú]sica|libro|pub|disco/,"Entretención"],
+  [/ropa|zapato|zapatilla|falabella|paris|ripley|h&m|zara|peluquer|barber|cosm[eé]tic|perfume/,"Ropa y cuidado personal"],
+  [/regalo|cumplea/,"Regalos"],
+  [/veterinari|mascota|perro|gato|pet/,"Mascotas"]];
+function historialVars(){return Object.values(state.vars).flat()}
+function categoriaSugerida(desc){
+  const d=(desc||"").trim().toLowerCase();if(d.length<2)return null;
+  const cont={};historialVars().forEach(v=>{if((v.descripcion||"").trim().toLowerCase()===d)cont[v.categoria]=(cont[v.categoria]||0)+1});
+  const top=Object.entries(cont).sort((a,b)=>b[1]-a[1])[0];if(top)return top[0];
+  for(const [re,c] of PALABRAS)if(re.test(d))return c;
+  return null;
+}
+function frecuentes(n=5){
+  const desde=iso(addM(today,-3));const g={};
+  historialVars().filter(v=>v.fecha>=desde&&(v.descripcion||"").trim()).forEach(v=>{const k=v.descripcion.trim().toLowerCase()+"|"+v.categoria;
+    const x=g[k]||(g[k]={n:0,ult:v});x.n++;if(v.fecha>=x.ult.fecha)x.ult=v});
+  return Object.values(g).filter(x=>x.n>=2).sort((a,b)=>b.n-a.n||b.ult.fecha.localeCompare(a.ult.fecha)).slice(0,n).map(x=>x.ult);
+}
+function descripcionesConocidas(){const s=new Set();historialVars().forEach(v=>{if(v.descripcion)s.add(v.descripcion.trim())});return [...s].slice(0,200)}
 /* ---------- charts ---------- */
 function smoothPath(pts){let d=`M${pts[0][0]},${pts[0][1]}`;for(let i=1;i<pts.length;i++){const[x0,y0]=pts[i-1],[x1,y1]=pts[i],mx=(x0+x1)/2;d+=` C${mx},${y0} ${mx},${y1} ${x1},${y1}`}return d}
 /* datos del gráfico principal según el modo: fijos, total o variables */
@@ -491,6 +616,8 @@ function viewInicio(){
       <div class="stat"><b>${t.activas}</b><span>Fijos activos</span></div>
       <div class="stat"><b>${nVar}</b><span>Variables este mes</span></div>
     </div>
+    ${cardAvisos()}
+    ${cardPresupuestos(k,true)}
     <section class="card">
       <div class="card-head"><div><h2>Variables de ${mesTxt}</h2><p class="sub">${nVar?(prevVar?`${t.vari>prevVar?"Más":"Menos"} que ${MESES[addM(today,-1).getMonth()].toLowerCase()} (${clp(prevVar)})`:"Primer mes con registros"):"Aún no registras gastos variables este mes"}</p></div>
       <button class="btn-s" data-newvar style="padding:6px 12px;font-size:13px">Agregar</button></div>
@@ -534,13 +661,16 @@ function viewMov(){
   <section class="card">
     <div class="card-head" style="align-items:center"><div class="monthnav"><button data-vmes="-1" aria-label="Mes anterior">‹</button><b>${MESES[d.getMonth()]} ${d.getFullYear()}</b><button data-vmes="1" aria-label="Mes siguiente" ${isCur?"disabled":""}>›</button></div>
     <button class="btn-p" data-newvar style="padding:8px 14px">Agregar</button></div>
+    ${isCur&&frecuentes().length?`<div class="chips" style="margin:10px 0 4px">${frecuentes().map((x,i)=>`<button class="chip" data-quick="${i}">+ ${esc(x.descripcion)}</button>`).join("")}</div>`:""}
     <div style="font-size:clamp(30px,6vw,40px);font-weight:800;letter-spacing:-.03em;margin-top:6px">${clp(total)}</div>
     <p class="sub">${items.length} movimiento${items.length===1?"":"s"}${items.length?`, promedio ${clp(avgDia)} por día`:""}${prev?`. Mes anterior ${clp(prev)}`:""}</p>
     ${items.length?Object.keys(byDay).map(f=>`<div class="dayhead"><span>${dayLbl(f)}</span><span>${clp(byDay[f].reduce((a,v)=>a+toCLP(v.monto,v.moneda),0))}</span></div><ul class="list">${byDay[f].map(rowVar).join("")}</ul>`).join(""):`<div class="empty"><b>Sin movimientos en ${MESES[d.getMonth()].toLowerCase()}</b>${isCur?"Registra lo que gastas en el día a día: supermercado, salidas, transporte.":"No registraste gastos variables este mes."}</div>`}
   </section>
+  <div class="grid" style="align-content:start">
+  ${cardPresupuestos(k,false)}
   <section class="card"><h2>Por categoría</h2><p class="sub">${MESES[d.getMonth()]} ${d.getFullYear()}</p>
     ${cats.length?donut(cats,"en el mes"):'<p class="sub">Aparecerá cuando registres movimientos.</p>'}
-  </section></div>`;
+  </section></div></div>`;
 }
 function viewGastos(){
   if(!state.gastos.length)return `<section class="card"><div class="empty"><b>Aún no hay gastos fijos</b>Agrega suscripciones, seguros o cuentas que se cobran solas.<div style="margin-top:14px"><button class="btn-p" data-new>Agregar gasto fijo</button></div></div></section>`;
@@ -609,8 +739,14 @@ function viewAjustes(){
     <dl class="kv">${fila("UF",t.UF,t.fechaUF||t.fecha)}${fila("Dólar observado",t.USD,t.fechaUSD)}${fila("Euro",t.EUR,t.fechaEUR)}</dl>
     ${cons?`<p class="sub" style="margin:10px 0 0">Consultado el ${cons.toLocaleString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</p>`:""}
   </section>
+  <section class="card"><h2>Avisos y calendario</h2><p class="sub">Los cobros fijos cercanos aparecen en el Resumen. Para recibir recordatorios con la app cerrada, exporta tus cobros a tu calendario.</p>
+    <form class="f" onsubmit="return false"><label>Avisar con anticipación de<select id="diasAviso">${[3,5,7,14].map(n=>`<option value="${n}" ${n===diasAviso()?"selected":""}>${n} días</option>`).join("")}</select></label>
+    <div class="full backup-actions"><button class="btn-s" type="button" data-ics><span class="ic">${I('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>')}</span><span>Exportar cobros al calendario<small>Crea eventos que se repiten cada mes o año, con aviso el día anterior a las 9:00</small></span></button></div></form>
+    <p class="sub" style="margin:10px 0 0">Para importarlo a Google Calendar, ábrelo desde el computador en calendar.google.com > Configuración > Importar y exportar. Te recomendamos crear antes un calendario llamado "Mis gastos" e importar ahí: si cambias tus gastos fijos, lo borras y vuelves a importar sin duplicados.</p>
+  </section>
+  <section class="card"><h2>Presupuestos</h2><p class="sub">${Object.keys(pres()).length?`${Object.keys(pres()).length} presupuesto${Object.keys(pres()).length===1?"":"s"} definidos.`:"Aún no defines presupuestos."} Se aplican a tus gastos variables de cada mes.</p><button class="btn-s" data-editpres>${Object.keys(pres()).length?"Editar presupuestos":"Definir presupuestos"}</button></section>
   <section class="card"><h2>Tus datos</h2><p class="sub">Se guardan en este teléfono. No se envían a ningún servidor.</p>
-    <dl class="kv"><dt>Gastos fijos</dt><dd>${state.gastos.length}</dd><dt>Gastos variables</dt><dd>${nVar}</dd><dt>Meses con variables</dt><dd>${Object.keys(state.vars).length}</dd></dl>
+    <dl class="kv"><dt>Gastos fijos</dt><dd>${state.gastos.length}</dd><dt>Gastos variables</dt><dd>${nVar}</dd><dt>Meses con variables</dt><dd>${Object.keys(state.vars).length}</dd><dt>Versión de la app</dt><dd>${APP_VERSION}</dd></dl>
   </section></div>`;
 }
 function emptyAll(){return `<section class="card"><div class="empty"><b>${ui.loaded?"Aún no hay gastos":"Cargando tus gastos…"}</b>${ui.loaded?'Registra un gasto del día a día o agrega tus suscripciones y cuentas fijas.<div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn-p" data-newvar>Agregar gasto variable</button><button class="btn-s" data-new>Agregar gasto fijo</button></div>':""}</div></section>`}
@@ -690,10 +826,12 @@ function openVarDetail(id,mes){
 let lastVar={categoria:"Supermercado",medio:"Débito",cuenta:"",moneda:"CLP"};
 function openVarForm(id,mes,base){
   const v=id?findVar(id,mes):{descripcion:base?.descripcion||"",categoria:base?.categoria||lastVar.categoria,monto:base?.monto??"",moneda:base?.moneda||lastVar.moneda,fecha:iso(today),medio:base?.medio||lastVar.medio,cuenta:base?.cuenta??lastVar.cuenta,notas:""};
+  const frec=id||base?[]:frecuentes();
   openSheet(`<h3 style="margin:0 0 14px;font-size:20px">${id?"Editar gasto variable":"Nuevo gasto variable"}</h3>
+  ${frec.length?`<div class="chips" style="margin:-4px 0 14px" aria-label="Gastos frecuentes">${frec.map((x,i)=>`<button type="button" class="chip frec" data-frec="${i}"><i style="display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px;background:${VCAT_COLOR[x.categoria]||VCAT_COLOR.Otro}"></i>${esc(x.descripcion)}</button>`).join("")}</div>`:""}
   <form class="f" id="vForm">
     <div class="full amount-in"><span>$</span><input name="monto" required inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Monto" value="${v.monto===""?"":v.monto}"></div>
-    <label class="full">Descripción<input name="descripcion" value="${esc(v.descripcion)}" placeholder="Ej.: Jumbo, almuerzo, Uber"></label>
+    <label class="full">Descripción<input name="descripcion" list="descList" autocomplete="off" value="${esc(v.descripcion)}" placeholder="Ej.: Jumbo, almuerzo, Uber"><datalist id="descList">${descripcionesConocidas().map(d=>`<option value="${esc(d)}">`).join("")}</datalist><span class="hint" id="sugCat"></span></label>
     <fieldset class="full" style="border:0;padding:0;margin:0"><legend style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px">Categoría</legend>
       <div class="catgrid">${VCATS.map(c=>`<label><input type="radio" name="categoria" value="${esc(c)}" ${c===v.categoria?"checked":""}><i style="background:${VCAT_COLOR[c]}"></i>${esc(c)}</label>`).join("")}</div></fieldset>
     <label>Fecha<input name="fecha" type="date" required value="${esc(v.fecha)}" max="${iso(today)}"></label>
@@ -705,14 +843,27 @@ function openVarForm(id,mes,base){
     ${id?"":`<div class="full"><button class="linkbtn" type="button" data-new>¿Es una suscripción o cuenta que se repite? Agrégala como gasto fijo</button></div>`}
   </form>`);
   $("#vForm [name=monto]").focus();
+  let catManual=!!id;
+  const fm=$("#vForm");
+  fm.querySelectorAll("[name=categoria]").forEach(r=>r.addEventListener("change",()=>{catManual=true;$("#sugCat").textContent=""}));
+  const aplicarSug=()=>{const c=categoriaSugerida(fm.descripcion.value);if(!c||catManual)return;const r=fm.querySelector(`[name=categoria][value="${CSS.escape(c)}"]`);if(r&&!r.checked){r.checked=true;$("#sugCat").textContent="Categoría sugerida: "+c}};
+  fm.descripcion.addEventListener("input",aplicarSug);fm.descripcion.addEventListener("change",aplicarSug);
+  document.querySelectorAll("[data-frec]").forEach(b=>b.addEventListener("click",()=>{const x=frec[Number(b.dataset.frec)];
+    fm.descripcion.value=x.descripcion;const r=fm.querySelector(`[name=categoria][value="${CSS.escape(x.categoria)}"]`);if(r)r.checked=true;catManual=true;
+    fm.medio.value=x.medio||fm.medio.value;fm.cuenta.value=x.cuenta||"";fm.moneda.value=x.moneda||"CLP";fm.monto.value=x.monto;$("#sugCat").textContent="";
+    fm.monto.focus();fm.monto.select();document.querySelectorAll("[data-frec]").forEach(o=>o.setAttribute("aria-pressed",String(o===b)))}));
   $("#vForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target);const monto=numIn(f.get("monto"));
     if(!(monto>0)){toast("Ingresa un monto mayor que cero");return}
     const obj={id:id||uid("v"),fecha:f.get("fecha")||iso(today),descripcion:f.get("descripcion").trim(),categoria:f.get("categoria")||"Otro",moneda:f.get("moneda"),monto,medio:f.get("medio"),cuenta:f.get("cuenta").trim(),notas:f.get("notas").trim(),creado:id?(v.creado||Date.now()):Date.now()};
     const nk=obj.fecha.slice(0,7);
+    const antes={cat:varsMes(nk).filter(x=>x.categoria===obj.categoria&&x.id!==id).reduce((a,x)=>a+toCLP(x.monto,x.moneda),0),tot:varsMes(nk).filter(x=>x.id!==id).reduce((a,x)=>a+toCLP(x.monto,x.moneda),0)};
     if(id&&mes!==nk){state.vars[mes]=(state.vars[mes]||[]).filter(x=>x.id!==id);if(!state.vars[mes].length)delete state.vars[mes];store.saveMes(mes)}
     const list=state.vars[nk]||[];state.vars[nk]=id&&mes===nk?list.map(x=>x.id===id?obj:x):[...list,obj];
     store.saveMes(nk);lastVar={categoria:obj.categoria,medio:obj.medio,cuenta:obj.cuenta,moneda:obj.moneda};
-    closeSheet();render();toast(id?"Cambios guardados":`${clp(toCLP(obj.monto,obj.moneda))} en ${obj.categoria}`);});
+    closeSheet();render();
+    const alertas=avisoPresupuesto(obj.categoria,nk,antes);
+    if(alertas.length)openSheet(`<h3 style="margin:0 0 10px">${alertas.some(a=>a.startsWith("Te pasaste"))?"Presupuesto superado":"Atención con el presupuesto"}</h3>${alertas.map(a=>`<p style="margin:0 0 8px">${esc(a)}</p>`).join("")}<div class="actions"><button class="btn-p grow" data-close>Entendido</button><button class="btn-s" data-close data-tab="mov">Ver presupuestos</button></div>`);
+    else toast(id?"Cambios guardados":`${clp(toCLP(obj.monto,obj.moneda))} en ${obj.categoria}`);});
 }
 function toast(msg){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
 
@@ -872,7 +1023,7 @@ async function dbxSubir(){
   if(sincronizando){scheduleSync();return}
   sincronizando=true;dbxEstado="subiendo";if(ui.tab==="ajustes")render();
   try{
-    const datos={app:"mis-gastos",version:1,modificado:state.modificado||Date.now(),gastos:state.gastos,vars:state.vars};
+    const datos={app:"mis-gastos",version:1,modificado:state.modificado||Date.now(),gastos:state.gastos,vars:state.vars,presupuestos:state.presupuestos||{},config:state.config||{}};
     await dbxSubirArchivo(DBX_DATOS,new Blob([JSON.stringify(datos)],{type:"application/json"}));
     const base=await baseGet();
     if(base){try{const blob=await generarExcel(new File([base.datos],base.nombre));await dbxSubirArchivo(DBX_EXCEL,blob);meta.ultimoRespaldo=iso(today)}catch(e){if(e.message!=="sin-variables")throw e}}
@@ -893,7 +1044,7 @@ async function dbxBajar(forzar,subirSiempre){
     const r=await dbxBajarArchivo(DBX_DATOS);
     const remoto=r?await r.json():null;
     if(remoto&&remoto.app==="mis-gastos"&&(remoto.modificado||0)>(state.modificado||0)){
-      state={...state,gastos:remoto.gastos||[],vars:remoto.vars||{},modificado:remoto.modificado};guardarLocal();meta.pendiente=false;
+      state={...state,gastos:remoto.gastos||[],vars:remoto.vars||{},presupuestos:remoto.presupuestos||state.presupuestos||{},config:remoto.config||state.config||{},modificado:remoto.modificado};guardarLocal();meta.pendiente=false;
       meta.dbxUltima=Date.now();meta.dbxError="";saveMeta();toast("Datos actualizados desde Dropbox");
     }else if(!remoto||(state.modificado||0)>(remoto.modificado||0)||meta.pendiente){dbxEstado="";await dbxSubir();return}
     else{meta.dbxUltima=Date.now();meta.dbxError="";saveMeta()}
@@ -944,7 +1095,7 @@ async function doRestore(){
     openSheet(`<h3 style="margin:0 0 8px">¿Reemplazar los datos de la app?</h3><p class="sub" style="margin:0 0 14px">El archivo tiene ${gastos.length} gastos fijos y ${nv} gastos variables. Lo que tienes ahora en la app se reemplazará por esto.</p>
       <div class="actions"><button class="btn-p grow" id="confirmRestore">Reemplazar datos</button><button class="btn-s" data-close>Cancelar</button></div>`);
     $("#confirmRestore").addEventListener("click",async()=>{
-      const oldKeys=Object.keys(state.vars);state={gastos,tasas,vars};
+      const oldKeys=Object.keys(state.vars);state={...state,gastos,tasas,vars};
       store.saveRegistro();new Set([...oldKeys,...Object.keys(vars)]).forEach(k=>store.saveMes(k));
       if(sm["Gastos variables"])await baseSet(file);
       closeSheet();render();toast("Datos cargados desde Excel")});
@@ -977,8 +1128,11 @@ function render(){
 }
 document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;const d=b.dataset;
-  if(d.tab){ui.tab=d.tab;if(d.tab==="mov"&&!b.closest("nav,.tabs-top"))ui.vmes=mkey(today);render();window.scrollTo({top:0});return}
+  if(d.tab){closeSheet();ui.tab=d.tab;if(d.tab==="mov"&&!b.closest("nav,.tabs-top"))ui.vmes=mkey(today);render();window.scrollTo({top:0});return}
   if(d.hero){ui.heroMode=d.hero;render();return}
+  if(b.hasAttribute("data-editpres")){openPresForm();return}
+  if(b.hasAttribute("data-ics")){exportarCalendario();return}
+  if(d.quick!==undefined){const x=frecuentes()[Number(d.quick)];if(x)openVarForm(null,null,{...x,fecha:iso(today)});setTimeout(()=>{const m=$("#vForm [name=monto]");if(m){m.focus();m.select()}},50);return}
   if(d.histn){ui.histN=Number(d.histn);ui.histSel=null;render();return}
   if(d.histsel!==undefined){ui.histSel=Number(d.histsel);render();return}
   if(d.filter){ui.filter=d.filter;render();return}
@@ -1008,7 +1162,8 @@ document.addEventListener("click",e=>{
   if(b.id==="themeBtn"){const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;r.dataset.theme=dark?"light":"dark";try{localStorage.setItem("gastos-theme",r.dataset.theme)}catch(_){}}
 });
 document.addEventListener("input",e=>{if(e.target.id==="q"){ui.q=e.target.value;render()}});
-document.addEventListener("change",e=>{if(e.target.id==="histCat"){ui.histCat=e.target.value;render()}});
+document.addEventListener("change",e=>{if(e.target.id==="histCat"){ui.histCat=e.target.value;render()}
+  if(e.target.id==="diasAviso"){state.config={...(state.config||{}),diasAviso:Number(e.target.value)};store.saveRegistro();render()}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#scrim"))closeSheet()});
 try{const th=localStorage.getItem("gastos-theme");if(th)document.documentElement.dataset.theme=th}catch(_){}
 pintarOjo();render();
