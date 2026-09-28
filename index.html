@@ -192,6 +192,27 @@ form.f textarea{min-height:70px;resize:vertical}
 .backup-actions button>span:last-child{min-width:0;flex:1}
 .backup-actions small{display:block;font-weight:500;color:var(--ink-3);font-size:12.5px}
 .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--primary-soft);color:var(--primary);flex:none}
+.seg3{display:flex;width:100%;max-width:340px}
+.seg3 button{flex:1}
+:root{--var-c:#22B8CF}
+.hist{display:flex;align-items:flex-end;gap:6px;height:190px;padding-top:6px;margin-top:6px}
+.hcol{flex:1;min-width:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;padding:4px 0;border-radius:10px;cursor:pointer}
+.hcol:hover{background:var(--surface-2)}
+.hcol.on{background:var(--primary-soft)}
+.hval{font-size:10px;color:var(--ink-3);font-weight:700;white-space:nowrap}
+.hbar{width:70%;max-width:32px;display:flex;flex-direction:column;border-radius:7px 7px 3px 3px;overflow:hidden;background:var(--surface-2)}
+.hbar i{display:block;width:100%}
+.hbar .hf{background:var(--primary)}
+.hbar .hv{background:var(--var-c)}
+.hcol:not(.on) .hbar{opacity:.55}
+.hlbl{font-size:11px;font-weight:700;color:var(--ink-2)}
+@media (max-width:560px){.hval{display:none}}
+.compare{margin-top:10px;border-top:1px solid var(--line);padding-top:12px}
+.compare>div:first-child{display:flex;justify-content:space-between;font-size:15px}
+.compare>div:first-child span{font-weight:800}
+.delta2{font-size:13.5px;color:var(--ink-2);margin-top:4px;font-weight:600}
+.delta2.up,.amt.up{color:var(--bad)}
+.delta2.down,.amt.down{color:var(--good)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 </head>
@@ -200,7 +221,7 @@ form.f textarea{min-height:70px;resize:vertical}
   <header class="top">
     <div class="brand"><div class="dot">$</div>Mis gastos</div>
     <div class="tabs-top" role="tablist" id="tabsTop"></div>
-    <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    <div style="display:flex;gap:8px"><button class="icon-btn" id="eyeBtn"></button><button class="icon-btn" id="themeBtn" aria-label="Cambiar tema"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
   </header>
   <div id="banner"></div>
   <main id="view"></main>
@@ -232,14 +253,17 @@ const TABS=[
 let state={gastos:[],tasas:{UF:0,USD:0,EUR:0,fecha:""},vars:{}};
 const today=new Date();
 const mkey=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
-let ui={tab:"inicio",heroMode:"real",donutMode:"eq",filter:"Todas",q:"",loaded:false,vmes:mkey(today)};
+let ui={tab:"inicio",heroMode:"total",filter:"Todas",q:"",loaded:false,vmes:mkey(today),histN:6,histCat:"Todas",histSel:null,oculto:false};
+try{ui.oculto=localStorage.getItem("mis-gastos-oculto")==="1"}catch(e){}
 let store=null;
 
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const clp=n=>(n<0?"-":"")+"$"+Math.round(Math.abs(n||0)).toLocaleString("es-CL");
-const clpShort=n=>{n=Math.round(n||0);if(n>=1e6)return "$"+(n/1e6).toLocaleString("es-CL",{maximumFractionDigits:1})+"M";if(n>=1e4)return "$"+Math.round(n/1e3)+"k";return clp(n)};
+const OCULTO="$ •••••";
+const clp=n=>ui.oculto?OCULTO:(n<0?"-":"")+"$"+Math.round(Math.abs(n||0)).toLocaleString("es-CL");
+const montoOrig=(v,m)=>ui.oculto?"••••• "+m:`${Number(v).toLocaleString("es-CL",{maximumFractionDigits:4})} ${m}`;
+const clpShort=n=>{if(ui.oculto)return "$ •••";n=Math.round(n||0);if(n>=1e6)return "$"+(n/1e6).toLocaleString("es-CL",{maximumFractionDigits:1})+"M";if(n>=1e4)return "$"+Math.round(n/1e3)+"k";return clp(n)};
 const pad=n=>String(n).padStart(2,"0");
 const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const parseD=s=>{if(!s)return null;const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c)};
@@ -259,8 +283,7 @@ function calc(g){
   const enClp=toCLP(g.valor,g.moneda);
   const conDesc=enClp*(1-(Number(g.descuento)||0));
   const pp=conDesc/Math.max(1,Number(g.personas)||1);
-  const eq=g.modalidad==="Anual"?pp/12:pp;
-  return {enClp,conDesc,pp,eq,anual:g.modalidad==="Anual"?pp:pp*12};
+  return {enClp,conDesc,pp,anual:g.modalidad==="Anual"?pp:pp*12};
 }
 function gastoMes(d,incluirReactivaciones=true){
   const mes=MESES[d.getMonth()],fin=eom(d);let s=0;
@@ -275,14 +298,14 @@ const totalVar=k=>varsMes(k).reduce((a,v)=>a+toCLP(v.monto,v.moneda),0);
 function cobraEsteMes(g,d=today){return g.estado==="Activa"&&(g.modalidad==="Mensual"||g.mesCobro===MESES[d.getMonth()])}
 function totales(){
   const act=state.gastos.filter(g=>g.estado==="Activa");
-  let eq=0,anual=0;act.forEach(g=>{const c=calc(g);eq+=c.eq;anual+=c.anual});
+  let anual=0;act.forEach(g=>{anual+=calc(g).anual});
   const fijos=gastoMes(today,false),vari=totalVar(mkey(today));
-  return {fijos,vari,real:fijos+vari,eq,anual,activas:act.length,mensuales:act.filter(g=>g.modalidad==="Mensual").length,anuales:act.filter(g=>g.modalidad==="Anual").length};
+  return {fijos,vari,real:fijos+vari,anual,activas:act.length,mensuales:act.filter(g=>g.modalidad==="Mensual").length,anuales:act.filter(g=>g.modalidad==="Anual").length};
 }
-function porCategoria(modo){
+function porCategoria(){
   const m={};CATS.forEach(c=>m[c]=0);
   state.gastos.forEach(g=>{if(g.estado!=="Activa")return;const c=calc(g);
-    const v=modo==="eq"?c.eq:(cobraEsteMes(g)?c.pp:0);m[g.categoria in m?g.categoria:"Otro"]+=v});
+    const v=cobraEsteMes(g)?c.pp:0;m[g.categoria in m?g.categoria:"Otro"]+=v});
   return CATS.map(c=>({cat:c,v:m[c],color:CAT_COLOR[c]})).filter(x=>x.v>0.5).sort((a,b)=>b.v-a.v);
 }
 function varPorCategoria(k){
@@ -335,24 +358,43 @@ async function actualizarTasas(forzar){
 }
 /* ---------- charts ---------- */
 function smoothPath(pts){let d=`M${pts[0][0]},${pts[0][1]}`;for(let i=1;i<pts.length;i++){const[x0,y0]=pts[i-1],[x1,y1]=pts[i],mx=(x0+x1)/2;d+=` C${mx},${y0} ${mx},${y1} ${x1},${y1}`}return d}
-function heroChart(){
-  const W=600,H=160,P=12;const data=[];
-  for(let i=-3;i<=12;i++){const d=addM(today,i);const v=i<=0?gastoMes(d,i<0)+totalVar(mkey(d)):gastoMes(d);data.push({d,v,future:i>0})}
-  const max=Math.max(...data.map(x=>x.v),1)*1.12;
-  const pts=data.map((x,i)=>[P+i*(W-2*P)/(data.length-1),H-8-(x.v/max)*(H-24)]);
+/* datos del gráfico principal según el modo: fijos, total o variables */
+function heroData(modo){
+  const data=[];let cur=0;
+  if(modo==="variables"){
+    for(let i=-11;i<=0;i++){const d=addM(today,i);data.push({d,v:totalVar(mkey(d)),future:false})}
+    cur=data.length-1;
+    const prev=data.slice(0,-1).filter(x=>x.v>0);
+    return {data,cur,avg:prev.length?prev.reduce((a,x)=>a+x.v,0)/prev.length:null};
+  }
+  for(let i=-3;i<=12;i++){const d=addM(today,i);
+    const fij=gastoMes(d,i!==0);
+    const v=modo==="fijos"?fij:(i<=0?fij+totalVar(mkey(d)):fij);
+    data.push({d,v,future:i>0})}
+  return {data,cur:3,avg:null};
+}
+function heroChart(modo){
+  const W=600,H=160,P=12;const {data,cur,avg}=heroData(modo);
+  const max=Math.max(...data.map(x=>x.v),avg||0,1)*1.12;
+  const y=v=>H-8-(v/max)*(H-24);
+  const pts=data.map((x,i)=>[P+i*(W-2*P)/(data.length-1),y(x.v)]);
   const line=smoothPath(pts),area=line+` L${pts.at(-1)[0]},${H} L${pts[0][0]},${H} Z`;
+  const cx=pts[cur][0];
+  const step=data.length>12?3:2;
   return {html:`<div class="chart" id="heroChart">
-    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Gasto por mes: 3 meses atrás y proyección de 12 meses">
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="${modo==="variables"?"Gastos variables de los últimos 12 meses":"Gasto por mes: 3 meses atrás y proyección de 12 meses"}">
       <defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-      <clipPath id="cpast"><rect x="0" y="0" width="${pts[3][0]}" height="${H}"/></clipPath><clipPath id="cfut"><rect x="${pts[3][0]}" y="0" width="${W}" height="${H}"/></clipPath></defs>
-      <line x1="${pts[3][0]}" x2="${pts[3][0]}" y1="0" y2="${H}" stroke="#fff" stroke-opacity=".25" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>
+      <clipPath id="cpast"><rect x="0" y="0" width="${cx}" height="${H}"/></clipPath><clipPath id="cfut"><rect x="${cx}" y="0" width="${W}" height="${H}"/></clipPath></defs>
+      ${cur<data.length-1?`<line x1="${cx}" x2="${cx}" y1="0" y2="${H}" stroke="#fff" stroke-opacity=".25" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>`:""}
+      ${avg?`<line x1="0" x2="${W}" y1="${y(avg)}" y2="${y(avg)}" stroke="#7FD3FF" stroke-opacity=".9" stroke-width="1.5" stroke-dasharray="4 5" vector-effect="non-scaling-stroke"/>`:""}
       <path d="${area}" fill="url(#ga)"/>
-      <path d="${line}" fill="none" stroke="#fff" stroke-width="2.5" vector-effect="non-scaling-stroke" clip-path="url(#cpast)"/>
-      <path d="${line}" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2.5" stroke-dasharray="6 5" vector-effect="non-scaling-stroke" clip-path="url(#cfut)"/>
+      <path d="${line}" fill="none" stroke="#fff" stroke-width="2.5" vector-effect="non-scaling-stroke" ${cur<data.length-1?'clip-path="url(#cpast)"':""}/>
+      ${cur<data.length-1?`<path d="${line}" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2.5" stroke-dasharray="6 5" vector-effect="non-scaling-stroke" clip-path="url(#cfut)"/>`:""}
       <g id="hcDot"></g>
     </svg>
-    <div class="xl">${data.map((x,i)=>i%3===0||i===data.length-1?`<span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span>`:"").join("")}</div>
-    <div id="hcTip"></div></div>`,data,pts,W};
+    <div class="xl">${data.map((x,i)=>(data.length-1-i)%step===0||i===0&&step===3?`<span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span>`:"").join("")}</div>
+    ${avg?`<div class="split" style="margin:0 8px;font-size:12px"><span><i style="background:#7FD3FF"></i>Promedio mensual ${clp(avg)}</span></div>`:""}
+    <div id="hcTip"></div></div>`,data,pts,W,cur};
 }
 function bindHeroChart(ch){
   const el=$("#heroChart");if(!el)return;
@@ -360,8 +402,48 @@ function bindHeroChart(ch){
     $("#hcDot").innerHTML=`<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="rgba(255,255,255,.4)" stroke-width="6" vector-effect="non-scaling-stroke"/>`;
     $("#hcTip").innerHTML=`<div class="tip" style="left:clamp(56px,${p}%,calc(100% - 56px))"><span>${MESES[it.d.getMonth()]} ${it.d.getFullYear()}${it.future?", proyectado":""}</span>${clp(it.v)}</div>`};
   const pick=e=>{const r=el.getBoundingClientRect();const rel=(e.clientX-r.left)/r.width*ch.W;let best=0,bd=1e9;ch.pts.forEach((p,i)=>{const dd=Math.abs(p[0]-rel);if(dd<bd){bd=dd;best=i}});show(best)};
-  el.addEventListener("pointermove",pick);el.addEventListener("pointerdown",pick);el.addEventListener("pointerleave",()=>show(3));
-  show(3);
+  el.addEventListener("pointermove",pick);el.addEventListener("pointerdown",pick);el.addEventListener("pointerleave",()=>show(ch.cur));
+  show(ch.cur);
+}
+/* historial: fijos y variables por mes, con comparación */
+function histMes(d,cat){
+  const k=mkey(d);const fij=gastoMes(d,true);
+  const vars=varsMes(k).filter(v=>cat==="Todas"||cat==="Variables"||v.categoria===cat).reduce((a,v)=>a+toCLP(v.monto,v.moneda),0);
+  const f=cat==="Todas"||cat==="Fijos"?fij:0;
+  return {d,f,v:cat==="Fijos"?0:vars,t:(cat==="Fijos"?0:vars)+f};
+}
+function viewHistorial(){
+  const n=ui.histN,cat=ui.histCat;const meses=[];
+  for(let i=-(n-1);i<=0;i++)meses.push(histMes(addM(today,i),cat));
+  const sel=ui.histSel==null||ui.histSel>=meses.length?meses.length-1:ui.histSel;
+  const max=Math.max(...meses.map(m=>m.t),1);
+  const m=meses[sel],prev=histMes(addM(m.d,-1),cat);
+  const dif=m.t-prev.t,pct=prev.t?dif/prev.t*100:null;
+  const esActual=mkey(m.d)===mkey(today);
+  // cambios por categoría de variables
+  const porCat=d=>{const o={};varsMes(mkey(d)).forEach(v=>{o[v.categoria]=(o[v.categoria]||0)+toCLP(v.monto,v.moneda)});return o};
+  const a=porCat(m.d),b=porCat(prev.d);
+  const cambios=[...new Set([...Object.keys(a),...Object.keys(b)])].map(c=>({c,d:(a[c]||0)-(b[c]||0)})).filter(x=>Math.abs(x.d)>=1&&(!VCATS.includes(cat)||x.c===cat)).sort((x,y)=>Math.abs(y.d)-Math.abs(x.d)).slice(0,3);
+  const opciones=["Todas","Fijos","Variables",...VCATS];
+  const nombreMes=d=>MESES[d.getMonth()].toLowerCase();
+  return `<section class="card span2">
+    <div class="card-head" style="flex-wrap:wrap"><div><h2>Historial</h2><p class="sub">Toca un mes para compararlo con el anterior</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="histCat" class="search" style="flex:none;min-width:0;padding:7px 10px;font-weight:600" aria-label="Qué mostrar">${opciones.map(o=>`<option value="${esc(o)}" ${o===cat?"selected":""}>${o==="Todas"?"Todo":o==="Fijos"?"Solo fijos":o==="Variables"?"Solo variables":esc(o)}</option>`).join("")}</select>
+        <div class="seg light" role="group" aria-label="Periodo"><button data-histn="6" aria-pressed="${n===6}">6 meses</button><button data-histn="12" aria-pressed="${n===12}">12 meses</button></div>
+      </div></div>
+    <div class="hist" role="list">${meses.map((x,i)=>`<button class="hcol ${i===sel?"on":""}" data-histsel="${i}" role="listitem" aria-label="${MESES[x.d.getMonth()]} ${x.d.getFullYear()}: ${clp(x.t)}">
+      <span class="hval">${clpShort(x.t)}</span>
+      <span class="hbar" style="height:${Math.max(x.t/max*130,x.t?4:2)}px">${x.v?`<i class="hv" style="height:${x.t?x.v/x.t*100:0}%"></i>`:""}${x.f?`<i class="hf" style="height:${x.t?x.f/x.t*100:0}%"></i>`:""}</span>
+      <span class="hlbl">${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></button>`).join("")}</div>
+    <div class="split" style="color:var(--ink-2);opacity:1;margin-top:8px"><span><i style="background:var(--primary)"></i>Fijos</span><span><i style="background:var(--var-c)"></i>Variables</span></div>
+    <div class="compare">
+      <div><b>${MESES[m.d.getMonth()]} ${m.d.getFullYear()}${esActual?" (en curso)":""}</b><span>${clp(m.t)}</span></div>
+      <div class="delta2 ${dif>0?"up":dif<0?"down":""}">${dif===0?"Igual que":`${dif>0?"▲":"▼"} ${clp(Math.abs(dif))}${pct!=null&&!ui.oculto?` (${Math.abs(pct).toLocaleString("es-CL",{maximumFractionDigits:0})}%)`:""} ${dif>0?"más que":"menos que"}`} ${nombreMes(prev.d)} (${clp(prev.t)})</div>
+      ${cambios.length&&cat!=="Fijos"?`<ul class="list">${cambios.map(x=>`<li class="row"><i style="width:10px;height:10px;border-radius:3px;background:${VCAT_COLOR[x.c]||VCAT_COLOR.Otro};flex:none"></i><div class="mid"><div class="t" style="font-weight:600">${esc(x.c)}</div></div><div class="amt ${x.d>0?"up":"down"}">${x.d>0?"+":"−"}${clp(Math.abs(x.d))}</div></li>`).join("")}</ul>`:""}
+      <p class="sub" style="margin:8px 0 0">Los fijos de meses pasados se calculan con tus gastos fijos actuales.</p>
+    </div>
+  </section>`;
 }
 function donut(items,sub){
   const total=items.reduce((a,b)=>a+b.v,0);let off=0;const r=15.9155;
@@ -376,51 +458,56 @@ function hbars(items){const max=Math.max(...items.map(x=>x.v),1);
 function viewInicio(){
   const t=totales();
   if(!state.gastos.length&&!Object.keys(state.vars).length)return emptyAll();
-  const ch=heroChart();
-  const heroVal=ui.heroMode==="real"?t.real:t.eq;
-  const heroLbl=ui.heroMode==="real"?`Gasto de ${MESES[today.getMonth()].toLowerCase()}`:"Fijos, costo mensual equivalente";
-  const cats=porCategoria(ui.donutMode);
+  const modo=ui.heroMode;const ch=heroChart(modo);
+  const mesTxt=MESES[today.getMonth()].toLowerCase();
+  const k=mkey(today),nVar=varsMes(k).length;
+  const heroVal=modo==="fijos"?t.fijos:modo==="variables"?t.vari:t.real;
+  const heroLbl=modo==="fijos"?`Gastos fijos de ${mesTxt}`:modo==="variables"?`Gastos variables de ${mesTxt}`:`Gasto total de ${mesTxt}`;
+  const sub=modo==="fijos"?`<div class="split"><span>${t.activas} gastos fijos activos</span></div>`
+    :modo==="variables"?`<div class="split"><span>${nVar} movimiento${nVar===1?"":"s"}${nVar?`, promedio ${clp(t.vari/today.getDate())} por día`:""}</span></div>`
+    :`<div class="split"><span><i style="background:#fff"></i>Fijos ${clp(t.fijos)}</span><span><i style="background:#7FD3FF"></i>Variables ${clp(t.vari)}</span></div>`;
+  const cats=porCategoria();
   const mesItems=state.gastos.filter(g=>cobraEsteMes(g)&&calc(g).pp>=1).map(g=>({g,v:calc(g).pp,dia:Number(g.dia)||1})).sort((a,b)=>a.dia-b.dia);
   const pagado=mesItems.filter(x=>x.dia<=today.getDate()).reduce((a,b)=>a+b.v,0);
   const totalMes=mesItems.reduce((a,b)=>a+b.v,0);
   const pend=mesItems.filter(x=>x.dia>today.getDate());
   const prox=proximos(12).slice(0,3);
-  const k=mkey(today),vcats=varPorCategoria(k),vlast=[...varsMes(k)].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,3);
+  const vcats=varPorCategoria(k),vlast=[...varsMes(k)].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,3);
   const prevVar=totalVar(mkey(addM(today,-1)));
   setTimeout(()=>bindHeroChart(ch));
   return `<div class="grid home">
   <section class="hero">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-      <div class="label">${heroLbl}</div>
-      <div class="seg" role="group" aria-label="Tipo de monto"><button data-hero="real" aria-pressed="${ui.heroMode==="real"}">Real</button><button data-hero="eq" aria-pressed="${ui.heroMode==="eq"}">Equivalente</button></div>
+    <div class="seg seg3" role="group" aria-label="Qué gastos mostrar">
+      <button data-hero="fijos" aria-pressed="${modo==="fijos"}">Fijos</button><button data-hero="total" aria-pressed="${modo==="total"}">Total</button><button data-hero="variables" aria-pressed="${modo==="variables"}">Variables</button>
     </div>
+    <div class="label" style="margin-top:14px">${heroLbl}</div>
     <div class="big">${clp(heroVal)}</div>
-    ${ui.heroMode==="real"?`<div class="split"><span><i style="background:#fff"></i>Fijos ${clp(t.fijos)}</span><span><i style="background:#7FD3FF"></i>Variables ${clp(t.vari)}</span></div>`:`<div class="split"><span>${t.activas} gastos fijos activos</span></div>`}
+    ${sub}
     ${ch.html}
   </section>
   <div class="grid" style="align-content:start">
     <div class="stats">
       <div class="stat"><b>${clpShort(t.anual)}</b><span>Fijos al año</span></div>
       <div class="stat"><b>${t.activas}</b><span>Fijos activos</span></div>
-      <div class="stat"><b>${varsMes(k).length}</b><span>Variables este mes</span></div>
+      <div class="stat"><b>${nVar}</b><span>Variables este mes</span></div>
     </div>
     <section class="card">
-      <div class="card-head"><div><h2>Variables de ${MESES[today.getMonth()].toLowerCase()}</h2><p class="sub">${varsMes(k).length?(prevVar?`${t.vari>prevVar?"Más":"Menos"} que ${MESES[addM(today,-1).getMonth()].toLowerCase()} (${clp(prevVar)})`:"Primer mes con registros"):"Aún no registras gastos variables este mes"}</p></div>
+      <div class="card-head"><div><h2>Variables de ${mesTxt}</h2><p class="sub">${nVar?(prevVar?`${t.vari>prevVar?"Más":"Menos"} que ${MESES[addM(today,-1).getMonth()].toLowerCase()} (${clp(prevVar)})`:"Primer mes con registros"):"Aún no registras gastos variables este mes"}</p></div>
       <button class="btn-s" data-newvar style="padding:6px 12px;font-size:13px">Agregar</button></div>
       ${vcats.length?hbars(vcats.slice(0,4)):""}
       ${vlast.length?`<ul class="list" style="margin-top:10px">${vlast.map(rowVar).join("")}</ul><button class="linkbtn" data-tab="mov">Ver todos los movimientos</button>`:""}
     </section>
   </div>
+  ${viewHistorial()}
   <section class="card">
-    <div class="card-head"><div><h2>Cobros fijos de ${MESES[today.getMonth()].toLowerCase()}</h2><p class="sub">${pend.length?`Faltan ${clp(totalMes-pagado)} por cobrar`:"Ya se cobró todo este mes"}</p></div></div>
+    <div class="card-head"><div><h2>Cobros fijos de ${mesTxt}</h2><p class="sub">${pend.length?`Faltan ${clp(totalMes-pagado)} por cobrar`:"Ya se cobró todo este mes"}</p></div></div>
     <div class="progress"><i style="width:${totalMes?pagado/totalMes*100:0}%"></i></div>
     <div class="remaining"><span>Cobrado ${clp(pagado)}</span><span>Total ${clp(totalMes)}</span></div>
     <ul class="list" style="margin-top:8px">${(pend.length?pend:mesItems.slice(-3)).slice(0,4).map(rowDay).join("")}</ul>
   </section>
   <section class="card">
-    <div class="card-head"><div><h2>Fijos por categoría</h2><p class="sub">${ui.donutMode==="eq"?"Costo mensual equivalente, solo activos":"Lo que se cobra este mes"}</p></div>
-      <div class="seg light" role="group"><button data-donut="eq" aria-pressed="${ui.donutMode==="eq"}">Equivalente</button><button data-donut="real" aria-pressed="${ui.donutMode==="real"}">Este mes</button></div></div>
-    ${cats.length?donut(cats):'<p class="sub">Sin gastos fijos activos en este periodo.</p>'}
+    <div class="card-head"><div><h2>Fijos por categoría</h2><p class="sub">Lo que se cobra en ${mesTxt}</p></div></div>
+    ${cats.length?donut(cats,"este mes"):'<p class="sub">Sin cobros fijos este mes.</p>'}
   </section>
   <section class="card span2">
     <div class="card-head"><div><h2>Pagos grandes que vienen</h2><p class="sub">Cuotas anuales y gastos que se reactivan</p></div><button class="btn-s" data-tab="pagos" style="padding:6px 12px;font-size:13px">Ver todo</button></div>
@@ -431,7 +518,7 @@ function viewInicio(){
 function rowDay(x){const past=x.dia<=today.getDate();
   return `<li><button class="row btn ${past?"past":""}" data-open="${x.g.id}"><div class="day"><b>${x.dia}</b><span>${MESES[today.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${esc([x.g.medio,x.g.cuenta].filter(Boolean).join(" · "))}</div></div><div class="amt">${clp(x.v)}</div></button></li>`}
 function rowVar(v){const c=toCLP(v.monto,v.moneda);
-  return `<li><button class="row btn" data-openvar="${v.id}" data-mes="${v.fecha.slice(0,7)}">${avV(v)}<div class="mid"><div class="t">${esc(v.descripcion||v.categoria)}</div><div class="s">${esc([v.categoria,v.medio].filter(Boolean).join(" · "))}</div></div><div class="amt">${clp(c)}${v.moneda&&v.moneda!=="CLP"?`<div class="s">${Number(v.monto).toLocaleString("es-CL")} ${v.moneda}</div>`:""}</div></button></li>`}
+  return `<li><button class="row btn" data-openvar="${v.id}" data-mes="${v.fecha.slice(0,7)}">${avV(v)}<div class="mid"><div class="t">${esc(v.descripcion||v.categoria)}</div><div class="s">${esc([v.categoria,v.medio].filter(Boolean).join(" · "))}</div></div><div class="amt">${clp(c)}${v.moneda&&v.moneda!=="CLP"?`<div class="s">${montoOrig(v.monto,v.moneda)}</div>`:""}</div></button></li>`}
 function monthGroup(m){
   return `<div class="month-group"><div class="mh">${MESES[m.d.getMonth()]} ${m.d.getFullYear()}<span>Fijos del mes ${clp(m.total)}</span></div>
   <ul class="list">${m.items.map(it=>`<li><button class="row btn" data-open="${it.g.id}">${avG(it.g)}<div class="mid"><div class="t">${esc(it.g.nombre)}</div><div class="s">${it.tipo}${it.g.proximoPago&&it.tipo==="Se reactiva"?" el "+fmtD(it.g.proximoPago):it.g.dia?", día "+it.g.dia:""}</div></div><div class="amt">${clp(it.v)}</div></button></li>`).join("")}</ul></div>`;
@@ -467,14 +554,14 @@ function viewGastos(){
       <input class="search" id="q" type="search" placeholder="Buscar gasto fijo" value="${esc(ui.q)}" aria-label="Buscar gasto fijo">
       <div class="chips">${["Todas",...ESTADOS].map(f=>`<button class="chip" data-filter="${f}" aria-pressed="${ui.filter===f}">${f} ${counts[f]}</button>`).join("")}</div>
     </div>
-    ${items.length?order.map(c=>{const sum=groups[c].filter(g=>g.estado==="Activa").reduce((a,g)=>a+calc(g).eq,0);
-      return `<div class="cat-sum"><span style="color:${CAT_COLOR[c]||"var(--ink-3)"}">${esc(c)}</span><span>${clp(sum)} / mes</span></div><ul class="list">${groups[c].map(rowGasto).join("")}</ul>`}).join(""):'<div class="empty"><b>Sin resultados</b>Prueba con otro nombre o cambia el filtro.</div>'}
+    ${items.length?order.map(c=>{const sum=groups[c].filter(g=>g.estado==="Activa").reduce((a,g)=>a+calc(g).anual,0);
+      return `<div class="cat-sum"><span style="color:${CAT_COLOR[c]||"var(--ink-3)"}">${esc(c)}</span><span>${clp(sum)} al año</span></div><ul class="list">${groups[c].map(rowGasto).join("")}</ul>`}).join(""):'<div class="empty"><b>Sin resultados</b>Prueba con otro nombre o cambia el filtro.</div>'}
   </section>`;
 }
 function rowGasto(g){const c=calc(g);
   const sub=[g.plan,g.modalidad==="Anual"?"Anual, "+(g.mesCobro||"—"):"Día "+(g.dia||"—"),g.personas>1?"Entre "+g.personas:""].filter(Boolean).map(esc).join(" · ");
   return `<li><button class="row btn" data-open="${g.id}">${avG(g)}<div class="mid"><div class="t">${esc(g.nombre)}</div><div class="s">${sub}</div></div>
-  <div class="amt">${clp(c.pp)}<div class="s">${g.estado==="Activa"?(g.modalidad==="Anual"?clp(c.eq)+"/mes":"al mes"):`<span class="pill ${g.estado}">${g.estado}</span>`}</div></div></button></li>`}
+  <div class="amt">${clp(c.pp)}<div class="s">${g.estado==="Activa"?(g.modalidad==="Anual"?"al año":"al mes"):`<span class="pill ${g.estado}">${g.estado}</span>`}</div></div></button></li>`}
 function viewPagos(){
   if(!state.gastos.length)return viewGastos();
   const list=proximos(12);
@@ -538,7 +625,7 @@ function openDetail(id){
   const g=state.gastos.find(x=>x.id===id);if(!g)return;const c=calc(g);
   const shared=(g.comparten||[]).filter(Boolean);
   const rows=[
-    ["Valor",g.moneda==="CLP"?clp(g.valor):`${Number(g.valor).toLocaleString("es-CL",{maximumFractionDigits:4})} ${g.moneda}`],
+    ["Valor",g.moneda==="CLP"?clp(g.valor):montoOrig(g.valor,g.moneda)],
     g.moneda!=="CLP"?["En pesos",clp(c.enClp)]:null,
     g.descuento?["Descuento",Math.round(g.descuento*100)+"%"]:null,
     g.personas>1?["Pagan",g.personas+" personas"+(shared.length?" (con "+shared.map(esc).join(", ")+")":"")]:null,
@@ -549,7 +636,7 @@ function openDetail(id){
     g.proximoPago?["Próximo pago",fmtD(g.proximoPago)]:null,
   ].filter(Boolean);
   openSheet(`<div class="detail-top">${avG(g)}<div><h3>${esc(g.nombre)}</h3><div style="color:var(--ink-3);font-size:13.5px">${esc([g.plan,g.categoria].filter(Boolean).join(" · "))} <span class="pill ${g.estado}">${g.estado}</span></div></div></div>
-  <div class="big-cost"><div><b>${clp(c.pp)}</b><span>${g.modalidad==="Anual"?"Por año, tu parte":"Por mes, tu parte"}</span></div><div><b>${clp(g.modalidad==="Anual"?c.eq:c.anual)}</b><span>${g.modalidad==="Anual"?"Equivalente mensual":"Al año"}</span></div></div>
+  <div class="big-cost"><div><b>${clp(c.pp)}</b><span>${g.modalidad==="Anual"?"Por año, tu parte":"Por mes, tu parte"}</span></div><div><b>${g.modalidad==="Anual"?esc(g.mesCobro||"—"):clp(c.anual)}</b><span>${g.modalidad==="Anual"?"Mes de cobro":"Al año"}</span></div></div>
   ${g.cuotasTotal>1?`<div class="progress" style="margin:0 0 14px"><i style="width:${(g.cuotasPagadas||0)/g.cuotasTotal*100}%"></i></div>`:""}
   <dl class="kv">${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>
   ${g.notas?`<div class="note">${esc(g.notas)}</div>`:""}
@@ -593,7 +680,7 @@ function openForm(id){
 function findVar(id,mes){return (state.vars[mes]||[]).find(v=>v.id===id)}
 function openVarDetail(id,mes){
   const v=findVar(id,mes);if(!v)return;const c=toCLP(v.monto,v.moneda);
-  const rows=[["Fecha",fmtD(v.fecha)],["Categoría",esc(v.categoria)],v.moneda!=="CLP"?["Monto original",`${Number(v.monto).toLocaleString("es-CL",{maximumFractionDigits:4})} ${v.moneda}`]:null,["Medio de pago",esc([v.medio,v.cuenta].filter(Boolean).join(" · ")||"—")]].filter(Boolean);
+  const rows=[["Fecha",fmtD(v.fecha)],["Categoría",esc(v.categoria)],v.moneda!=="CLP"?["Monto original",montoOrig(v.monto,v.moneda)]:null,["Medio de pago",esc([v.medio,v.cuenta].filter(Boolean).join(" · ")||"—")]].filter(Boolean);
   openSheet(`<div class="detail-top">${avV(v)}<div><h3>${esc(v.descripcion||v.categoria)}</h3><div style="color:var(--ink-3);font-size:13.5px">Gasto variable</div></div></div>
   <div class="big-cost" style="grid-template-columns:1fr"><div><b style="font-size:28px">${clp(c)}</b><span>${v.moneda!=="CLP"?"Convertido con los valores de Ajustes":"Monto"}</span></div></div>
   <dl class="kv">${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>
@@ -790,10 +877,11 @@ async function dbxSubir(){
     const base=await baseGet();
     if(base){try{const blob=await generarExcel(new File([base.datos],base.nombre));await dbxSubirArchivo(DBX_EXCEL,blob);meta.ultimoRespaldo=iso(today)}catch(e){if(e.message!=="sin-variables")throw e}}
     meta.pendiente=false;meta.dbxUltima=Date.now();meta.dbxError="";
+    if(ui.tab==="ajustes")toast("Excel actualizado en Dropbox");
   }catch(e){dbxFallo(e)}
   saveMeta();sincronizando=false;dbxEstado="";render();
 }
-async function dbxBajar(forzar){
+async function dbxBajar(forzar,subirSiempre){
   if(!meta.dbxRefresh)return;
   if(!forzar&&Date.now()-ultimaBajada<60000)return;ultimaBajada=Date.now();
   dbxEstado="bajando";if(ui.tab==="ajustes")render();
@@ -809,6 +897,7 @@ async function dbxBajar(forzar){
       meta.dbxUltima=Date.now();meta.dbxError="";saveMeta();toast("Datos actualizados desde Dropbox");
     }else if(!remoto||(state.modificado||0)>(remoto.modificado||0)||meta.pendiente){dbxEstado="";await dbxSubir();return}
     else{meta.dbxUltima=Date.now();meta.dbxError="";saveMeta()}
+    if(subirSiempre){dbxEstado="";await dbxSubir();return}
   }catch(e){dbxFallo(e)}
   dbxEstado="";render();
 }
@@ -863,6 +952,9 @@ async function doRestore(){
 }
 
 /* ---------- render & events ---------- */
+function pintarOjo(){const b=$("#eyeBtn");if(!b)return;
+  b.setAttribute("aria-label",ui.oculto?"Mostrar montos":"Ocultar montos");b.setAttribute("aria-pressed",String(ui.oculto));
+  b.innerHTML=ui.oculto?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.3 4M6.6 6.6A17 17 0 0 0 2 12s4 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>':'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'}
 function renderBanner(){
   const el=$("#banner");if(!el)return;const hay=state.gastos.length||Object.keys(state.vars).length;let html="";
   const usaDivisas=state.gastos.some(g=>g.moneda!=="CLP")||Object.values(state.vars).some(l=>l.some(v=>v.moneda&&v.moneda!=="CLP"));
@@ -887,7 +979,8 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;const d=b.dataset;
   if(d.tab){ui.tab=d.tab;if(d.tab==="mov"&&!b.closest("nav,.tabs-top"))ui.vmes=mkey(today);render();window.scrollTo({top:0});return}
   if(d.hero){ui.heroMode=d.hero;render();return}
-  if(d.donut){ui.donutMode=d.donut;render();return}
+  if(d.histn){ui.histN=Number(d.histn);ui.histSel=null;render();return}
+  if(d.histsel!==undefined){ui.histSel=Number(d.histsel);render();return}
   if(d.filter){ui.filter=d.filter;render();return}
   if(d.vmes){const nd=addM(keyToDate(ui.vmes),Number(d.vmes));if(nd<=today){ui.vmes=mkey(nd);render()}return}
   if(d.open){openDetail(d.open);return}
@@ -903,7 +996,7 @@ document.addEventListener("click",e=>{
   if(b.hasAttribute("data-newbase")){doBackup(true);return}
   if(b.hasAttribute("data-rates")){actualizarTasas(true);return}
   if(b.hasAttribute("data-dbxconnect")){dbxConectar(($("#dbxKey")||{}).value||meta.dbxKey);return}
-  if(b.hasAttribute("data-dbxsync")){meta.dbxError="";dbxBajar(true);return}
+  if(b.hasAttribute("data-dbxsync")){meta.dbxError="";dbxBajar(true,true);return}
   if(b.hasAttribute("data-dbxoff")){if(d.confirm)dbxDesconectar();else{b.dataset.confirm="1";b.textContent="Confirmar"}return}
   if(b.hasAttribute("data-restore")){doRestore();return}
   if(d.toggle){const id=d.toggle;state.gastos=state.gastos.map(g=>g.id===id?{...g,estado:g.estado==="Activa"?"Pausada":"Activa"}:g);store.saveRegistro();render();openDetail(id);return}
@@ -911,12 +1004,14 @@ document.addEventListener("click",e=>{
     if(d.confirm){state.gastos=state.gastos.filter(x=>x.id!==id);store.saveRegistro();closeSheet();render();toast(`${g.nombre} eliminado`)}else{b.dataset.confirm="1";b.textContent="Confirmar"}return}
   if(d.delvar){const k=d.mes,id=d.delvar;
     if(d.confirm){state.vars[k]=(state.vars[k]||[]).filter(x=>x.id!==id);if(!state.vars[k].length)delete state.vars[k];store.saveMes(k);closeSheet();render();toast("Gasto eliminado")}else{b.dataset.confirm="1";b.textContent="Confirmar"}return}
+  if(b.id==="eyeBtn"){ui.oculto=!ui.oculto;try{localStorage.setItem("mis-gastos-oculto",ui.oculto?"1":"0")}catch(_){}pintarOjo();render();return}
   if(b.id==="themeBtn"){const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;r.dataset.theme=dark?"light":"dark";try{localStorage.setItem("gastos-theme",r.dataset.theme)}catch(_){}}
 });
 document.addEventListener("input",e=>{if(e.target.id==="q"){ui.q=e.target.value;render()}});
+document.addEventListener("change",e=>{if(e.target.id==="histCat"){ui.histCat=e.target.value;render()}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#scrim"))closeSheet()});
 try{const th=localStorage.getItem("gastos-theme");if(th)document.documentElement.dataset.theme=th}catch(_){}
-render();
+pintarOjo();render();
 initStore();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){actualizarTasas(false);dbxBajar(false)}else if(meta.pendiente&&meta.dbxRefresh){clearTimeout(syncTimer);dbxSubir()}});
