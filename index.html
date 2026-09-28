@@ -233,14 +233,26 @@ form.f textarea{min-height:70px;resize:vertical}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="1.2";
+const APP_VERSION="1.3";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
 const VCATS=["Supermercado","Comida y restaurantes","Transporte","Hogar","Salud","Entretención","Ropa y cuidado personal","Regalos","Mascotas","Otro"];
 const VCAT_COLOR={Supermercado:"#10B981","Comida y restaurantes":"#F97316",Transporte:"#3B82F6",Hogar:"#8B5CF6",Salud:"#EF4444",Entretención:"#06B6D4","Ropa y cuidado personal":"#D946EF",Regalos:"#EAB308",Mascotas:"#B45309",Otro:"#94A3B8"};
 const ESTADOS=["Activa","Pausada","Cancelada"];
-const MONEDAS=["CLP","UF","USD","EUR"];
+const TOP20=["USD","EUR","JPY","GBP","CNY","AUD","CAD","CHF","HKD","SGD","SEK","KRW","NOK","NZD","INR","MXN","TWD","ZAR","BRL","DKK"];
+const LATAM=["ARS","BOB","BRL","CLP","COP","CRC","CUP","DOP","GTQ","HNL","MXN","NIO","PAB","PEN","PYG","UYU","VES"];
+const UNIDADES=["UF","UTM"];
+const MONEDAS=[...new Set(["CLP",...UNIDADES,...TOP20,...LATAM])];
+const BASES=MONEDAS.filter(m=>!UNIDADES.includes(m));
+const OFICIAL_DISTINTO=["ARS","VES"];
+let _dn=null;try{_dn=new Intl.DisplayNames(["es"],{type:"currency"})}catch(e){}
+const nombreMoneda=c=>{const n=c==="UF"?"Unidad de Fomento":c==="UTM"?"Unidad Tributaria Mensual":(_dn&&_dn.of(c))||c;return n.charAt(0).toUpperCase()+n.slice(1)};
+const etiquetaMoneda=c=>`${c} · ${nombreMoneda(c)}`;
+const monedaDeEtiqueta=v=>{const c=String(v||"").trim().split(/[\s·]/)[0].toUpperCase();return MONEDAS.includes(c)?c:null};
+const base=()=>(state.config&&state.config.monedaBase)||"CLP";
+function datalistMonedas(id){const orden=[base(),...(base()==="CLP"?UNIDADES:[]),...MONEDAS.filter(m=>m!==base())];
+  return `<datalist id="${id}">${[...new Set(orden)].map(c=>`<option value="${esc(etiquetaMoneda(c))}">`).join("")}</datalist>`}
 const MEDIOS=["Crédito","Débito","Transferencia","Efectivo","PayPal","Otro"];
 const I=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const TABS=[
@@ -261,10 +273,12 @@ let store=null;
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const OCULTO="$ •••••";
-const clp=n=>ui.oculto?OCULTO:(n<0?"-":"")+"$"+Math.round(Math.abs(n||0)).toLocaleString("es-CL");
+let _fmt={};
+function fmtBase(){const b=base();if(!_fmt[b]){try{_fmt[b]=new Intl.NumberFormat("es-CL",{style:"currency",currency:b,currencyDisplay:["CLP","USD"].includes(b)?"symbol":"narrowSymbol"})}catch(e){_fmt[b]=new Intl.NumberFormat("es-CL",{maximumFractionDigits:2})}}return _fmt[b]}
+const simbolo=()=>{const p=fmtBase().formatToParts(1).find(x=>x.type==="currency");return p?p.value:base()};
+const clp=n=>ui.oculto?simbolo()+" •••••":fmtBase().format(isFinite(n)?(n||0):0);
 const montoOrig=(v,m)=>ui.oculto?"••••• "+m:`${Number(v).toLocaleString("es-CL",{maximumFractionDigits:4})} ${m}`;
-const clpShort=n=>{if(ui.oculto)return "$ •••";n=Math.round(n||0);if(n>=1e6)return "$"+(n/1e6).toLocaleString("es-CL",{maximumFractionDigits:1})+"M";if(n>=1e4)return "$"+Math.round(n/1e3)+"k";return clp(n)};
+const clpShort=n=>{if(ui.oculto)return simbolo()+" •••";n=n||0;const a=Math.abs(n),sg=n<0?"-":"";if(a>=1e6)return sg+simbolo()+(a/1e6).toLocaleString("es-CL",{maximumFractionDigits:1})+"M";if(a>=1e4)return sg+simbolo()+Math.round(a/1e3)+"k";return clp(n)};
 const pad=n=>String(n).padStart(2,"0");
 const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const parseD=s=>{if(!s)return null;const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c)};
@@ -279,9 +293,16 @@ function avatar(name,color){return `<div class="av" style="background:color-mix(
 const avG=g=>avatar(g.nombre,CAT_COLOR[g.categoria]||CAT_COLOR.Otro);
 const avV=v=>avatar(v.descripcion||v.categoria,VCAT_COLOR[v.categoria]||VCAT_COLOR.Otro);
 
-function toCLP(monto,moneda){return moneda==="CLP"||!moneda?(Number(monto)||0):(Number(monto)||0)*(Number(state.tasas[moneda])||0)}
+/* Tasas: unidades de cada moneda por 1 EUR. CLP, USD, UF y UTM vienen del Banco Central (mindicador.cl); el resto, de frankfurter.dev */
+function porEUR(){const t=state.tasas||{};
+  if(t.porEUR)return t.porEUR;
+  if(t.EUR){const o={EUR:1,CLP:t.EUR};if(t.USD)o.USD=t.EUR/t.USD;if(t.UF)o.UF=t.EUR/t.UF;return o}
+  return {EUR:1}}
+function tasaOK(m){const pe=porEUR();return !m||m===base()||(pe[m]>0&&pe[base()]>0)}
+function toBase(monto,moneda){const a=Number(monto)||0;const m=moneda||"CLP",b=base();if(m===b)return a;
+  const pe=porEUR();if(!(pe[m]>0&&pe[b]>0))return 0;return a*pe[b]/pe[m]}
 function calc(g){
-  const enClp=toCLP(g.valor,g.moneda);
+  const enClp=toBase(g.valor,g.moneda);
   const conDesc=enClp*(1-(Number(g.descuento)||0));
   const pp=conDesc/Math.max(1,Number(g.personas)||1);
   return {enClp,conDesc,pp,anual:g.modalidad==="Anual"?pp:pp*12};
@@ -295,7 +316,7 @@ function gastoMes(d,incluirReactivaciones=true){
   return s;
 }
 const varsMes=k=>(state.vars[k]||[]);
-const totalVar=k=>varsMes(k).reduce((a,v)=>a+toCLP(v.monto,v.moneda),0);
+const totalVar=k=>varsMes(k).reduce((a,v)=>a+toBase(v.monto,v.moneda),0);
 function cobraEsteMes(g,d=today){return g.estado==="Activa"&&(g.modalidad==="Mensual"||g.mesCobro===MESES[d.getMonth()])}
 function totales(){
   const act=state.gastos.filter(g=>g.estado==="Activa");
@@ -310,7 +331,7 @@ function porCategoria(){
   return CATS.map(c=>({cat:c,v:m[c],color:CAT_COLOR[c]})).filter(x=>x.v>0.5).sort((a,b)=>b.v-a.v);
 }
 function varPorCategoria(k){
-  const m={};varsMes(k).forEach(v=>{const c=VCATS.includes(v.categoria)?v.categoria:"Otro";m[c]=(m[c]||0)+toCLP(v.monto,v.moneda)});
+  const m={};varsMes(k).forEach(v=>{const c=VCATS.includes(v.categoria)?v.categoria:"Otro";m[c]=(m[c]||0)+toBase(v.monto,v.moneda)});
   return Object.entries(m).map(([cat,v])=>({cat,v,color:VCAT_COLOR[cat]})).sort((a,b)=>b.v-a.v);
 }
 function proximos(nMeses=12){
@@ -338,30 +359,30 @@ function initStore(){
 }
 function guardarLocal(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){toast("No se pudo guardar: el teléfono no tiene espacio")}}
 function saveMeta(){try{localStorage.setItem(LSMETA,JSON.stringify(meta))}catch(e){}}
-/* Valores de UF, dólar y euro desde mindicador.cl (datos del Banco Central) */
+/* Valores de conversión: mindicador.cl (Banco Central de Chile) + frankfurter.dev (bancos centrales del mundo) */
 let tasasEstado="";
+async function getJSON(url){const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),12000);
+  try{const r=await fetch(url,{signal:ctrl.signal,cache:"no-store"});if(!r.ok)throw new Error("http "+r.status);return await r.json()}finally{clearTimeout(to)}}
 async function actualizarTasas(forzar){
   const t=state.tasas||{};
   const hace=t.consultado?(Date.now()-t.consultado)/36e5:1e9;
-  if(!forzar&&hace<6)return;
+  if(!forzar&&hace<6&&t.porEUR)return;
   tasasEstado="cargando";if(ui.tab==="ajustes")render();
-  try{
-    const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),12000);
-    const r=await fetch("https://mindicador.cl/api",{signal:ctrl.signal,cache:"no-store"});clearTimeout(to);
-    if(!r.ok)throw new Error("http "+r.status);
-    const j=await r.json();
-    const f=x=>x&&x.fecha?iso(new Date(x.fecha)):"";
-    if(!(j.uf&&j.uf.valor&&j.dolar&&j.dolar.valor&&j.euro&&j.euro.valor))throw new Error("formato");
-    state.tasas={UF:j.uf.valor,USD:j.dolar.valor,EUR:j.euro.valor,fechaUF:f(j.uf),fechaUSD:f(j.dolar),fechaEUR:f(j.euro),fecha:f(j.uf),consultado:Date.now()};
-    guardarLocal();tasasEstado="";
-  }catch(e){tasasEstado="error"}
+  const [fx,cl]=await Promise.allSettled([getJSON("https://api.frankfurter.dev/v2/rates"),getJSON("https://mindicador.cl/api")]);
+  const pe={...(t.porEUR||porEUR())},fe={...(t.fechas||{})};let ok=0;
+  if(fx.status==="fulfilled"&&Array.isArray(fx.value)){fx.value.forEach(r=>{if(MONEDAS.includes(r.quote)&&r.rate>0){pe[r.quote]=r.rate;fe[r.quote]=r.date}});pe.EUR=1;ok++}
+  if(cl.status==="fulfilled"&&cl.value&&cl.value.euro&&cl.value.euro.valor){const j=cl.value,eur=j.euro.valor,f=x=>x&&x.fecha?iso(new Date(x.fecha)):"";
+    pe.CLP=eur;fe.CLP=f(j.euro);
+    [["USD","dolar"],["UF","uf"],["UTM","utm"]].forEach(([c,k])=>{if(j[k]&&j[k].valor>0){pe[c]=eur/j[k].valor;fe[c]=f(j[k])}});ok++}
+  if(ok){state.tasas={porEUR:pe,fechas:fe,consultado:Date.now(),parcial:ok<2};guardarLocal();tasasEstado=ok<2?"parcial":""}
+  else tasasEstado="error";
   render();
 }
 /* ---------- presupuestos ---------- */
 const pres=()=>state.presupuestos||(state.presupuestos={});
 function estadoPres(k){
   const d=keyToDate(k),esAct=k===mkey(today),dias=eom(d).getDate(),hoy=esAct?today.getDate():dias;
-  const gasto={};varsMes(k).forEach(v=>{gasto[v.categoria]=(gasto[v.categoria]||0)+toCLP(v.monto,v.moneda)});
+  const gasto={};varsMes(k).forEach(v=>{gasto[v.categoria]=(gasto[v.categoria]||0)+toBase(v.monto,v.moneda)});
   const lista=Object.entries(pres()).filter(([c,m])=>m>0&&c!=="__total").map(([c,m])=>{const g=gasto[c]||0;return {c,m,g,pct:g/m,proy:esAct&&hoy>2?g/hoy*dias:null,color:VCAT_COLOR[c]||VCAT_COLOR.Otro}});
   const tot=pres().__total>0?{c:"Total variables",m:pres().__total,g:totalVar(k),color:"var(--primary)"}:null;
   if(tot){tot.pct=tot.g/tot.m;tot.proy=esAct&&hoy>2?tot.g/hoy*dias:null}
@@ -384,7 +405,7 @@ function cardPresupuestos(k,compacto){
 }
 function openPresForm(){
   const pr=pres();const val=v=>v>0?Math.round(v):"";
-  openSheet(`<h3 style="margin:0 0 6px;font-size:20px">Presupuestos mensuales</h3><p class="sub" style="margin:0 0 14px">Deja en blanco las categorías sin presupuesto. Te avisaremos al llegar al 80% y al 100%.</p>
+  openSheet(`<h3 style="margin:0 0 6px;font-size:20px">Presupuestos mensuales</h3><p class="sub" style="margin:0 0 14px">Montos en ${esc(nombreMoneda(base()))}. Deja en blanco las categorías sin presupuesto. Te avisaremos al llegar al 80% y al 100%.</p>
   <form class="f" id="pForm">
     <label class="full">Total de gastos variables<input name="__total" inputmode="numeric" placeholder="Sin límite" value="${val(pr.__total)}"></label>
     ${VCATS.map(c=>`<label>${esc(c)}<input name="${esc(c)}" inputmode="numeric" placeholder="—" value="${val(pr[c])}"></label>`).join("")}
@@ -400,7 +421,7 @@ function avisoPresupuesto(cat,k,antes){
   const revisar=(nombre,lim,a,d)=>{if(!(lim>0))return;const pa=a/lim,pd=d/lim;
     if(pa<1&&pd>=1)msgs.push(`Te pasaste del presupuesto de ${nombre}: ${clp(d)} de ${clp(lim)}`);
     else if(pa<.8&&pd>=.8)msgs.push(`Llevas el ${ui.oculto?"":Math.round(pd*100)+"% "}del presupuesto de ${nombre}`)};
-  const g=c=>varsMes(k).filter(v=>v.categoria===c).reduce((a,v)=>a+toCLP(v.monto,v.moneda),0);
+  const g=c=>varsMes(k).filter(v=>v.categoria===c).reduce((a,v)=>a+toBase(v.monto,v.moneda),0);
   revisar(cat,pr[cat],antes.cat,g(cat));revisar("gastos variables",pr.__total,antes.tot,totalVar(k));
   return msgs;
 }
@@ -429,7 +450,7 @@ function generarICS(){
   const icsEsc=t=>String(t).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");
   const f=d=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
   const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
-  const monto=g=>{const c=calc(g);return "$"+Math.round(c.pp).toLocaleString("es-CL")};
+  const monto=g=>{const c=calc(g);const o=ui.oculto;ui.oculto=false;const t=clp(c.pp);ui.oculto=o;return t};
   const ev=(uidx,inicio,titulo,desc,rrule)=>{const fin=new Date(inicio);fin.setDate(fin.getDate()+1);
     L.push("BEGIN:VEVENT","UID:"+uidx+"@mis-gastos","DTSTAMP:"+stamp,"DTSTART;VALUE=DATE:"+f(inicio),"DTEND;VALUE=DATE:"+f(fin),"SUMMARY:"+icsEsc(titulo),"DESCRIPTION:"+icsEsc(desc));
     if(rrule)L.push("RRULE:"+rrule);
@@ -533,7 +554,7 @@ function bindHeroChart(ch){
 /* historial: fijos y variables por mes, con comparación */
 function histMes(d,cat){
   const k=mkey(d);const fij=gastoMes(d,true);
-  const vars=varsMes(k).filter(v=>cat==="Todas"||cat==="Variables"||v.categoria===cat).reduce((a,v)=>a+toCLP(v.monto,v.moneda),0);
+  const vars=varsMes(k).filter(v=>cat==="Todas"||cat==="Variables"||v.categoria===cat).reduce((a,v)=>a+toBase(v.monto,v.moneda),0);
   const f=cat==="Todas"||cat==="Fijos"?fij:0;
   return {d,f,v:cat==="Fijos"?0:vars,t:(cat==="Fijos"?0:vars)+f};
 }
@@ -546,7 +567,7 @@ function viewHistorial(){
   const dif=m.t-prev.t,pct=prev.t?dif/prev.t*100:null;
   const esActual=mkey(m.d)===mkey(today);
   // cambios por categoría de variables
-  const porCat=d=>{const o={};varsMes(mkey(d)).forEach(v=>{o[v.categoria]=(o[v.categoria]||0)+toCLP(v.monto,v.moneda)});return o};
+  const porCat=d=>{const o={};varsMes(mkey(d)).forEach(v=>{o[v.categoria]=(o[v.categoria]||0)+toBase(v.monto,v.moneda)});return o};
   const a=porCat(m.d),b=porCat(prev.d);
   const cambios=[...new Set([...Object.keys(a),...Object.keys(b)])].map(c=>({c,d:(a[c]||0)-(b[c]||0)})).filter(x=>Math.abs(x.d)>=1&&(!VCATS.includes(cat)||x.c===cat)).sort((x,y)=>Math.abs(y.d)-Math.abs(x.d)).slice(0,3);
   const opciones=["Todas","Fijos","Variables",...VCATS];
@@ -644,8 +665,8 @@ function viewInicio(){
 }
 function rowDay(x){const past=x.dia<=today.getDate();
   return `<li><button class="row btn ${past?"past":""}" data-open="${x.g.id}"><div class="day"><b>${x.dia}</b><span>${MESES[today.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${esc([x.g.medio,x.g.cuenta].filter(Boolean).join(" · "))}</div></div><div class="amt">${clp(x.v)}</div></button></li>`}
-function rowVar(v){const c=toCLP(v.monto,v.moneda);
-  return `<li><button class="row btn" data-openvar="${v.id}" data-mes="${v.fecha.slice(0,7)}">${avV(v)}<div class="mid"><div class="t">${esc(v.descripcion||v.categoria)}</div><div class="s">${esc([v.categoria,v.medio].filter(Boolean).join(" · "))}</div></div><div class="amt">${clp(c)}${v.moneda&&v.moneda!=="CLP"?`<div class="s">${montoOrig(v.monto,v.moneda)}</div>`:""}</div></button></li>`}
+function rowVar(v){const c=toBase(v.monto,v.moneda);
+  return `<li><button class="row btn" data-openvar="${v.id}" data-mes="${v.fecha.slice(0,7)}">${avV(v)}<div class="mid"><div class="t">${esc(v.descripcion||v.categoria)}</div><div class="s">${esc([v.categoria,v.medio].filter(Boolean).join(" · "))}</div></div><div class="amt">${clp(c)}${v.moneda&&v.moneda!==base()?`<div class="s">${montoOrig(v.monto,v.moneda)}</div>`:""}</div></button></li>`}
 function monthGroup(m){
   return `<div class="month-group"><div class="mh">${MESES[m.d.getMonth()]} ${m.d.getFullYear()}<span>Fijos del mes ${clp(m.total)}</span></div>
   <ul class="list">${m.items.map(it=>`<li><button class="row btn" data-open="${it.g.id}">${avG(it.g)}<div class="mid"><div class="t">${esc(it.g.nombre)}</div><div class="s">${it.tipo}${it.g.proximoPago&&it.tipo==="Se reactiva"?" el "+fmtD(it.g.proximoPago):it.g.dia?", día "+it.g.dia:""}</div></div><div class="amt">${clp(it.v)}</div></button></li>`).join("")}</ul></div>`;
@@ -664,7 +685,7 @@ function viewMov(){
     ${isCur&&frecuentes().length?`<div class="chips" style="margin:10px 0 4px">${frecuentes().map((x,i)=>`<button class="chip" data-quick="${i}">+ ${esc(x.descripcion)}</button>`).join("")}</div>`:""}
     <div style="font-size:clamp(30px,6vw,40px);font-weight:800;letter-spacing:-.03em;margin-top:6px">${clp(total)}</div>
     <p class="sub">${items.length} movimiento${items.length===1?"":"s"}${items.length?`, promedio ${clp(avgDia)} por día`:""}${prev?`. Mes anterior ${clp(prev)}`:""}</p>
-    ${items.length?Object.keys(byDay).map(f=>`<div class="dayhead"><span>${dayLbl(f)}</span><span>${clp(byDay[f].reduce((a,v)=>a+toCLP(v.monto,v.moneda),0))}</span></div><ul class="list">${byDay[f].map(rowVar).join("")}</ul>`).join(""):`<div class="empty"><b>Sin movimientos en ${MESES[d.getMonth()].toLowerCase()}</b>${isCur?"Registra lo que gastas en el día a día: supermercado, salidas, transporte.":"No registraste gastos variables este mes."}</div>`}
+    ${items.length?Object.keys(byDay).map(f=>`<div class="dayhead"><span>${dayLbl(f)}</span><span>${clp(byDay[f].reduce((a,v)=>a+toBase(v.monto,v.moneda),0))}</span></div><ul class="list">${byDay[f].map(rowVar).join("")}</ul>`).join(""):`<div class="empty"><b>Sin movimientos en ${MESES[d.getMonth()].toLowerCase()}</b>${isCur?"Registra lo que gastas en el día a día: supermercado, salidas, transporte.":"No registraste gastos variables este mes."}</div>`}
   </section>
   <div class="grid" style="align-content:start">
   ${cardPresupuestos(k,false)}
@@ -720,6 +741,19 @@ function cardDropbox(){
     <p class="sub" style="margin:0 0 10px">En la carpeta Aplicaciones de tu Dropbox quedan tu Excel actualizado ("Registro de gastos (respaldo automático)"), el archivo base y los datos de la app.${meta.nombreBase?"":" Para que se genere el Excel, elige tu archivo base con \"Respaldar en Excel\"."}</p>
     <button class="btn-d" data-dbxoff style="padding:8px 14px;font-size:13px">Desconectar</button></section>`;
 }
+function indicadores(){const c=(state.config||{}).indicadores;const def=base()==="CLP"?["UF","USD","EUR"]:["USD","EUR"];return (c&&c.length?c:def).filter(x=>x!==base()&&MONEDAS.includes(x))}
+function fmtIndicador(v){if(ui.oculto)return clp(v);const dec=v<10?4:2;try{return new Intl.NumberFormat("es-CL",{style:"currency",currency:base(),currencyDisplay:["CLP","USD"].includes(base())?"symbol":"narrowSymbol",minimumFractionDigits:v<10?2:(base()==="CLP"?2:undefined),maximumFractionDigits:dec}).format(v)}catch(e){return v.toFixed(dec)}}
+function openIndicadores(){const sel=new Set(indicadores());
+  const grupo=(tit,arr)=>`<fieldset class="full" style="border:0;padding:0;margin:0 0 10px"><legend style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px">${tit}</legend><div class="catgrid">${arr.filter(c=>c!==base()).map(c=>`<label><input type="checkbox" name="ind" value="${c}" ${sel.has(c)?"checked":""}><b>${c}</b>&nbsp;<span style="color:var(--ink-3);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nombreMoneda(c))}</span></label>`).join("")}</div></fieldset>`;
+  openSheet(`<h3 style="margin:0 0 6px;font-size:20px">Indicadores</h3><p class="sub" style="margin:0 0 14px">Elige cuáles ver en Ajustes. Todas las monedas se pueden usar en tus gastos, estén o no aquí.</p>
+  <form id="iForm">${grupo("Chile",["UF","UTM","USD","EUR"])}${grupo("Principales del mundo",TOP20.filter(c=>!["USD","EUR"].includes(c)))}${grupo("Latinoamérica",LATAM.filter(c=>!TOP20.includes(c)))}
+  <div class="actions"><button class="btn-p grow" type="submit">Guardar</button><button class="btn-s" type="button" data-close>Cancelar</button></div></form>`);
+  $("#iForm").addEventListener("submit",e=>{e.preventDefault();const v=[...new FormData(e.target).getAll("ind")];state.config={...(state.config||{}),indicadores:v};store.saveRegistro();closeSheet();render()})}
+function cambiarBase(nueva){const vieja=base();if(nueva===vieja)return;
+  const pe=porEUR();const f=pe[vieja]>0&&pe[nueva]>0?pe[nueva]/pe[vieja]:null;
+  if(f&&state.presupuestos){const n={};for(const [k,v] of Object.entries(state.presupuestos))n[k]=Math.round(v*f*100)/100;state.presupuestos=n}
+  state.config={...(state.config||{}),monedaBase:nueva};store.saveRegistro();render();
+  toast(`Moneda principal: ${nombreMoneda(nueva)}${f&&Object.keys(state.presupuestos||{}).length?". Presupuestos convertidos":""}`)}
 function viewAjustes(){
   const t=state.tasas||{};const nVar=Object.values(state.vars).reduce((a,l)=>a+l.length,0);
   const dias=meta.ultimoRespaldo?Math.floor((today-parseD(meta.ultimoRespaldo))/864e5):null;
@@ -729,15 +763,17 @@ function viewAjustes(){
   ${cardDropbox()}
   <section class="card"><h2>Respaldo en Excel</h2><p class="sub">${meta.ultimoRespaldo?`Último respaldo: ${fmtD(meta.ultimoRespaldo)}${dias>0?` (hace ${dias} día${dias===1?"":"s"})`:" (hoy)"}.`:"Aún no has hecho un respaldo."}${meta.dbxRefresh?" Con Dropbox conectado, el respaldo se hace solo; este botón descarga una copia al teléfono.":" Tus datos viven solo en este teléfono, así que respalda seguido."}</p>
     <div class="backup-actions">
-      <button class="btn-s" data-backup><span class="ic">${I('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>')}</span><span>Respaldar en Excel<small>${meta.nombreBase?`Usa tu archivo base "${esc(meta.nombreBase)}" y descarga la copia actualizada`:"La primera vez te pedirá tu archivo Registro de gastos 1.4"}</small></span></button>
+      <button class="btn-s" data-backup><span class="ic">${I('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>')}</span><span>Respaldar en Excel<small>${meta.nombreBase?`Usa tu archivo base "${esc(meta.nombreBase)}" y descarga la copia actualizada`:"La primera vez te pedirá tu archivo Registro de gastos (versión 2.0)"}</small></span></button>
       <button class="btn-s" data-restore><span class="ic">${I('<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 7V4h16v3"/>')}</span><span>Cargar desde mi Excel<small>Reemplaza los gastos de la app con los del archivo</small></span></button>
       ${meta.nombreBase?`<button class="linkbtn" data-newbase style="text-align:left">Cambiar el archivo base</button>`:""}
     </div></section>
-  <section class="card"><div class="card-head"><div><h2>Valores de conversión</h2><p class="sub">Del Banco Central, vía mindicador.cl. Se actualizan solos cada vez que abres la app.</p></div>
+  <section class="card"><div class="card-head"><div><h2>Moneda y valores de conversión</h2><p class="sub">Se actualizan solos cada vez que abres la app.</p></div>
     <button class="btn-s" data-rates style="padding:6px 12px;font-size:13px" ${tasasEstado==="cargando"?"disabled":""}>${tasasEstado==="cargando"?"Actualizando…":"Actualizar"}</button></div>
-    ${tasasEstado==="error"?`<div class="banner" style="margin:0 0 10px">No se pudieron obtener los valores. ${t.consultado?"Se usan los últimos guardados.":"Revisa tu conexión a internet."}</div>`:""}
-    <dl class="kv">${fila("UF",t.UF,t.fechaUF||t.fecha)}${fila("Dólar observado",t.USD,t.fechaUSD)}${fila("Euro",t.EUR,t.fechaEUR)}</dl>
-    ${cons?`<p class="sub" style="margin:10px 0 0">Consultado el ${cons.toLocaleString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</p>`:""}
+    ${tasasEstado==="error"?`<div class="banner" style="margin:0 0 10px">No se pudieron obtener los valores. ${t.consultado?"Se usan los últimos guardados.":"Revisa tu conexión a internet."}</div>`:tasasEstado==="parcial"?`<div class="banner" style="margin:0 0 10px">Una de las fuentes no respondió; algunos valores son los últimos guardados.</div>`:""}
+    <form class="f" onsubmit="return false"><label class="full">Moneda principal<select id="monedaBase">${BASES.map(c=>`<option value="${c}" ${c===base()?"selected":""}>${esc(etiquetaMoneda(c))}</option>`).join("")}</select><span class="hint">Todos los totales, gráficos y presupuestos se muestran en esta moneda.</span></label></form>
+    <dl class="kv" style="margin-top:12px">${indicadores().map(c=>{const v=toBase(1,c),f=(t.fechas||{})[c];return `<dt>${esc(nombreMoneda(c))} <span style="color:var(--ink-3)">(${c})</span></dt><dd>${tasaOK(c)?fmtIndicador(v):"—"}${f?`<div style="font-weight:500;font-size:12px;color:var(--ink-3)">al ${fmtD(f)}</div>`:""}</dd>`}).join("")}</dl>
+    <button class="linkbtn" data-indic>Elegir indicadores</button>
+    <p class="sub" style="margin:8px 0 0">UF, UTM, dólar y euro en pesos: Banco Central de Chile, vía mindicador.cl. Otras monedas: bancos centrales del mundo, vía frankfurter.dev (valores diarios).${cons?` Consultado el ${cons.toLocaleString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}.`:""}</p>
   </section>
   <section class="card"><h2>Avisos y calendario</h2><p class="sub">Los cobros fijos cercanos aparecen en el Resumen. Para recibir recordatorios con la app cerrada, exporta tus cobros a tu calendario.</p>
     <form class="f" onsubmit="return false"><label>Avisar con anticipación de<select id="diasAviso">${[3,5,7,14].map(n=>`<option value="${n}" ${n===diasAviso()?"selected":""}>${n} días</option>`).join("")}</select></label>
@@ -761,8 +797,8 @@ function openDetail(id){
   const g=state.gastos.find(x=>x.id===id);if(!g)return;const c=calc(g);
   const shared=(g.comparten||[]).filter(Boolean);
   const rows=[
-    ["Valor",g.moneda==="CLP"?clp(g.valor):montoOrig(g.valor,g.moneda)],
-    g.moneda!=="CLP"?["En pesos",clp(c.enClp)]:null,
+    ["Valor",g.moneda===base()?clp(g.valor):montoOrig(g.valor,g.moneda)],
+    g.moneda!==base()?[`En ${base()}`,clp(c.enClp)+(OFICIAL_DISTINTO.includes(g.moneda)?"*":"")]:null,
     g.descuento?["Descuento",Math.round(g.descuento*100)+"%"]:null,
     g.personas>1?["Pagan",g.personas+" personas"+(shared.length?" (con "+shared.map(esc).join(", ")+")":"")]:null,
     ["Cobro",g.modalidad==="Anual"?`Anual, ${esc(g.mesCobro||"—")} día ${g.dia||"—"}`:`Mensual, día ${g.dia||"—"}`],
@@ -779,7 +815,7 @@ function openDetail(id){
   <div class="actions"><button class="btn-p grow" data-edit="${g.id}">Editar</button><button class="btn-s" data-toggle="${g.id}">${g.estado==="Activa"?"Pausar":"Activar"}</button><button class="btn-d" data-del="${g.id}">Eliminar</button></div>`);
 }
 function openForm(id){
-  const g=id?state.gastos.find(x=>x.id===id):{nombre:"",plan:"",categoria:"Streaming",modalidad:"Mensual",moneda:"CLP",valor:"",descuento:0,personas:1,comparten:[],dia:1,mesCobro:"Todos",estado:"Activa",medio:"Crédito",cuenta:"",cuotasPagadas:1,cuotasTotal:1,ultimoPago:"",proximoPago:"",notas:""};
+  const g=id?state.gastos.find(x=>x.id===id):{nombre:"",plan:"",categoria:"Streaming",modalidad:"Mensual",moneda:base(),valor:"",descuento:0,personas:1,comparten:[],dia:1,mesCobro:"Todos",estado:"Activa",medio:"Crédito",cuenta:"",cuotasPagadas:1,cuotasTotal:1,ultimoPago:"",proximoPago:"",notas:""};
   openSheet(`<h3 style="margin:0 0 14px;font-size:20px">${id?"Editar gasto fijo":"Nuevo gasto fijo"}</h3>
   <form class="f" id="gForm">
     <label class="full">Nombre<input name="nombre" required value="${esc(g.nombre)}" placeholder="Ej.: Netflix"></label>
@@ -787,7 +823,7 @@ function openForm(id){
     <label>Categoría<select name="categoria">${opt(CATS,g.categoria)}</select></label>
     <label>Modalidad<select name="modalidad" id="fMod">${opt(["Mensual","Anual"],g.modalidad)}</select></label>
     <label>Estado<select name="estado">${opt(ESTADOS,g.estado)}</select></label>
-    <label>Moneda<select name="moneda">${opt(MONEDAS,g.moneda)}</select></label>
+    <label>Moneda<input name="moneda" list="monListG" autocomplete="off" value="${esc(etiquetaMoneda(g.moneda||base()))}" onfocus="this.select()">${datalistMonedas("monListG")}<span class="hint monwarn"></span></label>
     <label>Valor<input name="valor" required inputmode="decimal" value="${g.valor}"></label>
     <label>Descuento (%)<input name="descuento" inputmode="decimal" value="${Math.round((g.descuento||0)*100)}"></label>
     <label>N° de personas que pagan<input name="personas" type="number" min="1" value="${g.personas||1}"></label>
@@ -804,8 +840,9 @@ function openForm(id){
     <div class="full actions" style="margin-top:4px"><button class="btn-p grow" type="submit">${id?"Guardar cambios":"Agregar gasto fijo"}</button><button class="btn-s" type="button" data-close>Cancelar</button></div>
   </form>`);
   const syncMes=()=>{$("#fMesWrap").style.display=$("#fMod").value==="Anual"?"":"none"};syncMes();$("#fMod").addEventListener("change",syncMes);
-  $("#gForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target);
-    const obj={id:id||uid("g"),nombre:f.get("nombre").trim(),plan:f.get("plan").trim(),categoria:f.get("categoria"),modalidad:f.get("modalidad"),estado:f.get("estado"),moneda:f.get("moneda"),valor:numIn(f.get("valor")),
+  vigilarMoneda($("#gForm"));
+  $("#gForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target);if(!monedaDeEtiqueta(f.get("moneda"))){toast("Elige una moneda de la lista");return}
+    const obj={id:id||uid("g"),nombre:f.get("nombre").trim(),plan:f.get("plan").trim(),categoria:f.get("categoria"),modalidad:f.get("modalidad"),estado:f.get("estado"),moneda:monedaDeEtiqueta(f.get("moneda")),valor:numIn(f.get("valor")),
       descuento:Math.min(Math.max(numIn(f.get("descuento")),0),100)/100,personas:Math.max(1,parseInt(f.get("personas"))||1),
       comparten:String(f.get("comparten")).split(",").map(s=>s.trim()).filter(Boolean),dia:parseInt(f.get("dia"))||1,
       mesCobro:f.get("modalidad")==="Anual"?f.get("mesCobro"):"Todos",medio:f.get("medio"),cuenta:f.get("cuenta").trim(),
@@ -815,27 +852,27 @@ function openForm(id){
 }
 function findVar(id,mes){return (state.vars[mes]||[]).find(v=>v.id===id)}
 function openVarDetail(id,mes){
-  const v=findVar(id,mes);if(!v)return;const c=toCLP(v.monto,v.moneda);
-  const rows=[["Fecha",fmtD(v.fecha)],["Categoría",esc(v.categoria)],v.moneda!=="CLP"?["Monto original",montoOrig(v.monto,v.moneda)]:null,["Medio de pago",esc([v.medio,v.cuenta].filter(Boolean).join(" · ")||"—")]].filter(Boolean);
+  const v=findVar(id,mes);if(!v)return;const c=toBase(v.monto,v.moneda);
+  const rows=[["Fecha",fmtD(v.fecha)],["Categoría",esc(v.categoria)],v.moneda&&v.moneda!==base()?["Monto original",montoOrig(v.monto,v.moneda)]:null,["Medio de pago",esc([v.medio,v.cuenta].filter(Boolean).join(" · ")||"—")]].filter(Boolean);
   openSheet(`<div class="detail-top">${avV(v)}<div><h3>${esc(v.descripcion||v.categoria)}</h3><div style="color:var(--ink-3);font-size:13.5px">Gasto variable</div></div></div>
-  <div class="big-cost" style="grid-template-columns:1fr"><div><b style="font-size:28px">${clp(c)}</b><span>${v.moneda!=="CLP"?"Convertido con los valores de Ajustes":"Monto"}</span></div></div>
+  <div class="big-cost" style="grid-template-columns:1fr"><div><b style="font-size:28px">${clp(c)}</b><span>${v.moneda&&v.moneda!==base()?(OFICIAL_DISTINTO.includes(v.moneda)?"Convertido con el tipo de cambio oficial, que puede diferir del que pagaste":"Convertido con los valores de Ajustes"):"Monto"}</span></div></div>
   <dl class="kv">${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>
   ${v.notas?`<div class="note">${esc(v.notas)}</div>`:""}
   <div class="actions"><button class="btn-p grow" data-editvar="${v.id}" data-mes="${mes}">Editar</button><button class="btn-s" data-dupvar="${v.id}" data-mes="${mes}">Repetir hoy</button><button class="btn-d" data-delvar="${v.id}" data-mes="${mes}">Eliminar</button></div>`);
 }
-let lastVar={categoria:"Supermercado",medio:"Débito",cuenta:"",moneda:"CLP"};
-function openVarForm(id,mes,base){
-  const v=id?findVar(id,mes):{descripcion:base?.descripcion||"",categoria:base?.categoria||lastVar.categoria,monto:base?.monto??"",moneda:base?.moneda||lastVar.moneda,fecha:iso(today),medio:base?.medio||lastVar.medio,cuenta:base?.cuenta??lastVar.cuenta,notas:""};
-  const frec=id||base?[]:frecuentes();
+let lastVar={categoria:"Supermercado",medio:"Débito",cuenta:"",moneda:null};
+function openVarForm(id,mes,plantilla){
+  const v=id?findVar(id,mes):{descripcion:plantilla?.descripcion||"",categoria:plantilla?.categoria||lastVar.categoria,monto:plantilla?.monto??"",moneda:plantilla?.moneda||lastVar.moneda||baseMon(),fecha:iso(today),medio:plantilla?.medio||lastVar.medio,cuenta:plantilla?.cuenta??lastVar.cuenta,notas:""};
+  const frec=id||plantilla?[]:frecuentes();
   openSheet(`<h3 style="margin:0 0 14px;font-size:20px">${id?"Editar gasto variable":"Nuevo gasto variable"}</h3>
   ${frec.length?`<div class="chips" style="margin:-4px 0 14px" aria-label="Gastos frecuentes">${frec.map((x,i)=>`<button type="button" class="chip frec" data-frec="${i}"><i style="display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px;background:${VCAT_COLOR[x.categoria]||VCAT_COLOR.Otro}"></i>${esc(x.descripcion)}</button>`).join("")}</div>`:""}
   <form class="f" id="vForm">
-    <div class="full amount-in"><span>$</span><input name="monto" required inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Monto" value="${v.monto===""?"":v.monto}"></div>
+    <div class="full amount-in"><span>${esc(simbolo())}</span><input name="monto" required inputmode="decimal" autocomplete="off" placeholder="0" aria-label="Monto" value="${v.monto===""?"":v.monto}"></div>
     <label class="full">Descripción<input name="descripcion" list="descList" autocomplete="off" value="${esc(v.descripcion)}" placeholder="Ej.: Jumbo, almuerzo, Uber"><datalist id="descList">${descripcionesConocidas().map(d=>`<option value="${esc(d)}">`).join("")}</datalist><span class="hint" id="sugCat"></span></label>
     <fieldset class="full" style="border:0;padding:0;margin:0"><legend style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px">Categoría</legend>
       <div class="catgrid">${VCATS.map(c=>`<label><input type="radio" name="categoria" value="${esc(c)}" ${c===v.categoria?"checked":""}><i style="background:${VCAT_COLOR[c]}"></i>${esc(c)}</label>`).join("")}</div></fieldset>
     <label>Fecha<input name="fecha" type="date" required value="${esc(v.fecha)}" max="${iso(today)}"></label>
-    <label>Moneda<select name="moneda">${opt(MONEDAS,v.moneda||"CLP")}</select></label>
+    <label>Moneda<input name="moneda" list="monListV" autocomplete="off" value="${esc(etiquetaMoneda(v.moneda||base()))}" onfocus="this.select()">${datalistMonedas("monListV")}<span class="hint monwarn"></span></label>
     <label>Medio de pago<select name="medio">${opt(MEDIOS,v.medio)}</select></label>
     <label>Tarjeta o cuenta<input name="cuenta" value="${esc(v.cuenta||"")}"></label>
     <label class="full">Notas<textarea name="notas" style="min-height:50px">${esc(v.notas||"")}</textarea></label>
@@ -843,6 +880,7 @@ function openVarForm(id,mes,base){
     ${id?"":`<div class="full"><button class="linkbtn" type="button" data-new>¿Es una suscripción o cuenta que se repite? Agrégala como gasto fijo</button></div>`}
   </form>`);
   $("#vForm [name=monto]").focus();
+  vigilarMoneda($("#vForm"));
   let catManual=!!id;
   const fm=$("#vForm");
   fm.querySelectorAll("[name=categoria]").forEach(r=>r.addEventListener("change",()=>{catManual=true;$("#sugCat").textContent=""}));
@@ -850,21 +888,26 @@ function openVarForm(id,mes,base){
   fm.descripcion.addEventListener("input",aplicarSug);fm.descripcion.addEventListener("change",aplicarSug);
   document.querySelectorAll("[data-frec]").forEach(b=>b.addEventListener("click",()=>{const x=frec[Number(b.dataset.frec)];
     fm.descripcion.value=x.descripcion;const r=fm.querySelector(`[name=categoria][value="${CSS.escape(x.categoria)}"]`);if(r)r.checked=true;catManual=true;
-    fm.medio.value=x.medio||fm.medio.value;fm.cuenta.value=x.cuenta||"";fm.moneda.value=x.moneda||"CLP";fm.monto.value=x.monto;$("#sugCat").textContent="";
+    fm.medio.value=x.medio||fm.medio.value;fm.cuenta.value=x.cuenta||"";fm.moneda.value=etiquetaMoneda(x.moneda||baseMon());fm.monto.value=x.monto;$("#sugCat").textContent="";
     fm.monto.focus();fm.monto.select();document.querySelectorAll("[data-frec]").forEach(o=>o.setAttribute("aria-pressed",String(o===b)))}));
   $("#vForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target);const monto=numIn(f.get("monto"));
     if(!(monto>0)){toast("Ingresa un monto mayor que cero");return}
-    const obj={id:id||uid("v"),fecha:f.get("fecha")||iso(today),descripcion:f.get("descripcion").trim(),categoria:f.get("categoria")||"Otro",moneda:f.get("moneda"),monto,medio:f.get("medio"),cuenta:f.get("cuenta").trim(),notas:f.get("notas").trim(),creado:id?(v.creado||Date.now()):Date.now()};
+    if(!monedaDeEtiqueta(f.get("moneda"))){toast("Elige una moneda de la lista");return}
+    const obj={id:id||uid("v"),fecha:f.get("fecha")||iso(today),descripcion:f.get("descripcion").trim(),categoria:f.get("categoria")||"Otro",moneda:monedaDeEtiqueta(f.get("moneda")),monto,medio:f.get("medio"),cuenta:f.get("cuenta").trim(),notas:f.get("notas").trim(),creado:id?(v.creado||Date.now()):Date.now()};
     const nk=obj.fecha.slice(0,7);
-    const antes={cat:varsMes(nk).filter(x=>x.categoria===obj.categoria&&x.id!==id).reduce((a,x)=>a+toCLP(x.monto,x.moneda),0),tot:varsMes(nk).filter(x=>x.id!==id).reduce((a,x)=>a+toCLP(x.monto,x.moneda),0)};
+    const antes={cat:varsMes(nk).filter(x=>x.categoria===obj.categoria&&x.id!==id).reduce((a,x)=>a+toBase(x.monto,x.moneda),0),tot:varsMes(nk).filter(x=>x.id!==id).reduce((a,x)=>a+toBase(x.monto,x.moneda),0)};
     if(id&&mes!==nk){state.vars[mes]=(state.vars[mes]||[]).filter(x=>x.id!==id);if(!state.vars[mes].length)delete state.vars[mes];store.saveMes(mes)}
     const list=state.vars[nk]||[];state.vars[nk]=id&&mes===nk?list.map(x=>x.id===id?obj:x):[...list,obj];
-    store.saveMes(nk);lastVar={categoria:obj.categoria,medio:obj.medio,cuenta:obj.cuenta,moneda:obj.moneda};
+    store.saveMes(nk);lastVar={categoria:obj.categoria,medio:obj.medio,cuenta:obj.cuenta,moneda:null};
     closeSheet();render();
     const alertas=avisoPresupuesto(obj.categoria,nk,antes);
     if(alertas.length)openSheet(`<h3 style="margin:0 0 10px">${alertas.some(a=>a.startsWith("Te pasaste"))?"Presupuesto superado":"Atención con el presupuesto"}</h3>${alertas.map(a=>`<p style="margin:0 0 8px">${esc(a)}</p>`).join("")}<div class="actions"><button class="btn-p grow" data-close>Entendido</button><button class="btn-s" data-close data-tab="mov">Ver presupuestos</button></div>`);
-    else toast(id?"Cambios guardados":`${clp(toCLP(obj.monto,obj.moneda))} en ${obj.categoria}`);});
+    else toast(id?"Cambios guardados":`${clp(toBase(obj.monto,obj.moneda))} en ${obj.categoria}`);});
 }
+const baseMon=()=>base();
+function vigilarMoneda(form){const inp=form.querySelector("[name=moneda]"),w=form.querySelector(".monwarn");
+  const upd=()=>{const c=monedaDeEtiqueta(inp.value);w.textContent=c&&OFICIAL_DISTINTO.includes(c)?"Se usa el tipo de cambio oficial, que puede ser muy distinto del que realmente pagas.":c&&!tasaOK(c)?"Aún no hay valor de conversión para esta moneda.":""};
+  inp.addEventListener("input",upd);inp.addEventListener("change",upd);upd()}
 function toast(msg){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
 
 /* ---------- Excel ---------- */
@@ -882,12 +925,14 @@ async function sheetMap(zip){
   [...wb.getElementsByTagName("sheet")].forEach(s=>{const rid=s.getAttribute("r:id")||s.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships","id");const r=rels.find(x=>x.id===rid);if(r)m[s.getAttribute("name")]=r.target});
   return m;
 }
-async function tableOf(zip,sheetPath){const r=(await relsOf(zip,sheetPath)).find(x=>/\/table$/.test(x.type));if(!r)return null;
+async function tableOf(zip,sheetPath,nombre){const rs=(await relsOf(zip,sheetPath)).filter(x=>/\/table$/.test(x.type));let r=rs[0];
+  if(nombre){r=null;for(const x of rs){const t=await zip.file(x.target).async("string");if(new RegExp(`displayName="${nombre}"`).test(t)){r=x;break}}}
+  if(!r)return null;
   const xml=await zip.file(r.target).async("string");const x=parseXml(xml);
   const cols=[...x.getElementsByTagName("tableColumn")].map(c=>{const f=c.getElementsByTagName("calculatedColumnFormula")[0];return {name:c.getAttribute("name"),formula:f?f.textContent:null}});
   return {path:r.target,xml,cols,ref:x.documentElement.getAttribute("ref")}}
-async function fillTable(zip,sheetPath,rows,valueFor){
-  const tb=await tableOf(zip,sheetPath);if(!tb)throw new Error("tabla");
+async function fillTable(zip,sheetPath,rows,valueFor,nombre){
+  const tb=await tableOf(zip,sheetPath,nombre);if(!tb)throw new Error("tabla");
   let sx=await zip.file(sheetPath).async("string");
   const [a1,b1]=tb.ref.split(":");const c0=colI(a1.match(/[A-Z]+/)[0]),r0=Number(a1.match(/\d+/)[0]);const lastC=c0+tb.cols.length-1;
   const rowRe=n=>new RegExp(`<row [^>]*r="${n}"[^>]*?(?:/>|>[\\s\\S]*?</row>)`);
@@ -912,7 +957,7 @@ async function fillTable(zip,sheetPath,rows,valueFor){
     rowsXml.forEach(rx=>{const rn=Number((rx.match(/^<row [^>]*?r="(\d+)"/)||[])[1]);
       if(rn<=r0){keep.push(rx);return}
       // conservar celdas fuera de la tabla (p. ej. resúmenes a la derecha)
-      const cs=(rx.match(/<c [^>]*?(?:\/>|>[\s\S]*?<\/c>)/g)||[]).filter(c=>{const L=(c.match(/r="([A-Z]+)\d+"/)||[])[1];const ci=L?colI(L):-1;return ci>lastC+0&&/<[fv]>|<is>/.test(c)});
+      const cs=(rx.match(/<c [^>]*?(?:\/>|>[\s\S]*?<\/c>)/g)||[]).filter(c=>{const L=(c.match(/r="([A-Z]+)\d+"/)||[])[1];const ci=L?colI(L):-1;return (ci>lastC||ci<c0)&&/<[fv]>|<is>/.test(c)});
       if(cs.length)extra[rn]=cs});
     const merged=out.map(rx=>{const rn=Number(rx.match(/r="(\d+)"/)[1]);if(extra[rn]){const add=extra[rn].join("");delete extra[rn];return rx.replace("</row>",add+"</row>")}return rx});
     Object.keys(extra).map(Number).sort((a,b)=>a-b).forEach(rn=>{const r=`<row r="${rn}">${extra[rn].join("")}</row>`;const idx=merged.findIndex(x=>Number(x.match(/r="(\d+)"/)[1])>rn);if(idx<0)merged.push(r);else merged.splice(idx,0,r)});
@@ -948,6 +993,14 @@ async function generarExcel(file){
   await fillTable(zip,sm["Gastos"],state.gastos,(g,name)=>GASTO_MAP[name]?GASTO_MAP[name](g):undefined);
   const all=Object.keys(state.vars).sort().flatMap(k=>[...state.vars[k]].sort((a,b)=>a.fecha.localeCompare(b.fecha)||(a.creado||0)-(b.creado||0)));
   await fillTable(zip,sm["Gastos variables"],all,(v,name)=>VAR_MAP[name]?VAR_MAP[name](v):undefined);
+  if(sm["Aux"]&&await tableOf(zip,sm["Aux"],"tblTasas")){
+    const pe=porEUR(),fe=(state.tasas&&state.tasas.fechas)||{};
+    const filas=MONEDAS.filter(c=>pe[c]>0);
+    await fillTable(zip,sm["Aux"],filas,(c,name)=>name==="Moneda"?c:name==="Por EUR (app)"?pe[c]:name==="Fecha (app)"?toSerial(fe[c]||iso(today)):undefined,"tblTasas");
+    if(sm["Resumen"]){let rx=await zip.file(sm["Resumen"]).async("string");
+      rx=rx.replace(/<c r="B2"([^>]*?)(?:\/>|>[\s\S]*?<\/c>)/,(m,at)=>`<c r="B2"${at.replace(/\s*t="[^"]*"/,"")} t="inlineStr"><is><t>${base()}</t></is></c>`);
+      zip.file(sm["Resumen"],rx)}
+  }else if(base()!=="CLP")throw new Error("excel-v1");
   await dropCalcChain(zip);
   return zip.generateAsync({type:"blob",compression:"DEFLATE",mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
 }
@@ -963,6 +1016,7 @@ async function doBackup(forzarNuevo){
   }catch(e){console.error(e);
     if(e.message==="sin-variables")openSheet(`<h3 style="margin:0 0 8px">Falta la hoja de gastos variables</h3><p class="sub" style="margin:0 0 14px">Este archivo es una versión anterior del Registro de gastos. Usa la versión 1.4, que tiene la hoja "Gastos variables".</p><div class="actions"><button class="btn-p grow" data-close>Entendido</button></div>`);
     else if(e.message==="sin-gastos")toast("Este archivo no tiene la hoja Gastos");
+    else if(e.message==="excel-v1")openSheet(`<h3 style="margin:0 0 8px">Necesitas el Excel 2.0</h3><p class="sub" style="margin:0 0 14px">Tu moneda principal es ${baseMon()}, pero tu archivo base solo sabe calcular en pesos chilenos. Carga la versión 2.0 del Registro de gastos como archivo base.</p><div class="actions"><button class="btn-p grow" data-close>Entendido</button></div>`);
     else toast("No se pudo leer el archivo. ¿Es un Excel .xlsx?")}
 }
 /* ---------- Dropbox ---------- */
@@ -1026,7 +1080,7 @@ async function dbxSubir(){
     const datos={app:"mis-gastos",version:1,modificado:state.modificado||Date.now(),gastos:state.gastos,vars:state.vars,presupuestos:state.presupuestos||{},config:state.config||{}};
     await dbxSubirArchivo(DBX_DATOS,new Blob([JSON.stringify(datos)],{type:"application/json"}));
     const base=await baseGet();
-    if(base){try{const blob=await generarExcel(new File([base.datos],base.nombre));await dbxSubirArchivo(DBX_EXCEL,blob);meta.ultimoRespaldo=iso(today)}catch(e){if(e.message!=="sin-variables")throw e}}
+    if(base){try{const blob=await generarExcel(new File([base.datos],base.nombre));await dbxSubirArchivo(DBX_EXCEL,blob);meta.ultimoRespaldo=iso(today)}catch(e){if(e.message!=="sin-variables"&&e.message!=="excel-v1")throw e}}
     meta.pendiente=false;meta.dbxUltima=Date.now();meta.dbxError="";
     if(ui.tab==="ajustes")toast("Excel actualizado en Dropbox");
   }catch(e){dbxFallo(e)}
@@ -1108,8 +1162,8 @@ function pintarOjo(){const b=$("#eyeBtn");if(!b)return;
   b.innerHTML=ui.oculto?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.3 4M6.6 6.6A17 17 0 0 0 2 12s4 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>':'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'}
 function renderBanner(){
   const el=$("#banner");if(!el)return;const hay=state.gastos.length||Object.keys(state.vars).length;let html="";
-  const usaDivisas=state.gastos.some(g=>g.moneda!=="CLP")||Object.values(state.vars).some(l=>l.some(v=>v.moneda&&v.moneda!=="CLP"));
-  if(usaDivisas&&!(state.tasas&&state.tasas.consultado))html=`<div class="banner"><span>Faltan los valores de UF, dólar y euro. Conéctate a internet para obtenerlos.</span><button data-rates>Reintentar</button></div>`;
+  const faltan=[...new Set([...state.gastos.map(g=>g.moneda),...Object.values(state.vars).flat().map(v=>v.moneda)].filter(m=>m&&!tasaOK(m)))];
+  if(faltan.length)html=`<div class="banner"><span>Falta el valor de ${faltan.join(", ")}. Esos montos se muestran en cero hasta obtenerlo; conéctate a internet.</span><button data-rates>Reintentar</button></div>`;
   else if(meta.dbxError&&ui.tab!=="ajustes")html=`<div class="banner"><span>${esc(meta.dbxError)}</span>${meta.dbxRefresh?`<button data-dbxsync>Reintentar</button>`:`<button data-tab="ajustes">Ir a Ajustes</button>`}</div>`;
   else if(hay&&ui.tab!=="ajustes"&&!meta.dbxRefresh){const d=meta.ultimoRespaldo?Math.floor((today-parseD(meta.ultimoRespaldo))/864e5):null;
     if(d===null||d>=14)html=`<div class="banner"><span>${d===null?"Aún no respaldas tus gastos en Excel.":`Tu último respaldo fue hace ${d} días.`}</span><button data-backup>Respaldar</button></div>`}
@@ -1131,6 +1185,7 @@ document.addEventListener("click",e=>{
   if(d.tab){closeSheet();ui.tab=d.tab;if(d.tab==="mov"&&!b.closest("nav,.tabs-top"))ui.vmes=mkey(today);render();window.scrollTo({top:0});return}
   if(d.hero){ui.heroMode=d.hero;render();return}
   if(b.hasAttribute("data-editpres")){openPresForm();return}
+  if(b.hasAttribute("data-indic")){openIndicadores();return}
   if(b.hasAttribute("data-ics")){exportarCalendario();return}
   if(d.quick!==undefined){const x=frecuentes()[Number(d.quick)];if(x)openVarForm(null,null,{...x,fecha:iso(today)});setTimeout(()=>{const m=$("#vForm [name=monto]");if(m){m.focus();m.select()}},50);return}
   if(d.histn){ui.histN=Number(d.histn);ui.histSel=null;render();return}
@@ -1163,6 +1218,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("input",e=>{if(e.target.id==="q"){ui.q=e.target.value;render()}});
 document.addEventListener("change",e=>{if(e.target.id==="histCat"){ui.histCat=e.target.value;render()}
+  if(e.target.id==="monedaBase"){cambiarBase(e.target.value);return}
   if(e.target.id==="diasAviso"){state.config={...(state.config||{}),diasAviso:Number(e.target.value)};store.saveRegistro();render()}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#scrim"))closeSheet()});
 try{const th=localStorage.getItem("gastos-theme");if(th)document.documentElement.dataset.theme=th}catch(_){}
