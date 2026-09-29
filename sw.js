@@ -1,6 +1,6 @@
 // Guarda la app en el teléfono para que abra rápido y funcione sin internet.
-const CACHE = "mis-gastos-v7";
-const ARCHIVOS = ["./", "index.html", "jszip.min.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
+const CACHE = "luka-1.70";
+const ARCHIVOS = ["./", "index.html", "jszip.min.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-192.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon.ico", "favicon-32.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));

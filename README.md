@@ -1,9 +1,9 @@
-# Mis gastos
+# Luka
 
 App para registrar gastos fijos (suscripciones, seguros, cuentas) y gastos variables del día a día.
 
-- Los datos se guardan solo en el teléfono donde usas la app.
-- Los valores de UF, dólar observado y euro vienen del Banco Central, a través de [mindicador.cl](https://mindicador.cl).
-- Se respalda en el Excel "Registro de gastos" (versión 1.4 o posterior) y, si conectas Dropbox, se sincroniza sola en tu carpeta Aplicaciones.
+- Los datos se guardan en el teléfono y, si conectas Dropbox, se sincronizan solos en tu carpeta Aplicaciones.
+- Los valores de UF, UTM, dólar y euro vienen del Banco Central de Chile (vía mindicador.cl); el resto de las divisas, de bancos centrales del mundo (vía frankfurter.dev).
+- Se respalda en el Excel "Registro de gastos" (versión 2.10 o posterior).
 
 Este repositorio no contiene datos personales ni contraseñas.
