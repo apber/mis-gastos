@@ -213,6 +213,31 @@ form.f textarea{min-height:70px;resize:vertical}
 .delta2{font-size:13.5px;color:var(--ink-2);margin-top:4px;font-weight:600}
 .delta2.up,.amt.up{color:var(--bad)}
 .delta2.down,.amt.down{color:var(--good)}
+.ht{display:flex;align-items:center;gap:6px;margin:0 0 2px}
+.ibtn{border:0;background:none;padding:2px;color:var(--ink-3);display:inline-grid;place-items:center;border-radius:50%;cursor:pointer}
+.ibtn svg{width:17px;height:17px}
+.ibtn:hover{color:var(--primary)}
+.switch{position:relative;display:inline-block;width:46px;height:28px;flex:none}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch span{position:absolute;inset:0;background:var(--line);border-radius:99px;transition:.2s;cursor:pointer}
+.switch span::before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s}
+.switch input:checked+span{background:var(--primary)}
+.switch input:checked+span::before{transform:translateX(18px)}
+.switch input:focus-visible+span{outline:2px solid var(--primary);outline-offset:2px}
+.inline-field{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:600;color:var(--ink-2)}
+.inline-field span{white-space:nowrap}
+.inline-field select{border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:8px 10px;font-weight:600;font-size:15px}
+.picker{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:10px 12px;font-weight:600;font-size:15px;text-align:left;min-width:0}
+.picker span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mpanel{border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
+.mpanel[hidden]{display:none}
+.mbusca{border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:var(--surface)!important}
+.mlista{max-height:260px;overflow:auto;padding:4px 0}
+.mgrp{font-size:11.5px;font-weight:700;color:var(--ink-3);padding:10px 12px 4px;text-transform:uppercase;letter-spacing:.04em}
+.mopt{display:flex;gap:10px;align-items:baseline;width:100%;border:0;background:none;padding:9px 12px;text-align:left;font-size:14.5px}
+.mopt b{min-width:38px}
+.mopt span{color:var(--ink-2)}
+.mopt:hover,.mopt.on{background:var(--primary-soft)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 </head>
@@ -233,7 +258,7 @@ form.f textarea{min-height:70px;resize:vertical}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="1.3";
+const APP_VERSION="1.4";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -378,6 +403,18 @@ async function actualizarTasas(forzar){
   else tasasEstado="error";
   render();
 }
+const INFO={
+  historial:["Historial","Toca un mes para compararlo con el anterior: verás la diferencia total y las categorías que más cambiaron. Los gastos fijos de meses pasados se calculan con tus gastos fijos actuales: si pausaste o agregaste uno hace poco, los meses anteriores no lo reflejan."],
+  presupuestos:["Presupuestos","Cada barra muestra cuánto llevas del límite que definiste para el mes. Verde: bajo el 80%. Amarillo: entre el 80% y el 100%. Rojo: te pasaste.<br><br>Durante el mes en curso, “a este ritmo llegarás a…” proyecta tu gasto a fin de mes según tu promedio diario. Al registrar un gasto que te hace cruzar el 80% o el 100%, la app te avisa."],
+  proximos:["Próximos cobros","Incluye los cobros fijos de los próximos días: gastos mensuales activos, pagos anuales que caen en esas fechas y gastos pausados que se reactivan. Puedes cambiar los días de anticipación, o desactivar los avisos, en Ajustes."],
+  moneda:["Moneda y valores de conversión","La moneda principal es la que se usa para todos los totales, gráficos y presupuestos.<br><br>La UF, la UTM, el dólar y el euro en pesos vienen del Banco Central de Chile, vía mindicador.cl. Las demás monedas vienen de bancos centrales de todo el mundo, vía frankfurter.dev, con valores diarios. Se actualizan solos al abrir la app; si una fuente falla, se usan los últimos valores guardados.<br><br>En el peso argentino y el bolívar venezolano se usa el tipo de cambio oficial, que puede ser muy distinto del que realmente pagas."],
+  avisos:["Avisos y calendario","Los cobros fijos cercanos aparecen en el Resumen. Para recibir recordatorios con la app cerrada, exporta tus cobros al calendario: se crean eventos que se repiten cada mes o año, con aviso el día anterior a las 9:00.<br><br>Para importarlo a Google Calendar, ábrelo desde el computador en calendar.google.com > Configuración > Importar y exportar. Te recomendamos crear antes un calendario llamado “Mis gastos” e importar ahí: si cambias tus gastos fijos, lo borras y vuelves a importar sin duplicados. Los montos son aproximados, porque la UF y las divisas cambian."],
+  dropbox:["Dropbox","Cada cambio que haces se guarda solo en la carpeta Aplicaciones de tu Dropbox. Ahí quedan los datos de la app (datos-app.json), tu archivo base y, si el respaldo en Excel está activado, tu Excel al día: “Registro de gastos (respaldo automático)”.<br><br>“Sincronizar” fuerza una actualización completa. No edites el respaldo automático: se reemplaza en cada sincronización. Si instalas la app en otro teléfono y conectas el mismo Dropbox, tus datos aparecen solos."],
+  respaldo:["Respaldo en Excel","El archivo base es tu Excel “Registro de gastos” (versión 2.0 o posterior). La app lo usa como molde: toma sus hojas, fórmulas y gráficos y le escribe tus datos actuales.<br><br>“Respaldar en Excel” descarga una copia al teléfono. “Cargar desde mi Excel” reemplaza los gastos de la app con los del archivo. Si desactivas el respaldo en Excel, tus datos siguen sincronizándose con Dropbox; solo deja de generarse el Excel."],
+  datos:["Tus datos","Tus gastos se guardan en este teléfono y, si conectas Dropbox, también en tu carpeta de Dropbox. No se envían a ningún otro servidor. La app solo se conecta a internet para obtener los valores de conversión y para sincronizar con tu Dropbox."]};
+const ib=k=>`<button class="ibtn" data-info="${k}" aria-label="Más información">${I('<circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/>')}</button>`;
+const t2=(titulo,k)=>`<h2 class="ht">${titulo}${ib(k)}</h2>`;
+const sw=(k,on,lbl)=>`<label class="switch" title="${lbl}"><input type="checkbox" data-cfg="${k}" ${on?"checked":""} aria-label="${lbl}"><span></span></label>`;
 /* ---------- presupuestos ---------- */
 const pres=()=>state.presupuestos||(state.presupuestos={});
 function estadoPres(k){
@@ -397,10 +434,10 @@ function presFila(x){
 }
 function cardPresupuestos(k,compacto){
   const {lista,tot}=estadoPres(k);const todas=(tot?[tot]:[]).concat(lista);
-  if(!todas.length)return compacto?"":`<section class="card"><h2>Presupuestos</h2><p class="sub">Define cuánto quieres gastar al mes en cada categoría y la app te avisará cuando te acerques al límite.</p><button class="btn-s" data-editpres>Definir presupuestos</button></section>`;
+  if(!todas.length)return compacto?"":`<section class="card">${t2("Presupuestos","presupuestos")}<p class="sub">Define cuánto quieres gastar al mes en cada categoría y la app te avisará cuando te acerques al límite.</p><button class="btn-s" data-editpres>Definir presupuestos</button></section>`;
   const mostrar=compacto?todas.filter(x=>x.pct>=.8):todas;
   if(compacto&&!mostrar.length)return "";
-  return `<section class="card"><div class="card-head"><div><h2>Presupuestos</h2><p class="sub">${compacto?"Categorías cerca o sobre el límite":MESES[keyToDate(k).getMonth()]+" "+keyToDate(k).getFullYear()}</p></div>${compacto?`<button class="btn-s" data-tab="mov" style="padding:6px 12px;font-size:13px">Ver</button>`:`<button class="btn-s" data-editpres style="padding:6px 12px;font-size:13px">Editar</button>`}</div>
+  return `<section class="card"><div class="card-head"><div>${t2("Presupuestos","presupuestos")}<p class="sub">${compacto?"Categorías cerca o sobre el límite":MESES[keyToDate(k).getMonth()]+" "+keyToDate(k).getFullYear()}</p></div>${compacto?`<button class="btn-s" data-tab="mov" style="padding:6px 12px;font-size:13px">Ver</button>`:`<button class="btn-s" data-editpres style="padding:6px 12px;font-size:13px">Editar</button>`}</div>
     <ul class="hbars">${mostrar.map(presFila).join("")}</ul></section>`;
 }
 function openPresForm(){
@@ -427,6 +464,8 @@ function avisoPresupuesto(cat,k,antes){
 }
 /* ---------- avisos de pagos próximos ---------- */
 const diasAviso=()=>Number((state.config||{}).diasAviso)||7;
+const avisosOn=()=>(state.config||{}).avisos!==false;
+const excelOn=()=>(state.config||{}).excel!==false;
 function proximosCobros(nDias){
   const out=[];const hoy0=new Date(today.getFullYear(),today.getMonth(),today.getDate());
   for(let i=0;i<=nDias;i++){const d=new Date(hoy0);d.setDate(d.getDate()+i);const ultimo=eom(d).getDate();
@@ -437,10 +476,11 @@ function proximosCobros(nDias){
 }
 const cuando=i=>i===0?"Hoy":i===1?"Mañana":`En ${i} días`;
 function cardAvisos(){
+  if(!avisosOn())return "";
   const n=diasAviso(),list=proximosCobros(n);
   if(!list.length)return "";
   const total=list.reduce((a,x)=>a+x.v,0);
-  return `<section class="card"><div class="card-head"><div><h2>Próximos cobros</h2><p class="sub">${list.length} en los próximos ${n} días, ${clp(total)} en total</p></div></div>
+  return `<section class="card"><div class="card-head"><div>${t2("Próximos cobros","proximos")}<p class="sub">${list.length} en los próximos ${n} días, ${clp(total)} en total</p></div></div>
     <ul class="list">${list.slice(0,5).map(x=>`<li><button class="row btn" data-open="${x.g.id}"><div class="day"><b>${x.d.getDate()}</b><span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${cuando(x.i)} · ${x.tipo}</div></div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>
     ${list.length>5?`<p class="sub" style="margin:6px 0 0">Y ${list.length-5} más.</p>`:""}</section>`;
 }
@@ -573,7 +613,7 @@ function viewHistorial(){
   const opciones=["Todas","Fijos","Variables",...VCATS];
   const nombreMes=d=>MESES[d.getMonth()].toLowerCase();
   return `<section class="card span2">
-    <div class="card-head" style="flex-wrap:wrap"><div><h2>Historial</h2><p class="sub">Toca un mes para compararlo con el anterior</p></div>
+    <div class="card-head" style="flex-wrap:wrap"><div>${t2("Historial","historial")}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <select id="histCat" class="search" style="flex:none;min-width:0;padding:7px 10px;font-weight:600" aria-label="Qué mostrar">${opciones.map(o=>`<option value="${esc(o)}" ${o===cat?"selected":""}>${o==="Todas"?"Todo":o==="Fijos"?"Solo fijos":o==="Variables"?"Solo variables":esc(o)}</option>`).join("")}</select>
         <div class="seg light" role="group" aria-label="Periodo"><button data-histn="6" aria-pressed="${n===6}">6 meses</button><button data-histn="12" aria-pressed="${n===12}">12 meses</button></div>
@@ -587,7 +627,6 @@ function viewHistorial(){
       <div><b>${MESES[m.d.getMonth()]} ${m.d.getFullYear()}${esActual?" (en curso)":""}</b><span>${clp(m.t)}</span></div>
       <div class="delta2 ${dif>0?"up":dif<0?"down":""}">${dif===0?"Igual que":`${dif>0?"▲":"▼"} ${clp(Math.abs(dif))}${pct!=null&&!ui.oculto?` (${Math.abs(pct).toLocaleString("es-CL",{maximumFractionDigits:0})}%)`:""} ${dif>0?"más que":"menos que"}`} ${nombreMes(prev.d)} (${clp(prev.t)})</div>
       ${cambios.length&&cat!=="Fijos"?`<ul class="list">${cambios.map(x=>`<li class="row"><i style="width:10px;height:10px;border-radius:3px;background:${VCAT_COLOR[x.c]||VCAT_COLOR.Otro};flex:none"></i><div class="mid"><div class="t" style="font-weight:600">${esc(x.c)}</div></div><div class="amt ${x.d>0?"up":"down"}">${x.d>0?"+":"−"}${clp(Math.abs(x.d))}</div></li>`).join("")}</ul>`:""}
-      <p class="sub" style="margin:8px 0 0">Los fijos de meses pasados se calculan con tus gastos fijos actuales.</p>
     </div>
   </section>`;
 }
@@ -731,16 +770,17 @@ function viewPagos(){
   </section></div>`;
 }
 function cardDropbox(){
-  if(!meta.dbxRefresh)return `<section class="card"><h2>Sincronizar con Dropbox</h2><p class="sub">Tus gastos y el Excel se guardan solos en tu Dropbox cada vez que haces un cambio.</p>
+  if(!meta.dbxRefresh)return `<section class="card">${t2("Sincronizar con Dropbox","dropbox")}<p class="sub">Tus datos se guardan solos en tu Dropbox cada vez que haces un cambio.</p>
     ${meta.dbxError?`<div class="banner" style="margin:0 0 12px">${esc(meta.dbxError)}</div>`:""}
-    <form class="f" onsubmit="return false"><label class="full">App key de Dropbox<input id="dbxKey" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(meta.dbxKey||"")}" placeholder="Pega aquí la App key"><span class="hint">Se obtiene una sola vez en dropbox.com/developers. Nunca pegues aquí el App secret.</span></label>
+    <form class="f" onsubmit="return false"><label class="full">App key de Dropbox<input id="dbxKey" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(meta.dbxKey||"")}" placeholder="Pega aquí la App key"><span class="hint">Nunca pegues aquí el App secret.</span></label>
     <div class="full"><button class="btn-p" type="button" data-dbxconnect>Conectar Dropbox</button></div></form></section>`;
   const u=meta.dbxUltima?new Date(meta.dbxUltima).toLocaleString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"";
-  const estado=dbxEstado==="subiendo"?"Guardando en Dropbox…":dbxEstado==="bajando"?"Revisando Dropbox…":meta.dbxError?esc(meta.dbxError):meta.pendiente?"Hay cambios por guardar":u?`Todo guardado. Última sincronización: ${u}`:"Conectado";
-  return `<section class="card"><div class="card-head"><div><h2>Dropbox</h2><p class="sub">${estado}</p></div><button class="btn-s" data-dbxsync style="padding:6px 12px;font-size:13px" ${dbxEstado?"disabled":""}>Sincronizar</button></div>
-    <p class="sub" style="margin:0 0 10px">En la carpeta Aplicaciones de tu Dropbox quedan tu Excel actualizado ("Registro de gastos (respaldo automático)"), el archivo base y los datos de la app.${meta.nombreBase?"":" Para que se genere el Excel, elige tu archivo base con \"Respaldar en Excel\"."}</p>
+  const estado=dbxEstado==="subiendo"?"Guardando en Dropbox…":dbxEstado==="bajando"?"Revisando Dropbox…":meta.dbxError?esc(meta.dbxError):meta.pendiente?"Hay cambios por guardar":u?`Todo guardado · ${u}`:"Conectado";
+  return `<section class="card"><div class="card-head"><div>${t2("Dropbox","dropbox")}<p class="sub">${estado}</p></div><button class="btn-s" data-dbxsync style="padding:6px 12px;font-size:13px" ${dbxEstado?"disabled":""}>Sincronizar</button></div>
+    ${excelOn()&&!meta.nombreBase?`<p class="sub" style="margin:0 0 10px">Para que se genere el Excel, elige tu archivo base en "Respaldo en Excel".</p>`:""}
     <button class="btn-d" data-dbxoff style="padding:8px 14px;font-size:13px">Desconectar</button></section>`;
 }
+
 function indicadores(){const c=(state.config||{}).indicadores;const def=base()==="CLP"?["UF","USD","EUR"]:["USD","EUR"];return (c&&c.length?c:def).filter(x=>x!==base()&&MONEDAS.includes(x))}
 function fmtIndicador(v){if(ui.oculto)return clp(v);const dec=v<10?4:2;try{return new Intl.NumberFormat("es-CL",{style:"currency",currency:base(),currencyDisplay:["CLP","USD"].includes(base())?"symbol":"narrowSymbol",minimumFractionDigits:v<10?2:(base()==="CLP"?2:undefined),maximumFractionDigits:dec}).format(v)}catch(e){return v.toFixed(dec)}}
 function openIndicadores(){const sel=new Set(indicadores());
@@ -758,40 +798,43 @@ function viewAjustes(){
   const t=state.tasas||{};const nVar=Object.values(state.vars).reduce((a,l)=>a+l.length,0);
   const dias=meta.ultimoRespaldo?Math.floor((today-parseD(meta.ultimoRespaldo))/864e5):null;
   const cons=t.consultado?new Date(t.consultado):null;
-  const fila=(lbl,v,f)=>`<dt>${lbl}</dt><dd>${v?"$"+Number(v).toLocaleString("es-CL",{minimumFractionDigits:2,maximumFractionDigits:2}):"—"}${f?`<div style="font-weight:500;font-size:12px;color:var(--ink-3)">al ${fmtD(f)}</div>`:""}</dd>`;
+  const nPres=Object.keys(pres()).length;
   return `<div class="grid home">
-  ${cardDropbox()}
-  <section class="card"><h2>Respaldo en Excel</h2><p class="sub">${meta.ultimoRespaldo?`Último respaldo: ${fmtD(meta.ultimoRespaldo)}${dias>0?` (hace ${dias} día${dias===1?"":"s"})`:" (hoy)"}.`:"Aún no has hecho un respaldo."}${meta.dbxRefresh?" Con Dropbox conectado, el respaldo se hace solo; este botón descarga una copia al teléfono.":" Tus datos viven solo en este teléfono, así que respalda seguido."}</p>
-    <div class="backup-actions">
-      <button class="btn-s" data-backup><span class="ic">${I('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>')}</span><span>Respaldar en Excel<small>${meta.nombreBase?`Usa tu archivo base "${esc(meta.nombreBase)}" y descarga la copia actualizada`:"La primera vez te pedirá tu archivo Registro de gastos (versión 2.0)"}</small></span></button>
-      <button class="btn-s" data-restore><span class="ic">${I('<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 7V4h16v3"/>')}</span><span>Cargar desde mi Excel<small>Reemplaza los gastos de la app con los del archivo</small></span></button>
-      ${meta.nombreBase?`<button class="linkbtn" data-newbase style="text-align:left">Cambiar el archivo base</button>`:""}
-    </div></section>
-  <section class="card"><div class="card-head"><div><h2>Moneda y valores de conversión</h2><p class="sub">Se actualizan solos cada vez que abres la app.</p></div>
-    <button class="btn-s" data-rates style="padding:6px 12px;font-size:13px" ${tasasEstado==="cargando"?"disabled":""}>${tasasEstado==="cargando"?"Actualizando…":"Actualizar"}</button></div>
+  <section class="card">${t2("Moneda y valores de conversión","moneda")}<p class="sub">Se actualizan solos al abrir la app.</p>
     ${tasasEstado==="error"?`<div class="banner" style="margin:0 0 10px">No se pudieron obtener los valores. ${t.consultado?"Se usan los últimos guardados.":"Revisa tu conexión a internet."}</div>`:tasasEstado==="parcial"?`<div class="banner" style="margin:0 0 10px">Una de las fuentes no respondió; algunos valores son los últimos guardados.</div>`:""}
-    <form class="f" onsubmit="return false"><label class="full">Moneda principal<select id="monedaBase">${BASES.map(c=>`<option value="${c}" ${c===base()?"selected":""}>${esc(etiquetaMoneda(c))}</option>`).join("")}</select><span class="hint">Todos los totales, gráficos y presupuestos se muestran en esta moneda.</span></label></form>
+    <form class="f" onsubmit="return false"><label class="full">Moneda principal<select id="monedaBase">${BASES.map(c=>`<option value="${c}" ${c===base()?"selected":""}>${esc(etiquetaMoneda(c))}</option>`).join("")}</select></label></form>
     <dl class="kv" style="margin-top:12px">${indicadores().map(c=>{const v=toBase(1,c),f=(t.fechas||{})[c];return `<dt>${esc(nombreMoneda(c))} <span style="color:var(--ink-3)">(${c})</span></dt><dd>${tasaOK(c)?fmtIndicador(v):"—"}${f?`<div style="font-weight:500;font-size:12px;color:var(--ink-3)">al ${fmtD(f)}</div>`:""}</dd>`}).join("")}</dl>
-    <button class="linkbtn" data-indic>Elegir indicadores</button>
-    <p class="sub" style="margin:8px 0 0">UF, UTM, dólar y euro en pesos: Banco Central de Chile, vía mindicador.cl. Otras monedas: bancos centrales del mundo, vía frankfurter.dev (valores diarios).${cons?` Consultado el ${cons.toLocaleString("es-CL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}.`:""}</p>
+    <div style="display:flex;justify-content:space-between;gap:10px;margin-top:6px"><button class="linkbtn" data-indic>Elegir indicadores</button><button class="linkbtn" data-rates ${tasasEstado==="cargando"?"disabled":""}>${tasasEstado==="cargando"?"Actualizando…":"Actualizar ahora"}</button></div>
   </section>
-  <section class="card"><h2>Avisos y calendario</h2><p class="sub">Los cobros fijos cercanos aparecen en el Resumen. Para recibir recordatorios con la app cerrada, exporta tus cobros a tu calendario.</p>
-    <form class="f" onsubmit="return false"><label>Avisar con anticipación de<select id="diasAviso">${[3,5,7,14].map(n=>`<option value="${n}" ${n===diasAviso()?"selected":""}>${n} días</option>`).join("")}</select></label>
-    <div class="full backup-actions"><button class="btn-s" type="button" data-ics><span class="ic">${I('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>')}</span><span>Exportar cobros al calendario<small>Crea eventos que se repiten cada mes o año, con aviso el día anterior a las 9:00</small></span></button></div></form>
-    <p class="sub" style="margin:10px 0 0">Para importarlo a Google Calendar, ábrelo desde el computador en calendar.google.com > Configuración > Importar y exportar. Te recomendamos crear antes un calendario llamado "Mis gastos" e importar ahí: si cambias tus gastos fijos, lo borras y vuelves a importar sin duplicados.</p>
+  <section class="card"><div class="card-head" style="margin-bottom:${avisosOn()?"12px":"0"}"><div>${t2("Avisos y calendario","avisos")}</div>${sw("avisos",avisosOn(),"Activar avisos")}</div>
+    ${avisosOn()?`<div class="inline-field"><span>Avisar con anticipación de</span><select id="diasAviso">${[3,5,7,14].map(n=>`<option value="${n}" ${n===diasAviso()?"selected":""}>${n} días</option>`).join("")}</select></div>
+    <div class="backup-actions" style="margin-top:12px"><button class="btn-s" type="button" data-ics><span class="ic">${I('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>')}</span><span>Exportar cobros al calendario<small>Eventos que se repiten, con aviso el día anterior</small></span></button></div>`:""}
   </section>
-  <section class="card"><h2>Presupuestos</h2><p class="sub">${Object.keys(pres()).length?`${Object.keys(pres()).length} presupuesto${Object.keys(pres()).length===1?"":"s"} definidos.`:"Aún no defines presupuestos."} Se aplican a tus gastos variables de cada mes.</p><button class="btn-s" data-editpres>${Object.keys(pres()).length?"Editar presupuestos":"Definir presupuestos"}</button></section>
-  <section class="card"><h2>Tus datos</h2><p class="sub">Se guardan en este teléfono. No se envían a ningún servidor.</p>
-    <dl class="kv"><dt>Gastos fijos</dt><dd>${state.gastos.length}</dd><dt>Gastos variables</dt><dd>${nVar}</dd><dt>Meses con variables</dt><dd>${Object.keys(state.vars).length}</dd><dt>Versión de la app</dt><dd>${APP_VERSION}</dd></dl>
+  <section class="card"><div class="card-head" style="margin-bottom:10px"><div>${t2("Presupuestos","presupuestos")}<p class="sub">${nPres?`${nPres} presupuesto${nPres===1?"":"s"} definido${nPres===1?"":"s"}`:"Aún no defines presupuestos"}</p></div></div><button class="btn-s" data-editpres>${nPres?"Editar presupuestos":"Definir presupuestos"}</button></section>
+  ${cardDropbox()}
+  <section class="card"><div class="card-head" style="margin-bottom:${excelOn()?"12px":"0"}"><div>${t2("Respaldo en Excel","respaldo")}${excelOn()?`<p class="sub">${meta.ultimoRespaldo?`Último respaldo: ${fmtD(meta.ultimoRespaldo)}${dias>0?` (hace ${dias} día${dias===1?"":"s"})`:" (hoy)"}`:"Aún no has hecho un respaldo"}</p>`:""}</div>${sw("excel",excelOn(),"Activar respaldo en Excel")}</div>
+    ${excelOn()?`<div class="backup-actions">
+      <button class="btn-s" data-backup><span class="ic">${I('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>')}</span><span>Respaldar en Excel<small>${meta.nombreBase?`Archivo base: ${esc(meta.nombreBase)}`:"La primera vez te pedirá tu archivo base"}</small></span></button>
+      <button class="btn-s" data-restore><span class="ic">${I('<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 7V4h16v3"/>')}</span><span>Cargar desde mi Excel<small>Reemplaza los gastos de la app</small></span></button>
+      ${meta.nombreBase?`<button class="linkbtn" data-newbase style="text-align:left">Cambiar el archivo base</button>`:""}
+    </div>`:""}</section>
+  <section class="card">${t2("Tus datos","datos")}
+    <dl class="kv" style="margin-top:8px"><dt>Gastos fijos</dt><dd>${state.gastos.length}</dd><dt>Gastos variables</dt><dd>${nVar}</dd><dt>Meses con variables</dt><dd>${Object.keys(state.vars).length}</dd><dt>Versión de la app</dt><dd>${APP_VERSION}</dd></dl>
   </section></div>`;
 }
 function emptyAll(){return `<section class="card"><div class="empty"><b>${ui.loaded?"Aún no hay gastos":"Cargando tus gastos…"}</b>${ui.loaded?'Registra un gasto del día a día o agrega tus suscripciones y cuentas fijas.<div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn-p" data-newvar>Agregar gasto variable</button><button class="btn-s" data-new>Agregar gasto fijo</button></div>':""}</div></section>`}
 
 /* ---------- sheets ---------- */
-function openSheet(html){$("#modal").innerHTML=`<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div></div>`;
+let volviendo=false;
+function sheetAbierta(){return !!$("#scrim")}
+window.addEventListener("popstate",()=>{
+  if(volviendo){volviendo=false;if(sheetAbierta()&&!(history.state&&history.state.hoja))history.pushState({hoja:1},"");return}
+  if(sheetAbierta())cerrarHoja()});
+function openSheet(html){if(!(history.state&&history.state.hoja))history.pushState({hoja:1},"");$("#modal").innerHTML=`<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div></div>`;
   $("#scrim").addEventListener("click",e=>{if(e.target.id==="scrim")closeSheet()});
   const f=$(".sheet input:not([type=radio]),.sheet button");f&&f.focus({preventScroll:true});}
-function closeSheet(){$("#modal").innerHTML=""}
+function cerrarHoja(){$("#modal").innerHTML=""}
+function closeSheet(){if(!sheetAbierta())return;cerrarHoja();if(history.state&&history.state.hoja){volviendo=true;history.back()}}
 const opt=(arr,v)=>arr.map(a=>`<option ${a===v?"selected":""}>${esc(a)}</option>`).join("");
 function openDetail(id){
   const g=state.gastos.find(x=>x.id===id);if(!g)return;const c=calc(g);
@@ -823,7 +866,7 @@ function openForm(id){
     <label>Categoría<select name="categoria">${opt(CATS,g.categoria)}</select></label>
     <label>Modalidad<select name="modalidad" id="fMod">${opt(["Mensual","Anual"],g.modalidad)}</select></label>
     <label>Estado<select name="estado">${opt(ESTADOS,g.estado)}</select></label>
-    <label>Moneda<input name="moneda" list="monListG" autocomplete="off" value="${esc(etiquetaMoneda(g.moneda||base()))}" onfocus="this.select()">${datalistMonedas("monListG")}<span class="hint monwarn"></span></label>
+    ${campoMoneda(g.moneda||base())}
     <label>Valor<input name="valor" required inputmode="decimal" value="${g.valor}"></label>
     <label>Descuento (%)<input name="descuento" inputmode="decimal" value="${Math.round((g.descuento||0)*100)}"></label>
     <label>N° de personas que pagan<input name="personas" type="number" min="1" value="${g.personas||1}"></label>
@@ -872,7 +915,7 @@ function openVarForm(id,mes,plantilla){
     <fieldset class="full" style="border:0;padding:0;margin:0"><legend style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px">Categoría</legend>
       <div class="catgrid">${VCATS.map(c=>`<label><input type="radio" name="categoria" value="${esc(c)}" ${c===v.categoria?"checked":""}><i style="background:${VCAT_COLOR[c]}"></i>${esc(c)}</label>`).join("")}</div></fieldset>
     <label>Fecha<input name="fecha" type="date" required value="${esc(v.fecha)}" max="${iso(today)}"></label>
-    <label>Moneda<input name="moneda" list="monListV" autocomplete="off" value="${esc(etiquetaMoneda(v.moneda||base()))}" onfocus="this.select()">${datalistMonedas("monListV")}<span class="hint monwarn"></span></label>
+    ${campoMoneda(v.moneda||baseMon())}
     <label>Medio de pago<select name="medio">${opt(MEDIOS,v.medio)}</select></label>
     <label>Tarjeta o cuenta<input name="cuenta" value="${esc(v.cuenta||"")}"></label>
     <label class="full">Notas<textarea name="notas" style="min-height:50px">${esc(v.notas||"")}</textarea></label>
@@ -888,7 +931,7 @@ function openVarForm(id,mes,plantilla){
   fm.descripcion.addEventListener("input",aplicarSug);fm.descripcion.addEventListener("change",aplicarSug);
   document.querySelectorAll("[data-frec]").forEach(b=>b.addEventListener("click",()=>{const x=frec[Number(b.dataset.frec)];
     fm.descripcion.value=x.descripcion;const r=fm.querySelector(`[name=categoria][value="${CSS.escape(x.categoria)}"]`);if(r)r.checked=true;catManual=true;
-    fm.medio.value=x.medio||fm.medio.value;fm.cuenta.value=x.cuenta||"";fm.moneda.value=etiquetaMoneda(x.moneda||baseMon());fm.monto.value=x.monto;$("#sugCat").textContent="";
+    fm.medio.value=x.medio||fm.medio.value;fm.cuenta.value=x.cuenta||"";fijarMoneda(fm,x.moneda||baseMon());fm.monto.value=x.monto;$("#sugCat").textContent="";
     fm.monto.focus();fm.monto.select();document.querySelectorAll("[data-frec]").forEach(o=>o.setAttribute("aria-pressed",String(o===b)))}));
   $("#vForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target);const monto=numIn(f.get("monto"));
     if(!(monto>0)){toast("Ingresa un monto mayor que cero");return}
@@ -905,7 +948,24 @@ function openVarForm(id,mes,plantilla){
     else toast(id?"Cambios guardados":`${clp(toBase(obj.monto,obj.moneda))} en ${obj.categoria}`);});
 }
 const baseMon=()=>base();
-function vigilarMoneda(form){const inp=form.querySelector("[name=moneda]"),w=form.querySelector(".monwarn");
+function campoMoneda(cod){return `<label>Moneda<input type="hidden" name="moneda" value="${cod}"><button type="button" class="picker" data-picker aria-haspopup="listbox"><span>${esc(etiquetaMoneda(cod))}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button><span class="hint monwarn"></span></label>
+  <div class="mpanel full" hidden><input type="search" class="mbusca" placeholder="Buscar moneda: yen, JPY, sol…" aria-label="Buscar moneda"><div class="mlista" role="listbox"></div></div>`}
+const sinAcento=t=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+function prepararPicker(form){
+  const btn=form.querySelector("[data-picker]"),hid=form.querySelector("[name=moneda]"),pan=form.querySelector(".mpanel"),bus=pan.querySelector(".mbusca"),lis=pan.querySelector(".mlista");
+  const grupos=[["Tu moneda y Chile",[...new Set([base(),"CLP","UF","UTM"])]],["Principales del mundo",TOP20],["Latinoamérica",LATAM.filter(c=>!TOP20.includes(c))]];
+  const pintar=()=>{const q=sinAcento(bus.value.trim());let html="";const vistos=new Set();
+    grupos.forEach(([t,arr])=>{const it=arr.filter(c=>!vistos.has(c)&&(!q||sinAcento(c+" "+nombreMoneda(c)).includes(q)));it.forEach(c=>vistos.add(c));
+      if(it.length)html+=`<div class="mgrp">${t}</div>`+it.map(c=>`<button type="button" class="mopt${c===hid.value?" on":""}" data-cod="${c}" role="option"><b>${c}</b><span>${esc(nombreMoneda(c))}</span></button>`).join("")});
+    lis.innerHTML=html||`<p class="sub" style="padding:10px">Sin resultados</p>`};
+  btn.addEventListener("click",()=>{pan.hidden=!pan.hidden;if(!pan.hidden){bus.value="";pintar();bus.focus();pan.scrollIntoView({block:"nearest",behavior:"smooth"})}});
+  bus.addEventListener("input",pintar);
+  bus.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const f=lis.querySelector(".mopt");if(f)f.click()}});
+  lis.addEventListener("click",e=>{const o=e.target.closest(".mopt");if(!o)return;fijarMoneda(form,o.dataset.cod);pan.hidden=true;btn.focus()});
+}
+function fijarMoneda(form,cod){form.querySelector("[name=moneda]").value=cod;form.querySelector("[data-picker] span").textContent=etiquetaMoneda(cod);form.querySelector("[name=moneda]").dispatchEvent(new Event("change"))}
+
+function vigilarMoneda(form){prepararPicker(form);const inp=form.querySelector("[name=moneda]"),w=form.querySelector(".monwarn");
   const upd=()=>{const c=monedaDeEtiqueta(inp.value);w.textContent=c&&OFICIAL_DISTINTO.includes(c)?"Se usa el tipo de cambio oficial, que puede ser muy distinto del que realmente pagas.":c&&!tasaOK(c)?"Aún no hay valor de conversión para esta moneda.":""};
   inp.addEventListener("input",upd);inp.addEventListener("change",upd);upd()}
 function toast(msg){const t=document.createElement("div");t.className="toast";t.setAttribute("role","status");t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
@@ -959,7 +1019,8 @@ async function fillTable(zip,sheetPath,rows,valueFor,nombre){
       // conservar celdas fuera de la tabla (p. ej. resúmenes a la derecha)
       const cs=(rx.match(/<c [^>]*?(?:\/>|>[\s\S]*?<\/c>)/g)||[]).filter(c=>{const L=(c.match(/r="([A-Z]+)\d+"/)||[])[1];const ci=L?colI(L):-1;return (ci>lastC||ci<c0)&&/<[fv]>|<is>/.test(c)});
       if(cs.length)extra[rn]=cs});
-    const merged=out.map(rx=>{const rn=Number(rx.match(/r="(\d+)"/)[1]);if(extra[rn]){const add=extra[rn].join("");delete extra[rn];return rx.replace("</row>",add+"</row>")}return rx});
+    const ordenar=rx=>{const m=rx.match(/^(<row [^>]*>)([\s\S]*)<\/row>$/);if(!m)return rx;const cs=m[2].match(/<c [^>]*?(?:\/>|>[\s\S]*?<\/c>)/g)||[];cs.sort((a,b)=>colI(a.match(/r="([A-Z]+)/)[1])-colI(b.match(/r="([A-Z]+)/)[1]));return m[1]+cs.join("")+"</row>"};
+    const merged=out.map(rx=>{const rn=Number(rx.match(/r="(\d+)"/)[1]);if(extra[rn]){const add=extra[rn].join("");delete extra[rn];return ordenar(rx.replace("</row>",add+"</row>"))}return rx});
     Object.keys(extra).map(Number).sort((a,b)=>a-b).forEach(rn=>{const r=`<row r="${rn}">${extra[rn].join("")}</row>`;const idx=merged.findIndex(x=>Number(x.match(/r="(\d+)"/)[1])>rn);if(idx<0)merged.push(r);else merged.splice(idx,0,r)});
     return "<sheetData>"+keep.join("")+merged.join("")+"</sheetData>"});
   sx=sx.replace(/<dimension ref="[^"]*"\/>/,`<dimension ref="A1:${colL(Math.max(lastC,25))}${Math.max(lastR,r0+12)}"/>`);
@@ -997,9 +1058,12 @@ async function generarExcel(file){
     const pe=porEUR(),fe=(state.tasas&&state.tasas.fechas)||{};
     const filas=MONEDAS.filter(c=>pe[c]>0);
     await fillTable(zip,sm["Aux"],filas,(c,name)=>name==="Moneda"?c:name==="Por EUR (app)"?pe[c]:name==="Fecha (app)"?toSerial(fe[c]||iso(today)):undefined,"tblTasas");
-    if(sm["Resumen"]){let rx=await zip.file(sm["Resumen"]).async("string");
-      rx=rx.replace(/<c r="B2"([^>]*?)(?:\/>|>[\s\S]*?<\/c>)/,(m,at)=>`<c r="B2"${at.replace(/\s*t="[^"]*"/,"")} t="inlineStr"><is><t>${base()}</t></is></c>`);
-      zip.file(sm["Resumen"],rx)}
+    const wbx=await zip.file("xl/workbook.xml").async("string");
+    const dn=(wbx.match(/<definedName name="MonedaBase"[^>]*>([^<]*)<\/definedName>/)||[])[1]||"Resumen!$B$2";
+    const mm=dn.match(/^'?([^'!]+)'?!\$?([A-Z]+)\$?(\d+)$/);
+    if(mm&&sm[mm[1]]){const ref=mm[2]+mm[3];let rx=await zip.file(sm[mm[1]]).async("string");
+      rx=rx.replace(new RegExp(`<c r="${ref}"([^>]*?)(?:\\/>|>[\\s\\S]*?<\\/c>)`),(m,at)=>`<c r="${ref}"${at.replace(/\s*t="[^"]*"/,"")} t="inlineStr"><is><t>${base()}</t></is></c>`);
+      zip.file(sm[mm[1]],rx)}
   }else if(base()!=="CLP")throw new Error("excel-v1");
   await dropCalcChain(zip);
   return zip.generateAsync({type:"blob",compression:"DEFLATE",mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
@@ -1079,7 +1143,7 @@ async function dbxSubir(){
   try{
     const datos={app:"mis-gastos",version:1,modificado:state.modificado||Date.now(),gastos:state.gastos,vars:state.vars,presupuestos:state.presupuestos||{},config:state.config||{}};
     await dbxSubirArchivo(DBX_DATOS,new Blob([JSON.stringify(datos)],{type:"application/json"}));
-    const base=await baseGet();
+    const base=excelOn()?await baseGet():null;
     if(base){try{const blob=await generarExcel(new File([base.datos],base.nombre));await dbxSubirArchivo(DBX_EXCEL,blob);meta.ultimoRespaldo=iso(today)}catch(e){if(e.message!=="sin-variables"&&e.message!=="excel-v1")throw e}}
     meta.pendiente=false;meta.dbxUltima=Date.now();meta.dbxError="";
     if(ui.tab==="ajustes")toast("Excel actualizado en Dropbox");
@@ -1165,7 +1229,7 @@ function renderBanner(){
   const faltan=[...new Set([...state.gastos.map(g=>g.moneda),...Object.values(state.vars).flat().map(v=>v.moneda)].filter(m=>m&&!tasaOK(m)))];
   if(faltan.length)html=`<div class="banner"><span>Falta el valor de ${faltan.join(", ")}. Esos montos se muestran en cero hasta obtenerlo; conéctate a internet.</span><button data-rates>Reintentar</button></div>`;
   else if(meta.dbxError&&ui.tab!=="ajustes")html=`<div class="banner"><span>${esc(meta.dbxError)}</span>${meta.dbxRefresh?`<button data-dbxsync>Reintentar</button>`:`<button data-tab="ajustes">Ir a Ajustes</button>`}</div>`;
-  else if(hay&&ui.tab!=="ajustes"&&!meta.dbxRefresh){const d=meta.ultimoRespaldo?Math.floor((today-parseD(meta.ultimoRespaldo))/864e5):null;
+  else if(hay&&ui.tab!=="ajustes"&&!meta.dbxRefresh&&excelOn()){const d=meta.ultimoRespaldo?Math.floor((today-parseD(meta.ultimoRespaldo))/864e5):null;
     if(d===null||d>=14)html=`<div class="banner"><span>${d===null?"Aún no respaldas tus gastos en Excel.":`Tu último respaldo fue hace ${d} días.`}</span><button data-backup>Respaldar</button></div>`}
   el.innerHTML=html;
 }
@@ -1184,6 +1248,7 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;const d=b.dataset;
   if(d.tab){closeSheet();ui.tab=d.tab;if(d.tab==="mov"&&!b.closest("nav,.tabs-top"))ui.vmes=mkey(today);render();window.scrollTo({top:0});return}
   if(d.hero){ui.heroMode=d.hero;render();return}
+  if(d.info){const x=INFO[d.info];if(x)openSheet(`<h3 style="margin:0 0 10px;font-size:19px">${x[0]}</h3><p style="margin:0 0 16px;color:var(--ink-2);line-height:1.55">${x[1]}</p><div class="actions"><button class="btn-p grow" data-close>Entendido</button></div>`);return}
   if(b.hasAttribute("data-editpres")){openPresForm();return}
   if(b.hasAttribute("data-indic")){openIndicadores();return}
   if(b.hasAttribute("data-ics")){exportarCalendario();return}
@@ -1219,6 +1284,8 @@ document.addEventListener("click",e=>{
 document.addEventListener("input",e=>{if(e.target.id==="q"){ui.q=e.target.value;render()}});
 document.addEventListener("change",e=>{if(e.target.id==="histCat"){ui.histCat=e.target.value;render()}
   if(e.target.id==="monedaBase"){cambiarBase(e.target.value);return}
+  if(e.target.dataset&&e.target.dataset.cfg){const k=e.target.dataset.cfg,on=e.target.checked;state.config={...(state.config||{}),[k]:on};store.saveRegistro();render();
+    if(k==="excel"&&on&&meta.dbxRefresh)scheduleSync();toast(k==="excel"?(on?"Respaldo en Excel activado":"Respaldo en Excel desactivado"):(on?"Avisos activados":"Avisos desactivados"));return}
   if(e.target.id==="diasAviso"){state.config={...(state.config||{}),diasAviso:Number(e.target.value)};store.saveRegistro();render()}});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#scrim"))closeSheet()});
 try{const th=localStorage.getItem("gastos-theme");if(th)document.documentElement.dataset.theme=th}catch(_){}

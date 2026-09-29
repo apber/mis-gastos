@@ -1,5 +1,5 @@
 // Guarda la app en el teléfono para que abra rápido y funcione sin internet.
-const CACHE = "mis-gastos-v4";
+const CACHE = "mis-gastos-v5";
 const ARCHIVOS = ["./", "index.html", "jszip.min.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
 
 self.addEventListener("install", e => {
