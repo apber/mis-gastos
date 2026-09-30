@@ -330,8 +330,7 @@ body.kp-open .sheet{padding-bottom:calc(270px + env(safe-area-inset-bottom,0px))
 @keyframes slL{from{opacity:.4;transform:translateX(24px)}}
 @keyframes slR{from{opacity:.4;transform:translateX(-24px)}}
 @media (prefers-reduced-motion:reduce){#view.slide-l,#view.slide-r{animation:none}#kp{transition:none}}
-html,body{overscroll-behavior-y:contain}
-html{overflow-x:clip}
+html{overscroll-behavior-y:contain}
 .app{overflow-x:clip}
 #view.slide-l{animation:slL .24s ease}
 #view.slide-r{animation:slR .24s ease}
@@ -382,7 +381,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="1.71";
+const APP_VERSION="1.72";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
