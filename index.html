@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Luka</title>
 <meta name="theme-color" content="#141c45">
 <meta name="description" content="Registro de gastos fijos y variables">
@@ -157,7 +157,7 @@ nav.bottom button[aria-current="true"]{color:var(--primary)}
 .actions .grow{flex:1}
 form.f{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 form.f .full{grid-column:1/-1}
-form.f label{display:grid;gap:5px;font-size:12.5px;font-weight:700;color:var(--ink-2)}
+form.f label{display:grid;gap:5px;align-content:start;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 form.f input,form.f select,form.f textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:10px 12px;font-weight:600;font-size:15px;width:100%;min-width:0}
 form.f textarea{min-height:70px;resize:vertical}
 .hint{font-size:12px;color:var(--ink-3);font-weight:500}
@@ -354,8 +354,15 @@ html{overscroll-behavior-y:contain}
 .swap.sw-r{animation:slR .24s ease}
 .sheet{overflow-x:clip}
 .chiptxt:focus-visible{outline:none}
-.dbx-estado{margin:2px 0 12px}
-.dbx-btns{justify-content:flex-start}
+body.teclado nav.bottom,body.teclado .fab{display:none!important}
+.porpagar{color:var(--ink-2)!important;font-weight:600}
+.fijos-tot{font-size:clamp(30px,6vw,40px);font-weight:800;letter-spacing:-.03em;margin-top:6px}
+.fijos-tot+.sub .ibtn{vertical-align:-3px;margin-left:2px}
+.cta-dias{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dbx-head{margin:0;flex-wrap:wrap;row-gap:8px;align-items:center}
+.dbx-tit{flex:1 0 auto}
+.dbx-btns .btn-s,.dbx-btns .btn-d{padding:6px 10px!important;font-size:12.5px!important}
+.card p.dbx-estado{margin:6px 0 0}
 .chips.una{flex-wrap:nowrap;gap:4px;width:100%}
 .chips.una .chip{flex:1 1 auto;white-space:nowrap;padding:6px 5px;font-size:12.5px;text-align:center;min-width:0}
 .chips.una .sm{display:none}
@@ -425,7 +432,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="1.80";
+const APP_VERSION="1.81";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -466,7 +473,7 @@ const TABS=[
 let state={gastos:[],tasas:{UF:0,USD:0,EUR:0,fecha:""},vars:{}};
 const today=new Date();
 const mkey=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
-let ui={tab:"inicio",heroMode:"total",filter:"Todas",q:"",vq:"",vf:{cat:"",medio:"",desde:"",hasta:""},vfOpen:false,ff:{cat:"",mp:"",per:"",mon:"",comp:""},ffOpen:false,loaded:false,vmes:mkey(today),histN:6,histCat:"Todas",histSel:null,oculto:false};
+let ui={tab:"inicio",heroMode:"total",filter:"Todas",q:"",vq:"",vf:{cat:"",medio:"",desde:"",hasta:""},vfOpen:false,ff:{cat:"",mp:"",per:"",mon:"",comp:""},ffOpen:false,fmes:mkey(today),loaded:false,vmes:mkey(today),histN:6,histCat:"Todas",histSel:null,oculto:false};
 try{ui.oculto=localStorage.getItem("mis-gastos-oculto")==="1";const t=sessionStorage.getItem("luka-tab");if(t)ui.tab=t}catch(e){}
 let store=null;
 
@@ -665,16 +672,17 @@ async function completarHistorico(){if(histEnCurso||histIntentado||navigator.onL
 const INFO={
   historial:["Historial","Toca un mes para compararlo con el anterior, o mantén el dedo sobre otro mes para ver la diferencia con el seleccionado.<br><br>Los gastos de cada mes quedan registrados tal como fueron. Los cambios que hagas en un gasto fijo rigen desde el mes actual, salvo que indiques lo contrario. Si nunca has cambiado un gasto fijo, Luka muestra su monto actual en todos los meses en que estuvo activo."],
   presupuestos:["Presupuestos","Cada barra muestra cuánto llevas del límite que definiste para el mes. Verde: bajo el 80%. Amarillo: entre el 80% y el 100%. Rojo: te pasaste.<br><br>El total que escribes manda. Si las categorías suman menos, la diferencia queda sin asignar y cubre las categorías sin presupuesto propio; si suman más, la app te avisa al guardar. Si dejas el total en blanco, se calcula solo como la suma de las categorías. También puedes definir solo un total.<br><br>Durante el mes en curso, desde el día 3, si vas camino a pasarte de un presupuesto aparece en amarillo “A este ritmo llegarás a…”, una proyección según tu promedio diario. Toca una barra para ver la proyección aunque vayas bien. Al registrar un gasto que te hace cruzar el 80% o el 100%, la app te avisa."],
-  proximos:["Próximos cobros","Incluye los cobros fijos de los próximos días: gastos mensuales activos, pagos anuales que caen en esas fechas y gastos pausados que se reactivan. Puedes cambiar los días de anticipación, o desactivar los avisos, en Ajustes."],
+  proximos:["Próximos cobros","Incluye los cobros fijos de los próximos días: gastos mensuales activos, pagos anuales que caen en esas fechas y gastos pausados que se reactivan. Si registraste el día de vencimiento de una tarjeta de crédito, también aparece su pago, con lo que Luka estima que facturó. Ese pago no se suma al total: sus compras ya están contadas en tus gastos.<br><br>Puedes cambiar los días de anticipación, o desactivar los avisos, en Ajustes."],
   moneda:["Moneda e indicadores","La moneda principal es la que se usa para todos los totales, gráficos y presupuestos.<br><br>La UF, la UTM, el dólar y el euro en pesos vienen del Banco Central de Chile, vía mindicador.cl. Las demás monedas vienen de bancos centrales de todo el mundo, vía frankfurter.dev, con valores diarios. Se actualizan solos al abrir la app; si una fuente falla, se usan los últimos valores guardados.<br><br>Cada gasto en otra moneda se convierte con el valor de su fecha: las compras, con el del día de la compra, y los gastos fijos de meses ya cerrados, con el del día de cobro. El mes en curso y los siguientes usan el valor de hoy. Así, si sube la UF o el dólar, tus meses pasados no cambian.<br><br>En el peso argentino y el bolívar venezolano se usa el tipo de cambio oficial, que puede ser muy distinto del que realmente pagas."],
   avisos:["Avisos y calendario","Los cobros fijos cercanos aparecen en el Resumen. Para recibir recordatorios con la app cerrada, exporta tus cobros al calendario: se crean eventos que se repiten cada mes o año, con aviso el día anterior a las 9:00.<br><br>Para importarlo a Google Calendar, ábrelo desde el computador en calendar.google.com > Configuración > Importar y exportar. Te recomendamos crear antes un calendario llamado “Luka” e importar ahí: si cambias tus gastos fijos, lo borras y vuelves a importar sin duplicados. Los montos son aproximados, porque la UF y las divisas cambian."],
-  dropbox:["Dropbox","Cada cambio que haces se guarda solo en la carpeta Aplicaciones de tu Dropbox. Ahí quedan los datos de la app (datos-app.json), tu archivo base y, si el respaldo en Excel está activado, tu Excel al día: “Registro de gastos (respaldo automático)”.<br><br>“Sincronizar” fuerza una actualización completa. No edites el respaldo automático: se reemplaza en cada sincronización. Si instalas la app en otro teléfono y conectas el mismo Dropbox, tus datos aparecen solos."],
-  respaldo:["Respaldo en Excel","El archivo base es tu Excel “Registro de gastos” (versión 2.0 o posterior). La app lo usa como molde: toma sus hojas, fórmulas y gráficos y le escribe tus datos actuales.<br><br>“Respaldar en Excel” descarga una copia al teléfono. “Cargar desde mi Excel” reemplaza los gastos de la app con los del archivo. Si desactivas el respaldo en Excel, tus datos siguen sincronizándose con Dropbox; solo deja de generarse el Excel."],
+  dropbox:["Dropbox","Luka guarda tus datos en tu nube (hoy Dropbox) cada vez que haces un cambio, así no los pierdes si cambias o pierdes el teléfono. Si instalas Luka en otro teléfono y conectas la misma cuenta, tus datos aparecen solos.<br><br>«Sincronizar» actualiza todo en el momento, sin esperar."],
+  respaldo:["Respaldo en Excel","Luka mantiene tus gastos en un Excel con resúmenes y gráficos, que se actualiza solo en tu nube (hoy Dropbox) cada vez que haces un cambio.<br><br>«Respaldar en Excel» descarga una copia en tu teléfono. «Cargar desde mi Excel» hace lo contrario: reemplaza los gastos de Luka por los de un Excel de Luka que tengas. Úsalo solo si editaste ese Excel y quieres traer esos cambios.<br><br>Si desactivas esta opción, tus datos siguen guardándose en tu nube; solo deja de generarse el Excel."],
   preferencias:["Preferencias","Activa solo las funciones que usas: las secciones de cada una aparecen en Ajustes cuando están activadas.<br><br>“Deshacer al eliminar” te da unos segundos para recuperar un gasto borrado; si eliges “No”, la app te pedirá confirmar antes de borrar."],
   cuentas:["Tarjetas y cuentas","Tus tarjetas y cuentas aparecen como opciones en «Medio de pago» al anotar un gasto, así no tienes que escribirlas.<br><br>En las tarjetas de crédito, el día de facturación permite ver en el Resumen cuánto llevas cargado en el período actual, que es lo que llegará en tu próximo estado de cuenta."],
   categorias:["Categorías","Puedes agregar, renombrar o cambiar el color de las categorías. Si renombras una, el cambio se aplica a todos tus gastos anteriores y a su presupuesto. Si eliminas una, eliges a qué categoría mover sus gastos."],
   tarjetas:["Tarjetas de crédito","Suma lo registrado con cada tarjeta entre su último cierre de facturación y el próximo: gastos variables, cuotas que caen en el período y gastos fijos cargados a esa tarjeta. Solo considera lo que anotaste en la app."],
-  grupos:["Grupos","Un grupo reúne gastos de distintas categorías, como un viaje o un evento, para ver cuánto costó en total. Un gasto puede estar en más de un grupo. Asígnalos desde el formulario de cada gasto variable."],
+  fijos:["Gastos fijos","En el mes actual, el monto grande es lo que se cobra este mes. El promedio suma lo que te cuestan en un año tus gastos fijos activos y lo divide por 12: por ejemplo, un seguro anual de $120.000 aporta $10.000 a cada mes, aunque se pague una sola vez.<br><br>Con las flechas puedes ver meses anteriores: aparece lo que se cobró cada mes, con el monto que tenía entonces, incluidos los gastos que ya no existen."],
+  grupos:["Grupos","Un grupo reúne gastos de distintas categorías, como un viaje o un evento, para ver cuánto costó en total. Un gasto puede estar en más de un grupo. Para agregar gastos, abre el grupo y toca «Agregar gastos», o elige el grupo al anotar o editar un gasto."],
   datos:["Tus datos","Tus gastos se guardan en este teléfono y, si conectas Dropbox, también en tu carpeta de Dropbox. No se envían a ningún otro servidor. La app solo se conecta a internet para obtener los valores de las monedas e indicadores y para sincronizar con tu Dropbox."]};
 const ib=k=>`<button class="ibtn" data-info="${k}" aria-label="Más información">${I('<circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/>')}</button>`;
 const t2=(titulo,k)=>`<h2 class="ht">${titulo}${ib(k)}</h2>`;
@@ -757,10 +765,12 @@ const cuando=i=>i===0?"Hoy":i===1?"Mañana":`En ${i} días`;
 function cardAvisos(){
   if(!avisosOn())return "";
   const n=diasAviso(),list=proximosCobros(n);
-  if(!list.length)return "";
+  const tj=cuentas().filter(c=>c.tipo==="credito").map(c=>({c,pp:porPagarTarjeta(c)})).filter(x=>x.pp&&x.pp.total>=1&&x.pp.dias<=n);
+  if(!list.length&&!tj.length)return "";
   const total=list.reduce((a,x)=>a+x.v,0);
-  return `<section class="card"><div class="card-head"><div>${t2("Próximos cobros","proximos")}<p class="sub">${list.length} en los próximos ${n} días, ${clp(total)} en total</p></div></div>
-    <ul class="list">${list.slice(0,5).map(x=>`<li><button class="row btn" data-open="${x.g.id}"><div class="day"><b>${x.d.getDate()}</b><span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${cuando(x.i)} · ${x.tipo}</div></div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>
+  const filaTj=x=>`<li><button class="row btn" data-tarjeta="${x.c.id}"><div class="day"><b>${x.pp.vence.getDate()}</b><span>${MESES[x.pp.vence.getMonth()].slice(0,3).toLowerCase()}</span></div><div class="av" style="background:var(--primary-soft);color:var(--primary)">${I('<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h3"/>')}</div><div class="mid"><div class="t">Pago ${esc(x.c.nombre)}</div><div class="s">Vence ${x.pp.dias===0?"hoy":x.pp.dias===1?"mañana":"en "+x.pp.dias+" días"}</div></div><div class="amt" style="color:var(--ink-2)">${clp(x.pp.total)}</div></button></li>`;
+  return `<section class="card"><div class="card-head"><div>${t2("Próximos cobros","proximos")}<p class="sub">${list.length?`${list.length} en los próximos ${n} días, ${clp(total)} en total`:`Nada por cobrar en los próximos ${n} días`}</p></div></div>
+    <ul class="list">${tj.map(filaTj).join("")}${list.slice(0,5).map(x=>`<li><button class="row btn" data-open="${x.g.id}"><div class="day"><b>${x.d.getDate()}</b><span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${cuando(x.i)} · ${x.tipo}</div></div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>
     ${list.length>5?`<p class="sub" style="margin:6px 0 0">Y ${list.length-5} más.</p>`:""}</section>`;
 }
 /* exportar cobros fijos a un calendario (.ics) */
@@ -784,6 +794,9 @@ function generarICS(){
     else if(g.estado==="Activa"){const pm=proximoMesCobro(g,addM(today,0));const ini=new Date(pm.getFullYear(),pm.getMonth(),Math.min(dia,eom(pm).getDate()));const p=per(g);
       ev((p===12?"a-":"p-")+g.id,ini,`${p===12?"Pago anual":"Pago "+nombrePer(p).toLowerCase()}: ${g.nombre} (${monto(g)})`,desc,`FREQ=MONTHLY;INTERVAL=${p};${diaRule}`);n++}
     else if(g.estado==="Pausada"&&g.proximoPago){ev("r-"+g.id,parseD(g.proximoPago),`Se reactiva: ${g.nombre} (${monto(g)})`,desc,null);n++}});
+  cuentas().filter(c=>c.tipo==="credito"&&c.diaVenc).forEach(c=>{const dia=Math.min(Math.max(Number(c.diaVenc)||1,1),31);
+    const dias=Array.from({length:Math.max(0,dia-27)},(_,i)=>28+i).join(",");const diaRule=dia>28?`BYMONTHDAY=${dias};BYSETPOS=-1`:`BYMONTHDAY=${dia}`;
+    ev("t-"+c.id,new Date(today.getFullYear(),today.getMonth(),Math.min(dia,eom(today).getDate())),`Vence tarjeta: ${c.nombre}`,"Último día para pagar el estado de cuenta.",`FREQ=MONTHLY;${diaRule}`);n++});
   L.push("END:VCALENDAR");
   const plegar=l=>{const out=[];let x=l;while(new TextEncoder().encode(x).length>73){let i=Math.min(x.length,70);while(new TextEncoder().encode(x.slice(0,i)).length>73)i--;out.push(x.slice(0,i));x=" "+x.slice(i)}out.push(x);return out.join("\r\n")};
   return {texto:L.map(plegar).join("\r\n"),n};
@@ -983,23 +996,30 @@ function viewInicio(){
   </div>`;
 }
 /* ---------- tarjetas de crédito: período de facturación ---------- */
-function periodoTarjeta(c){const F=Math.min(Math.max(parseInt(c.diaFact)||0,1),31);if(!c.diaFact)return null;
-  const dia=(y,m)=>Math.min(F,new Date(y,m+1,0).getDate());const y=today.getFullYear(),m=today.getMonth();
+function periodoTarjeta(c,ref){const F=Math.min(Math.max(parseInt(c.diaFact)||0,1),31);if(!c.diaFact)return null;ref=ref||today;
+  const dia=(y,m)=>Math.min(F,new Date(y,m+1,0).getDate());const y=ref.getFullYear(),m=ref.getMonth();
   const cierreEste=new Date(y,m,dia(y,m));let cierre,inicio;
-  if(today<=cierreEste){cierre=cierreEste;const pm=new Date(y,m-1,1);inicio=new Date(pm.getFullYear(),pm.getMonth(),dia(pm.getFullYear(),pm.getMonth())+1)}
+  if(new Date(ref.getFullYear(),ref.getMonth(),ref.getDate())<=cierreEste){cierre=cierreEste;const pm=new Date(y,m-1,1);inicio=new Date(pm.getFullYear(),pm.getMonth(),dia(pm.getFullYear(),pm.getMonth())+1)}
   else{const nm=new Date(y,m+1,1);cierre=new Date(nm.getFullYear(),nm.getMonth(),dia(nm.getFullYear(),nm.getMonth()));inicio=new Date(y,m,dia(y,m)+1)}
   return {inicio,cierre}}
-function cargosTarjeta(c){const p=periodoTarjeta(c);if(!p)return null;const ini=iso(p.inicio),fin=iso(p.cierre);const out=[];
+function cargosTarjeta(c,ref){const p=periodoTarjeta(c,ref);if(!p)return null;const ini=iso(p.inicio),fin=iso(p.cierre);const out=[];
   const meses=new Set([mkey(p.inicio),mkey(p.cierre)]);
   meses.forEach(k=>movsMes(k).forEach(x=>{if(x.v.cuenta===c.nombre&&x.fecha>=ini&&x.fecha<=fin)out.push({t:"var",x,m:x.m,fecha:x.fecha})}));
-  state.gastos.forEach(g=>{if(g.estado!=="Activa"||g.cuenta!==c.nombre)return;const cc=calc(g);if(cc.pp<1)return;
-    meses.forEach(k=>{const d=keyToDate(k);const di=Math.min(Number(g.dia)||1,eom(d).getDate());const f=iso(new Date(d.getFullYear(),d.getMonth(),di));
+  state.gastos.forEach(g=>{if(g.estado!=="Activa"||g.cuenta!==c.nombre)return;if(calc(g).pp<1)return;
+    meses.forEach(k=>{const d=keyToDate(k);const cc=calc(g,d);const di=Math.min(Number(g.dia)||1,eom(d).getDate());const f=iso(new Date(d.getFullYear(),d.getMonth(),di));
       if(f>=ini&&f<=fin&&cobraEnMes(g,d))out.push({t:"fijo",g,m:cc.pp,fecha:f})})});
   return {p,out:out.sort((a,b)=>b.fecha.localeCompare(a.fecha)),total:out.reduce((a,x)=>a+x.m,0)}}
+/* estado de cuenta ya cerrado que falta pagar: {total, vence} o null */
+function porPagarTarjeta(c){if(!c.diaFact||!c.diaVenc)return null;const p=periodoTarjeta(c);if(!p)return null;
+  const ant=new Date(p.inicio);ant.setDate(ant.getDate()-1);const r=cargosTarjeta(c,ant);if(!r)return null;
+  const cierre=r.p.cierre;let y=cierre.getFullYear(),m=cierre.getMonth();const V=Math.min(Math.max(parseInt(c.diaVenc)||1,1),31);
+  let vence=new Date(y,m,Math.min(V,eom(new Date(y,m,1)).getDate()));if(vence<=cierre){m++;vence=new Date(y,m,Math.min(V,eom(new Date(y,m,1)).getDate()))}
+  const hoy0=new Date(today.getFullYear(),today.getMonth(),today.getDate());if(hoy0>vence)return null;
+  return {total:r.total,vence,dias:Math.round((vence-hoy0)/864e5)}}
 function cardTarjetas(){const l=cuentas().filter(c=>c.tipo==="credito"&&c.diaFact);if(!l.length)return "";
   const fm=d=>d.getDate()+" "+MESES[d.getMonth()].slice(0,3).toLowerCase();
   return `<section class="card">${t2("Tarjetas de crédito","tarjetas")}<p class="sub">Lo cargado en el período de facturación actual</p><ul class="list">${l.map(c=>{const r=cargosTarjeta(c);const dias=Math.round((r.p.cierre-new Date(today.getFullYear(),today.getMonth(),today.getDate()))/864e5);
-    return `<li><button class="row btn" data-tarjeta="${c.id}"><div class="av" style="background:var(--primary-soft);color:var(--primary)">${I('<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h3"/>')}</div><div class="mid"><div class="t">${esc(c.nombre)}</div><div class="s">${fm(r.p.inicio)} – ${fm(r.p.cierre)} · ${dias===0?"factura hoy":dias===1?"factura mañana":`factura en ${dias} días`}</div></div><div class="amt">${clp(r.total)}</div></button></li>`}).join("")}</ul></section>`}
+    return `<li><button class="row btn" data-tarjeta="${c.id}"><div class="av" style="background:var(--primary-soft);color:var(--primary)">${I('<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h3"/>')}</div><div class="mid"><div class="t">${esc(c.nombre)}</div><div class="s">${fm(r.p.inicio)} – ${fm(r.p.cierre)} · ${dias===0?"factura hoy":dias===1?"factura mañana":`factura en ${dias} días`}</div>${(()=>{const pp=porPagarTarjeta(c);return pp&&pp.total>=1?`<div class="s porpagar">Por pagar: ${clp(pp.total)} hasta el ${fm(pp.vence)}</div>`:""})()}</div><div class="amt">${clp(r.total)}</div></button></li>`}).join("")}</ul></section>`}
 function openTarjeta(id){const c=cuentas().find(x=>x.id===id);if(!c)return;const r=cargosTarjeta(c);
   openSheet(`<h3 style="margin:0 0 2px;font-size:20px">${esc(c.nombre)}</h3><p class="sub" style="margin:0 0 6px">Período del ${fmtD(iso(r.p.inicio))} al ${fmtD(iso(r.p.cierre))} · ${clp(r.total)}</p>
     ${r.out.length?`<ul class="list">${r.out.map(y=>y.t==="var"?rowMov(y.x).replace('<div class="s">',`<div class="s">${fmtD(y.fecha)} · `):`<li><button class="row btn" data-open="${y.g.id}">${avG(y.g)}<div class="mid"><div class="t">${esc(y.g.nombre)}</div><div class="s">${fmtD(y.fecha)} · Gasto fijo</div></div><div class="amt">${clp(y.m)}</div></button></li>`).join("")}</ul>`:`<div class="empty"><b>Sin cargos</b>No hay gastos registrados con esta tarjeta en el período.</div>`}
@@ -1120,9 +1140,25 @@ function viewGastos(){
   const order=CATS.filter(c=>groups[c]).concat(Object.keys(groups).filter(c=>!CATS.includes(c)));
   const base0=state.gastos.filter(pasa);const counts={Todas:base0.length};ESTADOS.forEach(e=>counts[e]=base0.filter(g=>g.estado===e).length);
   const act=state.gastos.filter(g=>g.estado==="Activa");
+  const fk=ui.fmes||mkey(today),fd=keyToDate(fk),esHoy=fk===mkey(today),minK=mkey(addM(today,-12));
+  const cabeza=`${barraFijos()}
+    <div class="card-head" style="align-items:center;min-height:44px"><div class="monthnav"><button data-fmes="-1" aria-label="Mes anterior" ${fk<=minK?"disabled":""}>‹</button><b>${MESES[fd.getMonth()]} ${fd.getFullYear()}</b><button data-fmes="1" aria-label="Mes siguiente" ${esHoy?"disabled":""}>›</button></div><button class="btn-p" data-new style="padding:8px 14px">Agregar</button></div>`;
+  if(!esHoy){const fin=eom(fd),l=[];
+    for(const g0 of [...state.gastos,...archivados()]){const g=versionEn(g0,fk);if(!g)continue;
+      const cobra=(g.estado==="Activa"&&cobraEnMes(g,fd))||(g.estado==="Pausada"&&g.proximoPago&&parseD(g.proximoPago)<=fin&&cobraEnMes(g,fd));
+      if(!cobra||!pasa(g)||(q&&!(g.nombre+" "+(g.notas||"")+" "+g.categoria).toLowerCase().includes(q)))continue;
+      l.push({g,v:calc(g,fd).pp,existe:state.gastos.some(x=>x.id===g0.id)})}
+    const tot=gastoMes(fd),gr={};l.forEach(x=>{(gr[x.g.categoria]=gr[x.g.categoria]||[]).push(x)});
+    const ord=CATS.filter(c=>gr[c]).concat(Object.keys(gr).filter(c=>!CATS.includes(c)));
+    const fila=x=>{const g=x.g,sub=[per(g)===1?"Día "+(g.dia||"—"):nombrePer(per(g)),x.existe?"":"Ya no existe"].filter(Boolean).map(esc).join(" · ");
+      return `<li><button class="row btn" type="button" ${x.existe?`data-open="${g.id}"`:'style="cursor:default"'}>${avG(g)}<div class="mid"><div class="t">${esc(g.nombre)}</div><div class="s">${sub}</div></div><div class="amt">${clp(x.v)}${g.moneda&&g.moneda!==base()?`<div class="s">${montoOrig(g.valor,g.moneda)}</div>`:""}</div></button></li>`};
+    return `<section class="card">${cabeza}
+    <div class="fijos-tot">${clp(tot)}</div><p class="sub" style="margin:0 0 12px">${l.length} gasto${l.length===1?"":"s"} cobrado${l.length===1?"":"s"} en ${MESES[fd.getMonth()].toLowerCase()}${ib("fijos")}</p>
+    ${l.length?ord.map(c=>`<div class="cat-sum"><span style="color:${CAT_COLOR[c]||"var(--ink-3)"}">${esc(c)}</span><span>${clp(gr[c].reduce((a,x)=>a+x.v,0))}</span></div><ul class="list">${gr[c].map(fila).join("")}</ul>`).join(""):`<div class="empty"><b>Sin cobros en ${MESES[fd.getMonth()].toLowerCase()}</b>${q||[ff.cat,ff.mp,ff.per,ff.mon,ff.comp].some(Boolean)?"Prueba con otro nombre o cambia los filtros.":"No se cobraron gastos fijos ese mes."}</div>`}
+  </section>`}
   return `<section class="card">
-    ${barraFijos()}
-    <div class="card-head" style="align-items:center;min-height:44px"><div style="min-width:0"><b style="font-size:16px">Gastos fijos</b><p class="sub one" style="margin:0">${act.length} activos · ${clp(act.reduce((a,g)=>a+calc(g).anual,0)/12)} al mes en promedio</p></div><button class="btn-p" data-new style="padding:8px 14px">Agregar</button></div>
+    ${cabeza}
+    <div class="fijos-tot">${clp(gastoMes(today))}</div><p class="sub" style="margin:0 0 10px">${act.length} activo${act.length===1?"":"s"} · promedio ${clp(act.reduce((a,g)=>a+calc(g).anual,0)/12)} al mes${ib("fijos")}</p>
     <div class="toolbar">
       <div class="chips una">${["Todas",...ESTADOS].map(f=>`<button class="chip" data-filter="${f}" aria-pressed="${ui.filter===f}">${f==="Cancelada"?'<span class="lg">Cancelada</span><span class="sm">Cancel.</span>':f} ${counts[f]}</button>`).join("")}</div>
     </div>
@@ -1207,8 +1243,8 @@ function cardDropbox(){
     <div class="full"><button class="btn-p" type="button" data-dbxconnect>Conectar Dropbox</button></div></form></section>`;
   const u=meta.dbxUltima?fechaGuardado(meta.dbxUltima):"";
   const estado=dbxEstado==="subiendo"?"Guardando en Dropbox…":dbxEstado==="bajando"?"Revisando Dropbox…":meta.dbxError?esc(meta.dbxError):meta.pendiente?"Cambios por guardar":u?`Guardado · ${u}`:"Conectado";
-  return `<section class="card">${t2("Dropbox","dropbox")}
-    <p class="sub dbx-estado">${estado}</p><div class="hbtns dbx-btns"><button class="btn-s" data-dbxsync style="padding:6px 12px;font-size:13px" ${dbxEstado?"disabled":""}>Sincronizar</button><button class="btn-d" data-dbxoff style="padding:6px 12px;font-size:13px">Desconectar</button></div>
+  return `<section class="card"><div class="card-head dbx-head"><div class="dbx-tit">${t2("Dropbox","dropbox")}</div><div class="hbtns dbx-btns"><button class="btn-s" data-dbxsync style="padding:6px 12px;font-size:13px" ${dbxEstado?"disabled":""}>Sincronizar</button><button class="btn-d" data-dbxoff style="padding:6px 12px;font-size:13px">Desconectar</button></div></div>
+    <p class="sub dbx-estado">${estado}</p>
     ${excelOn()&&!meta.nombreBase?`<p class="sub" style="margin:0">Para que se genere el Excel, elige tu archivo base en "Respaldo en Excel".</p>`:""}</section>`;
 }
 
@@ -1242,14 +1278,14 @@ function openCuentaForm(id){const c=id?cuentas().find(x=>x.id===id):{nombre:"",t
   const uso=id?[...state.gastos,...Object.values(state.vars).flat()].filter(x=>x.cuenta===c.nombre).length:0;
   openSheet(`<h3 style="margin:0 0 12px;font-size:20px">${id?"Editar cuenta":"Nueva tarjeta o cuenta"}</h3><form class="f" id="ctaForm">
     <label class="full">Nombre<input name="nombre" required value="${esc(c.nombre)}" placeholder="Ej.: Visa Banco de Chile"></label>
-    <label>Tipo<select name="tipo" id="ctaTipo">${Object.entries(TIPOS_CTA).map(([k,l])=>`<option value="${k}" ${k===c.tipo?"selected":""}>${l}</option>`).join("")}</select></label>
-    <label id="ctaDiaW">Día de facturación<input name="diaFact" type="number" min="1" max="31" value="${c.diaFact||""}" placeholder="Ej.: 25"><span class="hint">Día en que cierra tu estado de cuenta</span></label>
+    <label class="full">Tipo<select name="tipo" id="ctaTipo">${Object.entries(TIPOS_CTA).map(([k,l])=>`<option value="${k}" ${k===c.tipo?"selected":""}>${l}</option>`).join("")}</select></label>
+    <div class="full cta-dias" id="ctaDiaW">${campoDiaOpc("Día de facturación","diaFact",c.diaFact,"Cierra tu estado de cuenta")}${campoDiaOpc("Día de vencimiento","diaVenc",c.diaVenc,"Último día para pagar")}</div>
     ${id?`<p class="sub full" style="margin:0">${uso?`Usada en ${uso} gasto${uso===1?"":"s"}. Si la renombras, se actualizan todos.`:"Sin gastos asociados."}</p>`:""}
     <div class="full actions"><button class="btn-p grow" type="submit">Guardar</button>${id?`<button class="btn-d" type="button" data-cuenta-del="${id}">Eliminar</button>`:`<button class="btn-s" type="button" data-close>Cancelar</button>`}</div></form>`);
   const ds=()=>{$("#ctaDiaW").style.display=$("#ctaTipo").value==="credito"?"":"none"};ds();$("#ctaTipo").addEventListener("change",ds);
   prepararControles($("#ctaForm"));$("#ctaForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target);const n=f.get("nombre").trim();if(!n)return;
     if(cuentas().some(x=>x.nombre===n&&x.id!==id)){toast("Ya existe una cuenta con ese nombre");return}
-    const nuevo={id:id||uid("c"),nombre:n,tipo:f.get("tipo"),diaFact:f.get("tipo")==="credito"?(parseInt(f.get("diaFact"))||null):null};
+    const nuevo={id:id||uid("c"),nombre:n,tipo:f.get("tipo"),diaFact:f.get("tipo")==="credito"?(parseInt(f.get("diaFact"))||null):null,diaVenc:f.get("tipo")==="credito"?(parseInt(f.get("diaVenc"))||null):null};
     if(id&&c.nombre!==n){state.gastos=state.gastos.map(x=>x.cuenta===c.nombre?{...x,cuenta:n}:x);for(const k of Object.keys(state.vars))state.vars[k]=state.vars[k].map(x=>x.cuenta===c.nombre?{...x,cuenta:n}:x)}
     state.cuentas=id?cuentas().map(x=>x.id===id?nuevo:x):[...cuentas(),nuevo];store.saveRegistro();closeSheet();render();toast(id?"Cuenta guardada":"Cuenta agregada")})}
 function cardCategorias(){const nv=VCATS.length,nf=CATS.length;
@@ -1295,10 +1331,10 @@ function viewAjustes(){
   </section>`:""}
   <section class="card"><div class="card-head" style="margin:0"><div>${t2("Presupuestos","presupuestos")}<p class="sub one">${nPres?`${nPres} presupuesto${nPres===1?"":"s"} definido${nPres===1?"":"s"}`:"Aún no defines presupuestos"}</p></div><button class="btn-s" data-editpres style="padding:6px 12px;font-size:13px">${nPres?"Editar":"Definir"}</button></div></section>
   ${cardDropbox()}
-  ${excelOn()?`<section class="card"><div class="card-head" style="margin-bottom:12px"><div>${t2("Respaldo en Excel","respaldo")}<p class="sub one">${meta.ultimoRespaldo?`Último respaldo: ${fmtD(meta.ultimoRespaldo)}${dias>0?` (hace ${dias} d)`:" (hoy)"}`:"Aún no has hecho un respaldo"}</p></div></div>
+  ${excelOn()?`<section class="card"><div class="card-head" style="margin-bottom:12px"><div>${t2("Respaldo en Excel","respaldo")}<p class="sub one">${meta.ultimoRespaldo?`Último respaldo: ${meta.ultimoRespaldoTs?fechaGuardado(meta.ultimoRespaldoTs):dias===0?"hoy":dias===1?"ayer":fmtD(meta.ultimoRespaldo)}`:"Aún no has hecho un respaldo"}</p></div></div>
     <div class="backup-actions">
-      <button class="btn-s" data-backup><span class="ic">${I('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>')}</span><span>Respaldar en Excel<small>${meta.nombreBase?`Archivo base: ${esc(meta.nombreBase)}`:"La primera vez te pedirá tu archivo base"}</small></span></button>
-      <button class="btn-s" data-restore><span class="ic">${I('<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 7V4h16v3"/>')}</span><span>Cargar desde mi Excel<small>Reemplaza los gastos de la app</small></span></button>
+      <button class="btn-s" data-backup><span class="ic">${I('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>')}</span><span>Respaldar en Excel<small>${meta.nombreBase?"Descarga una copia al teléfono":"La primera vez te pedirá tu archivo base"}</small></span></button>
+      <button class="btn-s" data-restore><span class="ic">${I('<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 7V4h16v3"/>')}</span><span>Cargar desde mi Excel<small>Reemplaza los gastos de Luka por los del archivo</small></span></button>
       
     </div></section>`:""}
   <section class="card">${t2("Tus datos","datos")}
@@ -1524,6 +1560,12 @@ function nombreArriba({titulo,placeholder,ok,fn}){document.querySelectorAll(".di
   c.addEventListener("click",e=>{if(e.target===c||e.target.closest("[data-na-no]"))cerrar()});
   c.querySelector("form").addEventListener("submit",e=>{e.preventDefault();const n=inp.value.trim();if(!n){inp.focus();return}cerrar();fn(n)});
   setTimeout(()=>inp.focus(),30)}
+/* teclado del teléfono: esconder barra inferior y botón +, y mantener visible el campo */
+(()=>{const esTexto=t=>t&&(t.tagName==="TEXTAREA"||(t.tagName==="INPUT"&&!t.readOnly&&!t.dataset.kp&&!["checkbox","radio","hidden","date","button","submit"].includes(t.type)));
+  document.addEventListener("focusin",e=>{if(esTexto(e.target))document.body.classList.add("teclado")});
+  document.addEventListener("focusout",()=>setTimeout(()=>{if(!esTexto(document.activeElement))document.body.classList.remove("teclado")},80));
+  const vv=window.visualViewport;const seguir=()=>{const a=document.activeElement;if(esTexto(a))setTimeout(()=>a.scrollIntoView({block:"nearest"}),60)};
+  window.addEventListener("resize",seguir);if(vv)vv.addEventListener("resize",seguir)})();
 /* ventana de confirmación genérica */
 function dialogo({titulo,texto,botones}){document.querySelectorAll(".dialogo").forEach(x=>x.remove());const c=document.createElement("div");c.className="dialogo";
   c.innerHTML=`<div class="conf-box" role="alertdialog" aria-labelledby="dlgT"><b id="dlgT">${esc(titulo)}</b>${texto?`<p>${esc(texto)}</p>`:""}<div class="dlg-btns ${botones.length>2||botones.some(x=>x.t.length>18)?"col":""}">${botones.map((x,i)=>`<button type="button" class="${x.c}" data-dlg="${i}">${esc(x.t)}</button>`).join("")}</div></div>`;
@@ -1532,6 +1574,8 @@ function dialogo({titulo,texto,botones}){document.querySelectorAll(".dialogo").f
   c.querySelector("[data-dlg]").focus()}
 function campoDia(val){return `<label>Día de cobro<div class="dd diasel"><input type="hidden" name="dia" value="${val||1}"><button type="button" class="picker" data-dias><span>Día ${val||1}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
   <div class="mpanel dgrid" hidden>${Array.from({length:31},(_,i)=>`<button type="button" data-dia="${i+1}" class="${i+1==val?"on":""}">${i+1}</button>`).join("")}</div></div><span class="hint dnote" ${(val||1)>=29?"":"hidden"}>En meses más cortos, se considera el último día.</span></label>`}
+function campoDiaOpc(label,name,val,hint,idw){return `<label${idw?` id="${idw}"`:""}>${label}<div class="dd diasel"><input type="hidden" name="${name}" value="${val||""}"><button type="button" class="picker" data-dias><span>${val?"Día "+val:"Elegir día"}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
+  <div class="mpanel dgrid" hidden>${Array.from({length:31},(_,i)=>`<button type="button" data-dia="${i+1}" class="${i+1==val?"on":""}">${i+1}</button>`).join("")}</div></div>${hint?`<span class="hint">${hint}</span>`:""}</label>`}
 const MEDIOS_GEN=[["Crédito","Tarjeta de crédito (sin especificar)"],["Débito","Tarjeta de débito (sin especificar)"],["Efectivo","Efectivo"],["Transferencia","Transferencia"],["PayPal","PayPal"],["Otro","Otro"]];
 function valorMedio(cuenta,medio){return cuenta?"c:"+cuenta:"m:"+(medio||"Débito")}
 function opcionesMedio(sel){const l=cuentas();const g=(t,arr)=>arr.length?`<optgroup label="${t}">${arr.join("")}</optgroup>`:"";
@@ -1772,7 +1816,7 @@ async function doBackup(forzarNuevo){
     if(!base)await baseSet(file);
     const nombre=file.name.replace(/\.xlsx$/i,"").replace(/\s*\(respaldo[^)]*\)$/i,"");
     await saveFile(`${nombre} (respaldo ${iso(today)}).xlsx`,blob);
-    meta.ultimoRespaldo=iso(today);saveMeta();render();toast("Respaldo descargado en tu carpeta de descargas");
+    meta.ultimoRespaldo=iso(today);meta.ultimoRespaldoTs=Date.now();saveMeta();render();toast("Respaldo descargado en tu carpeta de descargas");
   }catch(e){console.error(e);
     if(e.message==="sin-variables")openSheet(`<h3 style="margin:0 0 8px">Falta la hoja de gastos variables</h3><p class="sub" style="margin:0 0 14px">Este archivo es una versión anterior del Registro de gastos. Usa la versión 1.4, que tiene la hoja "Gastos variables".</p><div class="actions"><button class="btn-p grow" data-close>Entendido</button></div>`);
     else if(e.message==="sin-gastos")toast("Este archivo no tiene la hoja Gastos");
@@ -1840,7 +1884,7 @@ async function dbxSubir(){
     const datos={app:"mis-gastos",version:1,modificado:state.modificado||Date.now(),gastos:state.gastos,vars:state.vars,presupuestos:state.presupuestos||{},config:state.config||{},cuentas:state.cuentas||[],categorias:state.categorias||null,grupos:state.grupos||[],archivados:state.archivados||[],tasasDia:state.tasasDia||{}};
     await dbxSubirArchivo(DBX_DATOS,new Blob([JSON.stringify(datos)],{type:"application/json"}));
     const base=excelOn()?await baseGet():null;
-    if(base){try{const blob=await generarExcel(new File([base.datos],base.nombre));await dbxSubirArchivo(DBX_EXCEL,blob);meta.ultimoRespaldo=iso(today)}catch(e){if(e.message!=="sin-variables"&&e.message!=="excel-v1")throw e}}
+    if(base){try{const blob=await generarExcel(new File([base.datos],base.nombre));await dbxSubirArchivo(DBX_EXCEL,blob);meta.ultimoRespaldo=iso(today);meta.ultimoRespaldoTs=Date.now()}catch(e){if(e.message!=="sin-variables"&&e.message!=="excel-v1")throw e}}
     meta.pendiente=false;meta.dbxUltima=Date.now();meta.dbxError="";
     if(ui.tab==="ajustes")toast("Excel actualizado en Dropbox");
   }catch(e){dbxFallo(e)}
@@ -1887,13 +1931,20 @@ async function readTable(zip,sheetPath,shared){
 }
 const s=v=>v==null?"":String(v).trim();
 const dateIn=v=>typeof v==="number"?fromSerial(v):(/^\d{4}-\d{2}-\d{2}/.test(s(v))?s(v).slice(0,10):(()=>{const m=s(v).match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);return m?`${m[3]}-${pad(m[2])}-${pad(m[1])}`:""})());
+/* reconoce el Excel de Luka: hojas y columnas propias del formato */
+async function esExcelLuka(zip,sm){try{
+  if(!["Gastos","Gastos variables","Resumen","Aux"].every(h=>sm[h]))return false;
+  const tg=await tableOf(zip,sm["Gastos"]),tv=await tableOf(zip,sm["Gastos variables"]);if(!tg||!tv)return false;
+  const tiene=(t,l)=>{const n=t.cols.map(c=>c.name);return l.every(x=>n.includes(x))};
+  return tiene(tg,["Suscripción","Categoría","Modalidad","Moneda de cobro","Valor","Día de cobro","Estado"])&&tiene(tv,["Fecha","Descripción","Categoría","Moneda","Monto"])}catch(e){return false}}
+function noEsLuka(){dialogo({titulo:"Este archivo no es un Excel de Luka",texto:"Elige un Excel generado por Luka, como el que descargas con «Respaldar en Excel» o el que se guarda en tu nube. Tus datos no se modificaron.",botones:[{t:"Entendido",c:"btn-p"}]})}
 async function doRestore(){
   if(!window.JSZip){toast("No se pudo cargar el lector de Excel. Revisa tu conexión.");return}
   const file=await pickFile();if(!file)return;
   try{
     const zip=await JSZip.loadAsync(file);const sm=await sheetMap(zip);
     let shared=[];const ss=zip.file("xl/sharedStrings.xml");if(ss){const x=parseXml(await ss.async("string"));shared=[...x.getElementsByTagName("si")].map(si=>[...si.getElementsByTagName("t")].map(n=>n.textContent).join(""))}
-    if(!sm["Gastos"]){toast("Este archivo no tiene la hoja Gastos");return}
+    if(!(await esExcelLuka(zip,sm))){noEsLuka();return}
     const gastos=(await readTable(zip,sm["Gastos"],shared)).filter(r=>s(r["Suscripción"])).map((r,i)=>({id:"g"+(i+1).toString().padStart(3,"0")+Math.random().toString(36).slice(2,5),
       nombre:s(r["Suscripción"]),plan:s(r["Tipo de plan"]),categoria:s(r["Categoría"])||"Otro",modalidad:s(r["Modalidad"])==="Anual"?"Anual":"Mensual",periodo:(()=>{const m=s(r["Modalidad"]);const x=PERIODOS.find(y=>y[1]===m);if(x)return x[0];const n=m.match(/(\d+)/);return n?parseInt(n[1]):1})(),
       cuotasPagadas:Number(r["N° de cuotas pagadas"])||0,cuotasTotal:Number(r["N° total de cuotas"])||1,personas:Number(r["N° de personas que pagan"])||1,
@@ -1984,6 +2035,7 @@ document.addEventListener("click",e=>{
   if(d.histn){ui.histN=Number(d.histn);ui.histSel=null;render();return}
   if(d.histsel!==undefined){ui.histSel=Number(d.histsel);render();return}
   if(d.filter){ui.filter=d.filter;render();return}
+  if(d.fmes){const nd=addM(keyToDate(ui.fmes||mkey(today)),Number(d.fmes));if(nd<=today&&mkey(nd)>=mkey(addM(today,-12))){ui.fmes=mkey(nd);render()}return}
   if(d.vmes){const nd=addM(keyToDate(ui.vmes),Number(d.vmes));if(nd<=today){ui.vmes=mkey(nd);render()}return}
   if(d.open){openDetail(d.open);return}
   if(d.openvar){openVarDetail(d.openvar,d.mes);return}
