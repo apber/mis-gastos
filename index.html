@@ -15,7 +15,7 @@
 <style>
 :root{
   --bg:#F3F5FA; --surface:#FFFFFF; --surface-2:#F7F8FC; --ink:#0F1A33; --ink-2:#56607A; --ink-3:#8C94A8;
-  --line:#E4E8F1; --primary:#3056F5; --primary-soft:#E6ECFF; --good:#14A874; --warn:#E08A00; --bad:#E5484D;
+  --line:#E4E8F1; --primary:#3056F5; --primary-soft:#E6ECFF; --good:#14A874; --warn:#E08A00; --bad:#E5484D; --deb:#0B7F86; --deb-soft:#DDF3F4;
   --hero-a:#1B2B5E; --hero-b:#3056F5; --shadow:0 1px 2px rgba(15,26,51,.05),0 8px 24px rgba(15,26,51,.06);
   --r-lg:22px; --r-md:16px; --r-sm:10px;
   --font:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -23,12 +23,12 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0A1022; --surface:#121A31; --surface-2:#18213B; --ink:#EEF1F8; --ink-2:#A9B1C7; --ink-3:#6F7894;
-  --line:#243052; --primary:#6F8BFF; --primary-soft:#1F2A52; --good:#35C993; --warn:#F2A93B; --bad:#FF6B6F;
+  --line:#243052; --primary:#6F8BFF; --primary-soft:#1F2A52; --good:#35C993; --warn:#F2A93B; --bad:#FF6B6F; --deb:#4FD3D9; --deb-soft:#123B3F;
   --hero-a:#16224A; --hero-b:#2B48C9; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
 }}
 :root[data-theme="dark"]{
   --bg:#0A1022; --surface:#121A31; --surface-2:#18213B; --ink:#EEF1F8; --ink-2:#A9B1C7; --ink-3:#6F7894;
-  --line:#243052; --primary:#6F8BFF; --primary-soft:#1F2A52; --good:#35C993; --warn:#F2A93B; --bad:#FF6B6F;
+  --line:#243052; --primary:#6F8BFF; --primary-soft:#1F2A52; --good:#35C993; --warn:#F2A93B; --bad:#FF6B6F; --deb:#4FD3D9; --deb-soft:#123B3F;
   --hero-a:#16224A; --hero-b:#2B48C9; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -263,13 +263,26 @@ button.stat:hover{background:var(--surface-2)}
 .ap-fila>span,.ap-col>span{font-weight:700;font-size:14px}
 .ap-col{display:grid;gap:10px;margin-top:16px}
 .seg-tema button{padding:6px 10px}
-.ap-swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
-.sw-c{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 10px;min-width:0;text-align:left}
-.sw-c i{width:22px;height:22px;border-radius:50%!important;flex:none}
-.sw-c em{font-style:normal;font-size:12.5px;font-weight:600;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ap-swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sw-c{display:flex;flex-direction:column;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 4px 8px;min-width:0;text-align:center}
+.sw-c i{width:28px;height:28px;border-radius:50%!important;flex:none}
+.sw-c em{font-style:normal;font-size:12.5px;font-weight:600;color:var(--ink-2);line-height:1.25;overflow-wrap:anywhere}
 .sw-c[aria-pressed="true"]{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
 .sw-c[aria-pressed="true"] em{color:var(--ink)}
-.mopt small.mtipo{margin-left:auto;padding-left:10px;font-size:12px;color:var(--ink-3);font-weight:600;flex:none}
+.ttipo{display:inline-block;flex:none;box-sizing:border-box;width:60px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.02em;line-height:1.5;padding:1px 6px;border-radius:6px;margin-right:8px;vertical-align:1px}
+.tt-credito{background:var(--primary-soft);color:var(--primary)}
+.tt-debito{background:var(--deb-soft);color:var(--deb)}
+.tt-corriente,.tt-efectivo,.tt-otro{background:var(--surface-2);color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line)}
+.mopt .mnom,.picker .mnom{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mopt{align-items:center}
+.picker span.con-etq{display:flex;align-items:center;min-width:0}
+.s.s-medio{display:flex;align-items:center;min-width:0;white-space:nowrap}
+.s.s-medio .s-txt{flex:none}
+.s.s-medio{margin-top:3px}
+.s.s-medio .ttipo{margin:0 6px 0 0;font-size:10px;width:auto;min-width:0;padding:0 5px}
+.s.s-medio .mnom{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.av-tj{position:relative;overflow:visible}
+.av-tj .ttipo{position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);margin:0;width:auto;min-width:0;font-size:8.5px;padding:0 4px;line-height:1.45;box-shadow:0 0 0 2px var(--surface)}
 .tipo-hint{text-align:center;font-size:12.5px;color:var(--ink-3);margin:0 auto 14px;max-width:320px}
 .seg-tipo button{flex:1}
 .hist-head{flex-wrap:wrap}
@@ -375,6 +388,7 @@ body.teclado nav.bottom,body.teclado .fab{display:none!important}
 .tj-lista{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .tj{display:block;width:100%;text-align:left;border:0;background:none;padding:0;color:inherit;font:inherit;cursor:pointer}
 .tj-nom{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.tj-nom .ttipo{margin:0;width:auto}
 .tj-nom b{flex:1;min-width:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tj-ic{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--primary-soft);color:var(--primary)}
 .tj-ic svg{width:17px;height:17px}
@@ -466,7 +480,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="1.86";
+const APP_VERSION="1.87";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -818,9 +832,9 @@ function cardAvisos(){
   const tj=cuentas().filter(c=>c.tipo==="credito").map(c=>({c,pp:porPagarTarjeta(c)})).filter(x=>x.pp&&x.pp.total>=1&&x.pp.dias<=n);
   if(!list.length&&!tj.length)return "";
   const total=list.reduce((a,x)=>a+x.v,0);
-  const filaTj=x=>`<li><button class="row btn" data-tarjeta="${x.c.id}"><div class="day"><b>${x.pp.vence.getDate()}</b><span>${MESES[x.pp.vence.getMonth()].slice(0,3).toLowerCase()}</span></div><div class="av" style="background:var(--primary-soft);color:var(--primary)">${I('<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h3"/>')}</div><div class="mid"><div class="t">Pago ${esc(x.c.nombre)}</div><div class="s">Vence aprox. ${x.pp.dias===0?"hoy":x.pp.dias===1?"mañana":"en "+x.pp.dias+" días"}</div></div><div class="amt" style="color:var(--ink-2)">${clp(x.pp.total)}</div></button></li>`;
+  const filaTj=x=>`<li><button class="row btn" data-tarjeta="${x.c.id}"><div class="day"><b>${x.pp.vence.getDate()}</b><span>${MESES[x.pp.vence.getMonth()].slice(0,3).toLowerCase()}</span></div><div class="av av-tj" style="background:var(--primary-soft);color:var(--primary)">${I('<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h3"/>')}${etqTipo("credito")}</div><div class="mid"><div class="t">Pago ${esc(x.c.nombre)}</div><div class="s">Vence aprox. ${x.pp.dias===0?"hoy":x.pp.dias===1?"mañana":"en "+x.pp.dias+" días"}</div></div><div class="amt" style="color:var(--ink-2)">${clp(x.pp.total)}</div></button></li>`;
   return `<section class="card"><div class="card-head"><div>${t2("Próximos cobros","proximos")}<p class="sub">${list.length?`${list.length} en los próximos ${n} días, ${clp(total)} en total`:`Nada por cobrar en los próximos ${n} días`}</p></div></div>
-    <ul class="list">${tj.map(filaTj).join("")}${list.slice(0,5).map(x=>`<li><button class="row btn" data-open="${x.g.id}"><div class="day"><b>${x.d.getDate()}</b><span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${cuando(x.i)} · ${x.tipo}</div></div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>
+    <ul class="list">${tj.map(filaTj).join("")}${list.slice(0,5).map(x=>`<li><button class="row btn" data-open="${x.g.id}"><div class="day"><b>${x.d.getDate()}</b><span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${x.i<2?cuando(x.i)+" · ":""}${x.tipo==="Se reactiva"?x.tipo:per(x.g)===1?"Mensual":per(x.g)===12?"Anual":nombrePer(per(x.g))}</div>${medioHTML(x.g)?`<div class="s s-medio">${medioHTML(x.g)}</div>`:""}</div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>
     ${list.length>5?`<p class="sub" style="margin:6px 0 0">Y ${list.length-5} más.</p>`:""}</section>`;
 }
 /* exportar cobros fijos a un calendario (.ics) */
@@ -1070,7 +1084,7 @@ function cardTarjetas(){const l=cuentas().filter(c=>c.tipo==="credito"&&c.diaFac
   const fm=d=>d.getDate()+" "+MESES[d.getMonth()].slice(0,3).toLowerCase();
   return `<section class="card">${t2("Tarjetas de crédito","tarjetas")}<p class="sub">Lo que llevas en el período y lo que debes pagar</p><ul class="tj-lista">${l.map(c=>{const r=cargosTarjeta(c),pp=porPagarTarjeta(c);
     const pagar=pp&&pp.total>=1?`<b>${clp(pp.total)}</b><small>vence el ${fm(pp.vence)}</small>`:c.diaVenc?`<b class="tj-nada">Nada por pagar</b><small>&nbsp;</small>`:`<b class="tj-nada">Sin vencimiento</b><small>agrégalo en Ajustes</small>`;
-    return `<li><button class="tj btn" data-tarjeta="${c.id}"><div class="tj-nom"><span class="tj-ic">${I('<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h3"/>')}</span><b>${esc(c.nombre)}</b><span class="tj-ch">›</span></div>
+    return `<li><button class="tj btn" data-tarjeta="${c.id}"><div class="tj-nom"><span class="tj-ic">${I('<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h3"/>')}</span>${etqTipo("credito")}<b>${esc(c.nombre)}</b><span class="tj-ch">›</span></div>
       <div class="tj-cols"><div class="tj-col"><span>Período actual</span><b>${clp(r.total)}</b><small>cierra el ${fm(r.p.cierre)}</small></div><div class="tj-col"><span>Por pagar</span>${pagar}</div></div></button></li>`}).join("")}</ul></section>`}
 function openTarjeta(id){const c=cuentas().find(x=>x.id===id);if(!c)return;const r=cargosTarjeta(c);
   openSheet(`<h3 style="margin:0 0 2px;font-size:20px">${esc(c.nombre)}</h3><p class="sub" style="margin:0 0 6px">Período del ${fmtD(iso(r.p.inicio))} al ${fmtD(iso(r.p.cierre))} · ${clp(r.total)}</p>
@@ -1662,11 +1676,15 @@ function campoDiaOpc(label,name,val,hint,idw){return `<label${idw?` id="${idw}"`
   <div class="mpanel dgrid" hidden>${Array.from({length:31},(_,i)=>`<button type="button" data-dia="${i+1}" class="${i+1==val?"on":""}">${i+1}</button>`).join("")}</div></div>${hint?`<span class="hint">${hint}</span>`:""}</label>`}
 const MEDIOS_GEN=[["Crédito","Tarjeta de crédito (sin especificar)"],["Débito","Tarjeta de débito (sin especificar)"],["Efectivo","Efectivo"],["Transferencia","Transferencia"],["PayPal","PayPal"],["Otro","Otro"]];
 function valorMedio(cuenta,medio){return cuenta?"c:"+cuenta:"m:"+(medio||"Débito")}
+const TIPO_ETQ={credito:"Crédito",debito:"Débito",corriente:"Cuenta",efectivo:"Efectivo",otro:"Otro"};
+const etqTipo=t=>`<span class="ttipo tt-${t in TIPO_ETQ?t:"otro"}">${TIPO_ETQ[t]||"Otro"}</span>`;
+/* medio de pago de un gasto: etiqueta + nombre de la tarjeta, o el medio genérico */
+function medioHTML(g){if(g.cuenta){const c=cuentas().find(x=>x.nombre===g.cuenta);return `${etqTipo(c?c.tipo:"otro")}<span class="mnom">${esc(g.cuenta)}</span>`}return g.medio?`<span class="mnom">${esc(g.medio)}</span>`:""}
 function opcionesMedio(sel){const l=cuentas();const g=(t,arr)=>arr.length?`<optgroup label="${t}">${arr.join("")}</optgroup>`:"";
   const o=(v,t)=>`<option value="${esc(v)}" ${v===sel?"selected":""}>${esc(t)}</option>`;
-  const TIPO_CORTO={credito:"crédito",debito:"débito",corriente:"cuenta",efectivo:"efectivo",otro:"otro"},ORDEN={credito:0,debito:1,corriente:2,efectivo:3,otro:4};
+  const ORDEN={credito:0,debito:1,corriente:2,efectivo:3,otro:4};
   const ot=(v,t,tp)=>`<option value="${esc(v)}" data-tipo="${esc(tp)}" ${v===sel?"selected":""}>${esc(t)}</option>`;
-  const mias=[...l].sort((a,b)=>(ORDEN[a.tipo]??9)-(ORDEN[b.tipo]??9)).map(c=>ot("c:"+c.nombre,c.nombre,TIPO_CORTO[c.tipo]||"otro"));
+  const mias=[...l].sort((a,b)=>(ORDEN[a.tipo]??9)-(ORDEN[b.tipo]??9)).map(c=>ot("c:"+c.nombre,c.nombre,c.tipo in TIPO_ETQ?c.tipo:"otro"));
   const leg=sel&&sel.startsWith("c:")&&!cuentaExiste(sel.slice(2))?[o(sel,sel.slice(2))]:[];
   return g("Mis tarjetas y cuentas",[...mias,...leg])+g("Otros medios",MEDIOS_GEN.map(([v,t])=>o("m:"+v,t)))+`<option value="__nueva">+ Agregar tarjeta o cuenta…</option>`}
 function campoMedio(cuenta,medio){return `<label class="full">Medio de pago<select name="mp" data-buscar="Buscar tarjeta o cuenta…">${opcionesMedio(valorMedio(cuenta,medio))}</select></label>`}
@@ -1761,11 +1779,11 @@ function mejorarSelects(root){
       <div class="mpanel" hidden>${busca?`<input type="search" class="mbusca" placeholder="${sel.dataset.buscar||"Buscar…"}" aria-label="Buscar">`:""}<div class="mlista" role="listbox"></div></div>`;
     sel.after(w);
     const btn=w.querySelector(".picker"),pan=w.querySelector(".mpanel"),lis=w.querySelector(".mlista"),bus=w.querySelector(".mbusca");
-    const sync=()=>{const o=sel.options[sel.selectedIndex];btn.querySelector("span").textContent=o?o.textContent:""};
+    const sync=()=>{const o=sel.options[sel.selectedIndex],sp=btn.querySelector("span");if(o&&o.dataset.tipo){sp.innerHTML=etqTipo(o.dataset.tipo)+`<span class="mnom">${esc(o.textContent)}</span>`;sp.classList.add("con-etq")}else{sp.textContent=o?o.textContent:"";sp.classList.remove("con-etq")}};
     sel._ddSync=sync;sync();
     const pintar=()=>{const q=bus?sinAcento(bus.value.trim()):"";let html="";
       const item=o=>{const t=o.textContent,b=o.dataset.b;if(q&&!sinAcento(t).includes(q))return "";
-        return `<button type="button" class="mopt${o.value===sel.value?" on":""}" data-v="${esc(o.value)}" role="option">${b?`<b>${esc(b)}</b><span>${esc(o.dataset.n||"")}</span>`:o.dataset.tipo?`${esc(t)}<small class="mtipo">${esc(o.dataset.tipo)}</small>`:esc(t)}</button>`};
+        return `<button type="button" class="mopt${o.value===sel.value?" on":""}" data-v="${esc(o.value)}" role="option">${b?`<b>${esc(b)}</b><span>${esc(o.dataset.n||"")}</span>`:o.dataset.tipo?`${etqTipo(o.dataset.tipo)}<span class="mnom">${esc(t)}</span>`:esc(t)}</button>`};
       [...sel.children].forEach(ch=>{if(ch.tagName==="OPTGROUP"){const it=[...ch.children].map(item).join("");if(it)html+=`<div class="mgrp">${esc(ch.label)}</div>`+it}else html+=item(ch)});
       lis.innerHTML=html||`<p class="sub" style="padding:10px 12px;margin:0">Sin resultados</p>`};
     const cerrar=()=>{pan.hidden=true;btn.setAttribute("aria-expanded","false")};
