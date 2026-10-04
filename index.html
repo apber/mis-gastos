@@ -15,7 +15,7 @@
 <style>
 :root{
   --bg:#F3F5FA; --surface:#FFFFFF; --surface-2:#F7F8FC; --ink:#0F1A33; --ink-2:#56607A; --ink-3:#8C94A8;
-  --line:#E4E8F1; --primary:#3056F5; --primary-soft:#E6ECFF; --good:#14A874; --warn:#E08A00; --bad:#E5484D; --deb:#0B7F86; --deb-soft:#DDF3F4;
+  --line:#E4E8F1; --primary:#3056F5; --primary-soft:#E6ECFF; --good:#14A874; --warn:#E08A00; --bad:#E5484D; --deb:#0B7F86; --deb-soft:#DDF3F4; --cred:#3056F5; --cred-soft:#E6ECFF;
   --hero-a:#1B2B5E; --hero-b:#3056F5; --shadow:0 1px 2px rgba(15,26,51,.05),0 8px 24px rgba(15,26,51,.06);
   --r-lg:22px; --r-md:16px; --r-sm:10px;
   --font:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -23,12 +23,12 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0A1022; --surface:#121A31; --surface-2:#18213B; --ink:#EEF1F8; --ink-2:#A9B1C7; --ink-3:#6F7894;
-  --line:#243052; --primary:#6F8BFF; --primary-soft:#1F2A52; --good:#35C993; --warn:#F2A93B; --bad:#FF6B6F; --deb:#4FD3D9; --deb-soft:#123B3F;
+  --line:#243052; --primary:#6F8BFF; --primary-soft:#1F2A52; --good:#35C993; --warn:#F2A93B; --bad:#FF6B6F; --deb:#4FD3D9; --deb-soft:#123B3F; --cred:#6F8BFF; --cred-soft:#1F2A52;
   --hero-a:#16224A; --hero-b:#2B48C9; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
 }}
 :root[data-theme="dark"]{
   --bg:#0A1022; --surface:#121A31; --surface-2:#18213B; --ink:#EEF1F8; --ink-2:#A9B1C7; --ink-3:#6F7894;
-  --line:#243052; --primary:#6F8BFF; --primary-soft:#1F2A52; --good:#35C993; --warn:#F2A93B; --bad:#FF6B6F; --deb:#4FD3D9; --deb-soft:#123B3F;
+  --line:#243052; --primary:#6F8BFF; --primary-soft:#1F2A52; --good:#35C993; --warn:#F2A93B; --bad:#FF6B6F; --deb:#4FD3D9; --deb-soft:#123B3F; --cred:#6F8BFF; --cred-soft:#1F2A52;
   --hero-a:#16224A; --hero-b:#2B48C9; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -270,7 +270,7 @@ button.stat:hover{background:var(--surface-2)}
 .sw-c[aria-pressed="true"]{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
 .sw-c[aria-pressed="true"] em{color:var(--ink)}
 .ttipo{display:inline-block;flex:none;box-sizing:border-box;width:60px;text-align:center;font-size:11px;font-weight:800;letter-spacing:.02em;line-height:1.5;padding:1px 6px;border-radius:6px;margin-right:8px;vertical-align:1px}
-.tt-credito{background:var(--primary-soft);color:var(--primary)}
+.tt-credito{background:var(--cred-soft);color:var(--cred)}
 .tt-debito{background:var(--deb-soft);color:var(--deb)}
 .tt-corriente,.tt-efectivo,.tt-otro{background:var(--surface-2);color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line)}
 .mopt .mnom,.picker .mnom{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -399,7 +399,7 @@ body.teclado nav.bottom,body.teclado .fab{display:none!important}
 .av.av-md svg{width:20px;height:20px}
 .av-tj .ttipo.tt-corriente,.av-tj .ttipo.tt-efectivo,.av-tj .ttipo.tt-otro{background:var(--surface)}
 .tj-nom b{flex:1;min-width:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tj-ic{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--primary-soft);color:var(--primary)}
+.tj-ic{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--cred-soft);color:var(--cred)}
 .tj-ic svg{width:17px;height:17px}
 .tj-ch{color:var(--ink-3);font-size:20px;line-height:1}
 .tj-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -607,7 +607,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="1.92";
+const APP_VERSION="1.93";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -2293,7 +2293,7 @@ const etqTipo=t=>`<span class="ttipo tt-${t in TIPO_ETQ?t:"otro"}">${TIPO_ETQ[t]
 /* medio de pago de un gasto: etiqueta + nombre de la tarjeta, o el medio genérico */
 function medioHTML(g){if(g.cuenta||g.cuentaId){const c=ctaDe(g);return `${etqTipo(c?c.tipo:"otro")}<span class="mnom">${esc(c?c.nombre:g.cuenta)}</span>`}return g.medio?`<span class="mnom">${esc(g.medio)}</span>`:""}
 const IC_TARJ='<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18M7 15h3"/>',IC_BANCO='<path d="M3 10h18M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18M12 3l9 5H3z"/>',IC_EFECT='<rect x="3" y="7" width="18" height="11" rx="2"/><circle cx="12" cy="12.5" r="2.5"/>';
-const icCuenta=(tipo,cls)=>`<div class="av av-tj ${cls||""}" style="background:${tipo==="debito"?"var(--deb-soft)":tipo==="credito"?"var(--primary-soft)":"var(--surface-2)"};color:${tipo==="debito"?"var(--deb)":tipo==="credito"?"var(--primary)":"var(--ink-2)"}">${I(tipo==="corriente"?IC_BANCO:tipo==="efectivo"?IC_EFECT:IC_TARJ)}${etqTipo(tipo)}</div>`;
+const icCuenta=(tipo,cls)=>`<div class="av av-tj ${cls||""}" style="background:${tipo==="debito"?"var(--deb-soft)":tipo==="credito"?"var(--cred-soft)":"var(--surface-2)"};color:${tipo==="debito"?"var(--deb)":tipo==="credito"?"var(--cred)":"var(--ink-2)"}">${I(tipo==="corriente"?IC_BANCO:tipo==="efectivo"?IC_EFECT:IC_TARJ)}${etqTipo(tipo)}</div>`;
 function opcionesMedio(sel){const l=cuentas();const g=(t,arr)=>arr.length?`<optgroup label="${t}">${arr.join("")}</optgroup>`:"";
   const o=(v,t)=>`<option value="${esc(v)}" ${v===sel?"selected":""}>${esc(t)}</option>`;
   const ORDEN={credito:0,debito:1,corriente:2,efectivo:3,otro:4};
