@@ -577,6 +577,17 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 .lista-prox .av-tj{margin-top:-9px}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 #lock .lk-tel{margin:4px 0 6px}
+
+/* 1.92 */
+.tj-nom .av-tj{margin-top:-8px}
+.lista-prox .day{width:28px;margin-right:-3px}
+.lista-prox .row .av{margin-left:2px;margin-right:5px}
+.lista-prox .day{display:flex;flex-direction:column;align-items:center;gap:0!important}
+.lista-prox .day b,.lista-prox .day span{margin:0!important;display:block}
+.lista-prox .day b{line-height:21.75px}
+.lista-prox .day span{line-height:18.125px}
+.hc-prom{position:absolute;top:-2px;left:8px;font-size:13px;font-weight:600;opacity:.85;pointer-events:none;z-index:1}
+.hc-prom i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px;vertical-align:1px;background:#7FD3FF}
 </style>
 </head>
 <body>
@@ -596,7 +607,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="1.91";
+const APP_VERSION="1.92";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -1044,7 +1055,7 @@ function heroData(modo){
 }
 function heroChart(modo){
   const W=600,H=160,P=12;const {data,cur,avg}=heroData(modo);
-  const max=Math.max(...data.map(x=>x.v),avg||0,1)*1.12;
+  const max=Math.max(...data.map(x=>x.v),avg||0,1)*(avg?1.3:1.12);
   const y=v=>H-8-(v/max)*(H-24);
   const pts=data.map((x,i)=>[P+i*(W-2*P)/(data.length-1),y(x.v)]);
   const line=smoothPath(pts),area=line+` L${pts.at(-1)[0]},${H} L${pts[0][0]},${H} Z`;
@@ -1062,8 +1073,8 @@ function heroChart(modo){
       <g id="hcDot"></g>
     </svg>
     <div class="xl">${data.map((x,i)=>(data.length-1-i)%step===0||i===0&&step===3?`<span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span>`:"").join("")}</div>
-    ${avg?`<div class="split" style="margin:0 8px;font-size:12px"><span><i style="background:#7FD3FF"></i>Promedio mensual ${clp(avg)}</span></div>`:""}
-    <div id="hcTip"></div></div>`,data,pts,W,cur};
+    ${avg?`<div class="hc-prom"><i></i>Promedio mensual ${clp(avg)}</div>`:""}
+    <div id="hcTip"></div></div>`,data,pts,W,cur,avg};
 }
 function bindHeroChart(ch){
   const el=$("#heroChart");if(!el)return;
@@ -1357,7 +1368,8 @@ function parseCorreo0(c){
       return {...base0,tipo:"compra",moneda:m[1]==="US$"?"USD":"CLP",monto:gmNum(m[2]),medio:/d[ée]bito|cuenta/i.test(t)&&!/cr[ée]dito/i.test(t)?"Débito":/cr[ée]dito/i.test(t)?"Crédito":"",banco:de.split("@")[1]||"",bk:"",comercio:com||as.slice(0,40),fecha:gmDMY(t)||fEmail,generico:true}}}
   return null}
 /* tarjeta: por banco (palabra en el nombre) y tipo; si hay más de una, queda sin especificar */
-function gmCuenta(x){if(!x.bk||!x.medio||x.medio==="Transferencia")return null;const tipos=MEDIO_A_TIPOS[x.medio]||[];
+function gmCuenta(x){if(x.dig){const t=MEDIO_A_TIPOS[x.medio]||[];const c=cuentas().find(c=>c.dig===x.dig&&(!t.length||t.includes(c.tipo)));if(c)return c}
+  if(!x.bk||!x.medio||x.medio==="Transferencia")return null;const tipos=MEDIO_A_TIPOS[x.medio]||[];
   const l=cuentas().filter(c=>tipos.includes(c.tipo)&&sinAcento(c.nombre).includes(x.bk));return l.length===1?l[0]:null}
 function gmSugerencia(x){const r=((state.config||{}).gmailReglas||{})[normN(x.persona).join(" ")];
   if(x.tipo==="compra"){const d=parseD(x.fecha),mb=toBaseEn(x.monto,x.moneda,x.fecha);
@@ -1370,6 +1382,8 @@ function gmSugerencia(x){const r=((state.config||{}).gmailReglas||{})[normN(x.pe
     if(g)return {t:`Parece el pago de ${g.nombre}, que ya está en tus fijos`,k:"fijo",g}}
   if(fOn("fCompartidos")&&x.persona){const p=saldosComp().map(s=>s.p).find(p=>normN(x.persona).includes(normN(p)[0]||"·"));if(p)return {t:x.tipo==="salida"?`¿Le pagaste a ${p}?`:`¿${p} te pagó?`,k:"comp",p}}
   return null}
+function aprenderDig(dig,cid){if(!dig||!cid)return;const c=cuentas().find(x=>x.id===cid);if(!c||c.dig||!["credito","debito","corriente"].includes(c.tipo))return;if(cuentas().some(x=>x.dig===dig))return;
+  state.cuentas=cuentas().map(x=>x.id===cid?{...x,dig}:x);setTimeout(()=>toast(`${c.nombre}: Luka la reconocerá por los dígitos ${dig}`),1600)}
 function gmMarcar(id,e){const v=gmVistos();v[id]={e,t:Date.now()};const lim=Date.now()-120*864e5;for(const k of Object.keys(v))if(v[k].t<lim)delete v[k];gmPend=gmPend.filter(x=>x.id!==id)}
 function gmailMarcar(id,e){gmMarcar(id,e);store.saveRegistro()}
 function gmPendientes(){return gmPend.filter(x=>!gmVistos()[x.id]&&(x.tipo!=="entrada"||fOn("fIngresos")))}
@@ -1381,7 +1395,8 @@ async function gmailRevisar(forzar){const g=gmCfg();if(!fOn("fGmail")||!g.url||!
     const l=(j.correos||[]).map(c=>{try{return parseCorreo(c)}catch(e){return null}}).filter(x=>x&&x.monto>0);
     /* reglas recordadas: se aplican solas */
     let cambio=false;l.forEach(x=>{if(gmVistos()[x.id])return;const sg=gmSugerencia(x);if(sg&&sg.k==="regla"&&sg.r.a==="no"){gmMarcar(x.id,"d");cambio=true}});
-    gmPend=l.sort((a,b)=>b.fecha.localeCompare(a.fecha));gmEstado="";meta.gmailOk=Date.now();meta.gmailError="";saveMeta();if(cambio)store.saveRegistro();
+    gmPend=l.sort((a,b)=>b.fecha.localeCompare(a.fecha));gmEstado="";
+    {const nuevos=l.filter(x=>!gmVistos()[x.id]);meta.gmailDiag={n:(j.correos||[]).length,rec:l.length,vistos:l.length-nuevos.length,ocultos:nuevos.filter(x=>x.tipo==="entrada"&&!fOn("fIngresos")).length,t:Date.now()}}meta.gmailOk=Date.now();meta.gmailError="";saveMeta();if(cambio)store.saveRegistro();
   }catch(e){gmEstado="";meta.gmailError=e.message==="clave"?"El script no aceptó la clave. Vuelve a configurarlo.":"No se pudo revisar tu correo. Revisa tu conexión o la configuración.";saveMeta()}
   if(["inicio","ajustes"].includes(ui.tab)&&!sheetAbierta())render()}
 const MEDIO_TXT=x=>[x.medio,x.banco].filter(Boolean).join(" · ");
@@ -1392,7 +1407,7 @@ function cardPend(){if(!fOn("fGmail"))return "";const l=gmPendientes();if(!l.len
     <ul class="list">${l.slice(0,4).map(filaPend).join("")}</ul>${l.length>4?`<button class="linkbtn" data-pendtodos>Ver todos (${l.length})</button>`:""}</section>`}
 function openPendTodos(){const l=gmPendientes();openSheet(`<div id="pendSheet"><h3 style="margin:0 0 4px;font-size:20px">Por confirmar</h3><p class="sub" style="margin:0 0 10px">${l.length} movimientos detectados en tu correo</p><ul class="list">${l.map(filaPend).join("")}</ul></div>`)}
 function gmPlantilla(x){const c=gmCuenta(x),cat=categoriaSugerida(x.comercio);
-  return {_gmail:x.id,_cambio:true,notas:x.hora?`Hora: ${x.hora}`:"",descripcion:x.comercio,monto:x.monto,moneda:x.moneda,fecha:x.fecha,cuotas:x.cuotas||1,medio:x.medio||lastVar.medio,cuenta:c?c.nombre:"",cuentaId:c?c.id:"",categoria:cat||undefined}}
+  return {_gmail:x.id,_dig:x.dig||"",_cambio:true,notas:x.hora?`Hora: ${x.hora}`:"",descripcion:x.comercio,monto:x.monto,moneda:x.moneda,fecha:x.fecha,cuotas:x.cuotas||1,medio:x.medio||lastVar.medio,cuenta:c?c.nombre:"",cuentaId:c?c.id:"",categoria:cat||undefined}}
 function abrirPend(id){const x=gmPend.find(y=>y.id===id);if(!x)return;
   if(x.tipo==="compra"){openVarForm(null,null,gmPlantilla(x));return}
   const sg=gmSugerencia(x),nom=normN(x.persona).join(" ");
@@ -1463,6 +1478,7 @@ function openGmailSetup(nuevo){gmSetupNuevo=!!nuevo;const g=gmCfg();const key=g.
     <li>En <b>Configuración del proyecto</b> (⚙), marca <b>Mostrar el archivo de manifiesto «appsscript.json»</b>. Vuelve al editor, abre ese archivo, borra su contenido y pega este otro: <button class="btn-s" type="button" data-gmcopia="manif" style="padding:4px 10px;font-size:13px">Copiar permisos</button><br>Así el script solo puede <b>leer</b> tu correo.</li>
     <li>Toca <b>Implementar › Nueva implementación</b>, elige <b>Aplicación web</b> y toca <b>Implementar</b>. Google te pedirá permiso: si dice que la app no está verificada, toca <b>Configuración avanzada</b> y luego <b>Ir a…</b>. Es normal: el script es tuyo y corre solo en tu cuenta.</li>
     <li>Copia la <b>URL de la aplicación web</b> y pégala aquí:</li></ol>
+  ${g.url&&meta.gmailDiag?`<p class="sub" style="margin:0 0 12px;padding:10px 12px;background:var(--surface-2);border-radius:12px">Última revisión (${fechaGuardado(meta.gmailDiag.t)}): ${meta.gmailDiag.n} correo${meta.gmailDiag.n===1?"":"s"} de los últimos 30 días, ${meta.gmailDiag.rec} reconocido${meta.gmailDiag.rec===1?"":"s"}${meta.gmailDiag.vistos?`, ${meta.gmailDiag.vistos} ya confirmado${meta.gmailDiag.vistos===1?"":"s"} o descartado${meta.gmailDiag.vistos===1?"":"s"}`:""}${meta.gmailDiag.ocultos?`, ${meta.gmailDiag.ocultos} oculto${meta.gmailDiag.ocultos===1?"":"s"} porque Ingresos y ahorro está apagado`:""}.</p>`:""}
   <form class="f" id="gmForm" onsubmit="return false"><label class="full">URL de la aplicación web<input name="url" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(g.url||"")}" placeholder="https://script.google.com/macros/s/…/exec"></label>
   <div class="full actions"><button class="btn-p grow" type="button" data-gmconectar>Conectar</button><button class="btn-s" type="button" data-close>Cancelar</button></div>
   ${g.url?`<div class="full"><button class="btn-d" type="button" data-gmquitar style="width:100%">Desconectar Gmail</button></div>`:""}</form>`)}
@@ -1774,7 +1790,8 @@ function viewGastos(){
   /* agrupa una lista de {g,...}: por periodicidad (todos los meses / no todos) o por categoría */
   const agrupar=(l,ord)=>{const gr={};l.forEach(x=>{const k=porPer?(x.g.estado==="Cancelada"?"c":x.g.estado==="Pausada"||per(x.g)!==1?"n":"m"):x.g.categoria;(gr[k]=gr[k]||[]).push(x)});
     const keys=porPer?["m","n","c"].filter(k=>gr[k]):CATS.filter(c=>gr[c]).concat(Object.keys(gr).filter(c=>!CATS.includes(c)));
-    keys.forEach(k=>gr[k].sort(ord));return keys.map(k=>({k,l:gr[k],titulo:porPer?(k==="m"?"Todos los meses":k==="c"?"Cancelados":"No todos los meses"):k,color:porPer?"var(--ink-2)":(CAT_COLOR[k]||"var(--ink-3)")}))};
+    keys.forEach(k=>gr[k].sort((a,b)=>{const pa=a.g.estado==="Pausada",pb=b.g.estado==="Pausada";if(pa!==pb)return pa?1:-1;
+      if(pa){const fa=a.g.proximoPago||"",fb=b.g.proximoPago||"";if(!!fa!==!!fb)return fa?-1:1;if(fa!==fb)return fa.localeCompare(fb)}return ord(a,b)}));return keys.map(k=>({k,l:gr[k],titulo:porPer?(k==="m"?"Todos los meses":k==="c"?"Cancelados":"No todos los meses"):k,color:porPer?"var(--ink-2)":(CAT_COLOR[k]||"var(--ink-3)")}))};
   const porDia=(a,b)=>(Number(a.g.dia)||1)-(Number(b.g.dia)||1)||a.g.nombre.localeCompare(b.g.nombre);
   const act=state.gastos.filter(g=>g.estado==="Activa");
   const hoyK=mkey(today),fk=ui.fmes||hoyK,fd=keyToDate(fk),esHoy=fk===hoyK,futuro=fk>hoyK,minK=mkey(addM(today,-12)),maxK=mkey(addM(today,12));
@@ -1932,13 +1949,16 @@ function openCuentaForm(id){const c=id?cuentas().find(x=>x.id===id):{nombre:"",t
   openSheet(`<h3 style="margin:0 0 12px;font-size:20px">${id?"Editar cuenta":"Nueva tarjeta o cuenta"}</h3><form class="f" id="ctaForm">
     <label class="full">Nombre<input name="nombre" required value="${esc(c.nombre)}" placeholder="Ej.: Visa Banco de Chile"></label>
     <label class="full">Tipo<select name="tipo" id="ctaTipo">${Object.entries(TIPOS_CTA).map(([k,l])=>`<option value="${k}" ${k===c.tipo?"selected":""}>${l}</option>`).join("")}</select></label>
+    <label class="full" id="ctaDigW">Últimos 4 dígitos (opcional)<input name="dig" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" value="${esc(c.dig||"")}" placeholder="Ej.: 1234"><span class="hint">Así Luka reconoce esta tarjeta en los avisos de tu banco.</span></label>
     <div class="full cta-dias" id="ctaDiaW">${campoDiaOpc("Día de facturación","diaFact",c.diaFact,"Cierra tu estado de cuenta")}${campoDiaOpc("Día de vencimiento","diaVenc",c.diaVenc,"Último día para pagar")}</div>
     ${id?`<p class="sub full" style="margin:0">${uso?`Usada en ${uso} gasto${uso===1?"":"s"}. Si la renombras, se actualizan todos.`:"Sin gastos asociados."}</p>`:""}
     <div class="full actions"><button class="btn-p grow" type="submit">Guardar</button>${id?`<button class="btn-d" type="button" data-cuenta-del="${id}">Eliminar</button>`:`<button class="btn-s" type="button" data-close>Cancelar</button>`}</div></form>`);
-  const ds=()=>{$("#ctaDiaW").style.display=$("#ctaTipo").value==="credito"?"":"none"};ds();$("#ctaTipo").addEventListener("change",ds);
+  const ds=()=>{const t=$("#ctaTipo").value;$("#ctaDiaW").style.display=t==="credito"?"":"none";$("#ctaDigW").style.display=["credito","debito","corriente"].includes(t)?"":"none"};ds();$("#ctaTipo").addEventListener("change",ds);
   prepararControles($("#ctaForm"));$("#ctaForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target);const n=f.get("nombre").trim();if(!n)return;
     if(cuentas().some(x=>x.nombre===n&&x.tipo===f.get("tipo")&&x.id!==id)){toast("Ya tienes una tarjeta o cuenta de ese tipo con ese nombre");return}
     const nuevo={id:id||uid("c"),nombre:n,tipo:f.get("tipo"),diaFact:f.get("tipo")==="credito"?(parseInt(f.get("diaFact"))||null):null,diaVenc:f.get("tipo")==="credito"?(parseInt(f.get("diaVenc"))||null):null};
+    const dg=String(f.get("dig")||"").replace(/\D/g,"");if(dg&&dg.length!==4){toast("Escribe los últimos 4 dígitos, o deja el campo vacío");return}
+    if(dg&&["credito","debito","corriente"].includes(nuevo.tipo))nuevo.dig=dg;
     if(id&&c.nombre!==n){const fx=x=>idDe(x)===id?{...x,cuenta:n,cuentaId:id}:x;state.gastos=state.gastos.map(fx);state.archivados=archivados().map(fx);for(const k of Object.keys(state.vars))state.vars[k]=state.vars[k].map(fx)}
     state.cuentas=id?cuentas().map(x=>x.id===id?nuevo:x):[...cuentas(),nuevo];store.saveRegistro();closeSheet();render();toast(id?"Cuenta guardada":"Cuenta agregada")})}
 function cardCategorias(){const nv=VCATS.length,nf=CATS.length;
@@ -2067,7 +2087,7 @@ function openForm(id,pre){
   const p=per(g),pSel=PERIODOS.some(x=>x[0]===p)?p:"x",prox=proximoMesCobro(g);
   const mesesOpc=Array.from({length:24},(_,i)=>addM(today,i)).map(d=>`<option value="${mkey(d)}" ${mkey(d)===mkey(prox)?"selected":""}>${MESES[d.getMonth()]} ${d.getFullYear()}</option>`).join("");
   openSheet(`${id?"":selTipo("fijo")}<h3 style="margin:0 0 14px;font-size:20px">${id?"Editar gasto fijo":"Nuevo gasto fijo"}</h3>
-  <form class="f" id="gForm" data-nuevo="${id?"":"1"}" ${pre&&pre._gmail?`data-gmail="${esc(pre._gmail)}" data-fecha="${esc(pre._fecha||"")}"`:""}>
+  <form class="f" id="gForm" data-nuevo="${id?"":"1"}" ${pre&&pre._gmail?`data-gmail="${esc(pre._gmail)}" data-fecha="${esc(pre._fecha||"")}" data-dig="${esc(pre._dig||"")}"`:""}>
     ${campoMonto("valor",g.valor,g.moneda||base())}
     <label class="full">Nombre<input name="nombre" required value="${esc(g.nombre)}" placeholder="Ej.: Netflix"></label>
     <label>Categoría<select name="categoria">${opt(CATS,g.categoria)}</select></label>
@@ -2112,7 +2132,7 @@ function openForm(id,pre){
     if(fOn("fCompartidos")){const pg=f.get("pagador")||"";if(pg&&obj.comparten.includes(pg))obj.pagador=pg}else if(id){const ant=state.gastos.find(x=>x.id===id);if(ant&&ant.pagador)obj.pagador=ant.pagador}
     if(id){const ant=state.gastos.find(x=>x.id===id);versionar(ant,obj,mkey(today),!!f.get("corregir"))}
     state.gastos=id?state.gastos.map(x=>x.id===id?obj:x):[...state.gastos,obj];
-    if(!id&&pre&&pre._gmail)gmMarcar(pre._gmail,"a");
+    if(!id&&pre&&pre._gmail){aprenderDig(pre._dig,obj.cuentaId);gmMarcar(pre._gmail,"a")}
     store.saveRegistro();closeSheet();render();toast(id?"Cambios guardados":"Gasto fijo agregado");});
 }
 
@@ -2144,14 +2164,14 @@ function openVarDetail(id,mes){
 let lastVar={categoria:"Supermercado",medio:"Débito",cuenta:"",moneda:null};
 const selTipo=act=>`<div class="seg light seg-tipo" role="group" aria-label="Tipo de gasto"><button type="button" data-switch="var" aria-pressed="${act==="var"}">Variable</button><button type="button" data-switch="fijo" aria-pressed="${act==="fijo"}">Fijo</button></div><p class="tipo-hint">${act==="var"?"Lo que compras en el día a día: supermercado, salidas, transporte.":"Lo que se cobra solo cada cierto tiempo: arriendo, cuentas, suscripciones, seguros."}</p>`;
 function cambiarTipo(a){const fv=$("#vForm"),fg=$("#gForm");swapDir=a==="fijo"?"sw-l":"sw-r";
-  if(a==="fijo"&&fv){const f=new FormData(fv);const mp=leerMedio(f.get("mp"));openForm(null,{nombre:(f.get("descripcion")||"").trim(),valor:numIn(f.get("monto"))||"",moneda:f.get("moneda")||base(),medio:mp.medio,cuenta:mp.cuenta,cuentaId:mp.cuentaId,notas:(f.get("notas")||"").trim(),_gmail:fv.dataset.gmail||"",_fecha:f.get("fecha")||""})}
-  else if(a==="var"&&fg){const f=new FormData(fg);const mp=leerMedio(f.get("mp"));const gm=fg.dataset.gmail||"";openVarForm(null,null,{descripcion:(f.get("nombre")||"").trim(),monto:numIn(f.get("valor"))||"",moneda:f.get("moneda")||base(),medio:mp.medio,cuenta:mp.cuenta,cuentaId:mp.cuentaId,_cambio:1,...(gm?{_gmail:gm,fecha:fg.dataset.fecha||"",notas:(f.get("notas")||"").trim()}:{})})}}
+  if(a==="fijo"&&fv){const f=new FormData(fv);const mp=leerMedio(f.get("mp"));openForm(null,{nombre:(f.get("descripcion")||"").trim(),valor:numIn(f.get("monto"))||"",moneda:f.get("moneda")||base(),medio:mp.medio,cuenta:mp.cuenta,cuentaId:mp.cuentaId,notas:(f.get("notas")||"").trim(),_gmail:fv.dataset.gmail||"",_fecha:f.get("fecha")||"",_dig:fv.dataset.dig||""})}
+  else if(a==="var"&&fg){const f=new FormData(fg);const mp=leerMedio(f.get("mp"));const gm=fg.dataset.gmail||"";openVarForm(null,null,{descripcion:(f.get("nombre")||"").trim(),monto:numIn(f.get("valor"))||"",moneda:f.get("moneda")||base(),medio:mp.medio,cuenta:mp.cuenta,cuentaId:mp.cuentaId,_cambio:1,...(gm?{_gmail:gm,_dig:fg.dataset.dig||"",fecha:fg.dataset.fecha||"",notas:(f.get("notas")||"").trim()}:{})})}}
 function openVarForm(id,mes,plantilla){
   const v=id?findVar(id,mes):{cuotas:plantilla?._gmail?(plantilla.cuotas||1):1,grupos:[],descripcion:plantilla?.descripcion||"",categoria:plantilla?.categoria||lastVar.categoria,monto:plantilla?.monto??"",moneda:plantilla?.moneda||lastVar.moneda||baseMon(),fecha:plantilla?._gmail&&plantilla.fecha?plantilla.fecha:iso(today),medio:plantilla?.medio||lastVar.medio,cuenta:plantilla?.cuenta??lastVar.cuenta,cuentaId:plantilla?plantilla.cuentaId:lastVar.cuentaId,notas:plantilla?._gmail?(plantilla.notas||""):""};
   const frec=id||(plantilla&&(!plantilla._cambio||plantilla._gmail))?[]:frecuentes();
   openSheet(`${id?"":selTipo("var")}<h3 style="margin:0 0 14px;font-size:20px">${id?"Editar gasto variable":"Nuevo gasto variable"}</h3>
   ${frec.length?`<div class="chips" style="margin:-4px 0 14px" aria-label="Gastos frecuentes">${frec.map((x,i)=>`<button type="button" class="chip frec" data-frec="${i}"><i style="display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px;background:${VCAT_COLOR[x.categoria]||VCAT_COLOR.Otro}"></i>${esc(x.descripcion)}</button>`).join("")}</div>`:""}
-  <form class="f" id="vForm" data-nuevo="${id?"":"1"}" ${plantilla?._gmail?`data-gmail="${esc(plantilla._gmail)}"`:""}>
+  <form class="f" id="vForm" data-nuevo="${id?"":"1"}" ${plantilla?._gmail?`data-gmail="${esc(plantilla._gmail)}" data-dig="${esc(plantilla._dig||"")}"`:""}>
     ${campoMonto("monto",v.monto,v.moneda||baseMon())}
     <label class="full">Descripción<input name="descripcion" list="descList" autocomplete="off" value="${esc(v.descripcion)}" placeholder="Ej.: Jumbo, almuerzo, Uber"><datalist id="descList">${descripcionesConocidas().map(d=>`<option value="${esc(d)}">`).join("")}</datalist><span class="hint" id="sugCat"></span></label>
     <fieldset class="full" style="border:0;padding:0;margin:0"><legend style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px">Categoría</legend>
@@ -2191,7 +2211,7 @@ function openVarForm(id,mes,plantilla){
     const mm=movsMes(nk).filter(x=>x.v.id!==id);const antes={cat:mm.filter(x=>x.v.categoria===obj.categoria).reduce((a,x)=>a+x.m,0),tot:mm.reduce((a,x)=>a+x.m,0)};
     if(id&&mes!==nk){state.vars[mes]=(state.vars[mes]||[]).filter(x=>x.id!==id);if(!state.vars[mes].length)delete state.vars[mes];store.saveMes(mes)}
     const list=state.vars[nk]||[];state.vars[nk]=id&&mes===nk?list.map(x=>x.id===id?obj:x):[...list,obj];
-    store.saveMes(nk);if(plantilla&&plantilla._regla)state.config={...(state.config||{}),gmailReglas:{...((state.config||{}).gmailReglas||{}),[plantilla._regla]:{a:"gasto",cat:obj.categoria}}};if(plantilla&&plantilla._gmail)gmailMarcar(plantilla._gmail,"a");lastVar={categoria:obj.categoria,medio:obj.medio,cuenta:obj.cuenta,cuentaId:obj.cuentaId,moneda:null};
+    store.saveMes(nk);if(plantilla&&plantilla._regla)state.config={...(state.config||{}),gmailReglas:{...((state.config||{}).gmailReglas||{}),[plantilla._regla]:{a:"gasto",cat:obj.categoria}}};if(plantilla&&plantilla._gmail){aprenderDig(plantilla._dig,obj.cuentaId);gmailMarcar(plantilla._gmail,"a")}lastVar={categoria:obj.categoria,medio:obj.medio,cuenta:obj.cuenta,cuentaId:obj.cuentaId,moneda:null};
     closeSheet();render();
     const alertas=avisoPresupuesto(obj.categoria,nk,antes);
     if(alertas.length)openSheet(`<h3 style="margin:0 0 10px">${alertas.some(a=>a.startsWith("Te pasaste"))?"Presupuesto superado":"Atención con el presupuesto"}</h3>${alertas.map(a=>`<p style="margin:0 0 8px">${esc(a)}</p>`).join("")}<div class="actions"><button class="btn-p grow" data-close>Entendido</button><button class="btn-s" data-close data-tab="mov">Ver presupuestos</button></div>`);
@@ -2681,7 +2701,9 @@ async function doRestore(){
 function pintarOjo(){const b=$("#eyeBtn");if(!b)return;
   b.setAttribute("aria-label",ui.oculto?"Mostrar montos":"Ocultar montos");b.setAttribute("aria-pressed",String(ui.oculto));
   b.innerHTML=ui.oculto?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.3 4M6.6 6.6A17 17 0 0 0 2 12s4 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>':'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'}
-function irPestana(t){const i=TABS.findIndex(x=>x.id===ui.tab),j=TABS.findIndex(x=>x.id===t);ui.tab=t;render();window.scrollTo({top:0});
+let posAjustes=null;
+function irPestana(t){const i=TABS.findIndex(x=>x.id===ui.tab),j=TABS.findIndex(x=>x.id===t);if(ui.tab==="ajustes"&&t!=="ajustes")posAjustes={y:window.scrollY,t:Date.now()};ui.tab=t;render();
+  if(t==="ajustes"&&posAjustes&&Date.now()-posAjustes.t<=30000)window.scrollTo({top:posAjustes.y});else window.scrollTo({top:0});
   if(i<0||j<0||i===j)return;const v=$("#view");v.classList.remove("slide-l","slide-r");void v.offsetWidth;v.classList.add(j>i?"slide-l":"slide-r")}
 function renderBanner(){
   const el=$("#banner");if(!el)return;const hay=state.gastos.length||Object.keys(state.vars).length;let html="";
