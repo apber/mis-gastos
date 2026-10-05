@@ -607,7 +607,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="1.95";
+const APP_VERSION="1.96";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -717,7 +717,8 @@ const CAMPOS_VER=["valor","moneda","descuento","personas","periodo","modalidad",
 const archivados=()=>state.archivados||(state.archivados=[]);
 function versionEn(g,k){if(g.desde&&k<g.desde)return null;if(g.fin&&k>=g.fin)return null;
   const cur={...g,desde:g.vdesde||null};const l=[...(g.hist||[]),cur];
-  for(let i=l.length-1;i>=0;i--){if(!l[i].desde||l[i].desde<=k)return l[i]}return l[0]}
+  const ver=s=>{if(s===cur)return s;const o={...g};CAMPOS_VER.forEach(c=>delete o[c]);return {...o,...s}};
+  for(let i=l.length-1;i>=0;i--){if(!l[i].desde||l[i].desde<=k)return ver(l[i])}return ver(l[0])}
 const cobradoYa=g=>{const d=Math.min(Number(g.dia)||1,eom(today).getDate());return today.getDate()>=d&&cobraEnMes(g,today)};
 /* guarda la versión anterior si cambió algo que afecta el monto; desde = mes en que rige lo nuevo */
 function versionar(ant,nuevo,desde,corregir){
@@ -785,7 +786,7 @@ function proximos(nMeses=12){
 const LS="mis-gastos-v1",LSMETA="mis-gastos-meta";
 let meta={ultimoRespaldo:""};
 function initStore(){
-  try{const r=localStorage.getItem(LS);if(r){const d=JSON.parse(r);state={gastos:d.gastos||[],tasas:d.tasas||state.tasas,vars:d.vars||{},presupuestos:d.presupuestos||{},config:d.config||{},cuentas:d.cuentas,categorias:d.categorias,grupos:d.grupos||[],archivados:d.archivados||[],tasasDia:d.tasasDia||{},ingresos:d.ingresos||{fijos:[],extra:{}},compPagos:d.compPagos||[],gmailVistos:d.gmailVistos||{},modificado:d.modificado||0}}}catch(e){}
+  try{const r=localStorage.getItem(LS);if(r){const d=JSON.parse(r);state={gastos:d.gastos||[],tasas:d.tasas||state.tasas,vars:d.vars||{},presupuestos:d.presupuestos||{},config:d.config||{},cuentas:d.cuentas,categorias:d.categorias,grupos:d.grupos||[],archivados:d.archivados||[],tasasDia:d.tasasDia||{},ingresos:d.ingresos||{fijos:[],extra:{}},compPagos:d.compPagos||[],pagosTc:d.pagosTc||[],gmailVistos:d.gmailVistos||{},modificado:d.modificado||0}}}catch(e){}
   migrarCuentas();if(migrarCuentaIds())guardarLocal();if(migrarPlan())guardarLocal();aplicarCategorias();
   try{const m=localStorage.getItem(LSMETA);if(m)meta={...meta,...JSON.parse(m)}}catch(e){}
   borrarBaseAntigua();
@@ -1198,7 +1199,7 @@ function openIngForm(id,mes,tipoIni,montoPrev,pre){
     ${id?`<div class="full"><button class="btn-d" type="button" data-ingdel="${id}" data-mes="${mes||""}" style="width:100%">Eliminar ingreso</button></div>`:""}
   </form>`);
   const fm=$("#iForm");vigilarMoneda(fm);prepararControles(fm);
-  document.querySelectorAll("[data-ingtipo]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.ingtipo===tipo)return;openIngForm(null,null,b.dataset.ingtipo,fm.monto.dataset.raw?numIn(fm.monto.value):"")}));
+  document.querySelectorAll("[data-ingtipo]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.ingtipo===tipo)return;swapDir=b.dataset.ingtipo==="fijo"?"sw-r":"sw-l";openIngForm(null,null,b.dataset.ingtipo,fm.monto.dataset.raw?numIn(fm.monto.value):"",{nombre:(fm.nombre.value||"").trim()})}));
   if(!id)setTimeout(()=>abrirKP($("#iForm [name=monto]")),120);
   fm.addEventListener("submit",e=>{e.preventDefault();cerrarKP();const f=new FormData(fm);const monto=numIn(f.get("monto"));
     if(!(monto>0)){toast("Ingresa un monto mayor que cero");return}
@@ -1351,6 +1352,17 @@ function parseCorreo0(c){
   if(de.endsWith("bancochile.cl")&&/transferencia a terceros/i.test(as+" "+t)){
     const monto=linea(t,/Monto\s*\$\s?([\d.,]+)/i),dest=linea(t,/Nombre y Apellido\s*([^\n]+)/i);
     if(monto)return {...base0,tipo:"salida",moneda:"CLP",monto:gmNum(monto),medio:"Transferencia",banco:"Banco de Chile",bk:"chile",persona:dest,comercio:dest?`Transferencia a ${dest}`:"Transferencia",fecha:gmFechaLarga(t)||fEmail}}
+  if(de.endsWith("bancochile.cl")&&/pago de (la )?tarjeta de cr[ée]dito/i.test(as+" "+t)){
+    const monto=linea(t,/\n\s*Monto\s*\$\s?([\d.,]+)/i),dig=linea(t,/N[°º]\s*de tarjeta\s*\**\s*(\d{4})/i),ori=linea(t,/Tipo de cuenta\s*([^\n]+)/i);
+    if(monto)return {...base0,tipo:"pagotc",moneda:"CLP",monto:gmNum(monto),medio:"Crédito",banco:"Banco de Chile",bk:"chile",dig,origen:ori?`${ori} Banco de Chile`:"",comercio:"Pago de tarjeta de crédito",fecha:gmFechaLarga(t)||fEmail,hora:gmHora(linea(t,/Fecha y Hora:?\s*([^\n]*\d{1,2}:\d{2}[^\n]*)/i))}}
+  if(de.endsWith("bancochile.cl")&&/efectuado una transferencia de fondos a/i.test(t)){
+    const monto=linea(t,/\n\s*Monto\s*\$\s?([\d.,]+)/i),dest=linea(t,/\n\s*Nombre\s+([^\n]+)/i)||linea(t,/transferencia de fondos a\s+(.+?),/i),idt=linea(t,/\n\s*ID\s+(\S+)/);
+    const fecha=gmDMY(linea(t,/\n\s*Fecha\s+([\d\/-]+)/i))||gmFechaLarga(t)||fEmail,hm=idt.match(/^[A-Z_]*?(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);
+    const hora=hm&&`20${hm[1]}-${hm[2]}-${hm[3]}`===fecha&&Number(hm[4])<24&&Number(hm[5])<60?`${hm[4]}:${hm[5]}`:"";
+    if(monto)return {...base0,tipo:"salida",moneda:"CLP",monto:gmNum(monto),medio:"Transferencia",banco:"Banco de Chile",bk:"chile",persona:dest,bancoDest:linea(t,/\n\s*Banco\s+([^\n]+)/i),mailDest:linea(t,/\n\s*Mail\s+([^\n]+)/i),origen:(linea(t,/desde su (Cuenta [A-Za-záéíóú ]+?)\s*[\dx*]/i)||"Cuenta")+" Banco de Chile",comercio:dest?`Transferencia a ${dest}`:"Transferencia",fecha,hora}}
+  if(de.endsWith("tenpo.cl")&&/pago (de|a) (tu )?tarjeta de cr[ée]dito|pago que realizaste/i.test(as+" "+t)){
+    const monto=linea(t,/Monto transacci[óo]n:?\s*\$\s?([\d.,]+)/i)||linea(t,/pago que realizaste por \$\s?([\d.,]+)/i);
+    if(monto)return {...base0,tipo:"pagotc",moneda:"CLP",monto:gmNum(monto),medio:"Crédito",banco:"Tenpo",bk:"tenpo",dig:"",origen:linea(t,/Medio de pago:?\s*([^\n]+)/i),comercio:"Pago de tarjeta de crédito",fecha:gmDMY(linea(t,/Fecha:?\s*([\d\/-]+)/i))||fEmail,hora:gmHora(linea(t,/Hora:?\s*([\d:]+)/i))}}
   if(de.endsWith("tenpo.cl")&&/compra por/i.test(t)){
     const m=t.match(/compra por (US\$|\$)\s?([\d.,]+) con tu tarjeta de (cr[ée]dito|d[ée]bito)/i);
     if(m)return {...base0,tipo:"compra",moneda:m[1]==="US$"?"USD":"CLP",monto:gmNum(m[2]),medio:/cr/i.test(m[3])?"Crédito":"Débito",banco:"Tenpo",bk:"tenpo",comercio:linea(t,/Comercio:\s*([^\n]+)/i)||"Compra Tenpo",cuotas:parseInt(linea(t,/Cuotas:\s*(\d+)/i))||1,fecha:gmDMY(linea(t,/Fecha:\s*([\d-\/]+)/i))||fEmail,hora:gmHora(linea(t,/Hora:\s*([\d:]+)/i))}}
@@ -1368,11 +1380,19 @@ function parseCorreo0(c){
     if(m){const com=linea(t,/\ben ([A-Z0-9][^\n]{1,40}?) (?:el|del|con)\b/);
       return {...base0,tipo:"compra",moneda:m[1]==="US$"?"USD":"CLP",monto:gmNum(m[2]),medio:/d[ée]bito|cuenta/i.test(t)&&!/cr[ée]dito/i.test(t)?"Débito":/cr[ée]dito/i.test(t)?"Crédito":"",banco:de.split("@")[1]||"",bk:"",comercio:com||as.slice(0,40),fecha:gmDMY(t)||fEmail,generico:true}}}
   return null}
+/* un pago de tarjeta puede llegar en dos correos: la transferencia desde tu banco y el comprobante del emisor de la tarjeta */
+const gmMin=h=>{const m=String(h||"").match(/^(\d{2}):(\d{2})/);return m?Number(m[1])*60+Number(m[2]):null};
+function gmJuntar(l){const usados=new Set();
+  l.filter(x=>x.tipo==="pagotc").forEach(p=>{const s=l.find(x=>x.tipo==="salida"&&!usados.has(x.id)&&Math.abs(x.monto-p.monto)<1&&Math.abs(parseD(x.fecha)-parseD(p.fecha))<=864e5
+      &&(gmMin(x.hora)==null||gmMin(p.hora)==null||Math.abs(gmMin(x.hora)-gmMin(p.hora))<=60)&&sinAcento([x.bancoDest,x.persona,x.mailDest].join(" ")).includes(p.bk));
+    if(s){usados.add(s.id);p.ids=[p.id,s.id];p.origen=s.origen||s.banco;p.via=p.origen&&p.origen!==s.origen?p.origen:"";if(!p.hora)p.hora=s.hora}});
+  return l.filter(x=>!usados.has(x.id))}
+const gmIds=x=>x.ids||[x.id];
 /* tarjeta: por banco (palabra en el nombre) y tipo; si hay más de una, queda sin especificar */
 function gmCuenta(x){if(x.dig){const t=MEDIO_A_TIPOS[x.medio]||[];const c=cuentas().find(c=>c.dig===x.dig&&(!t.length||t.includes(c.tipo)));if(c)return c}
   if(!x.bk||!x.medio||x.medio==="Transferencia")return null;const tipos=MEDIO_A_TIPOS[x.medio]||[];
   const l=cuentas().filter(c=>tipos.includes(c.tipo)&&sinAcento(c.nombre).includes(x.bk));return l.length===1?l[0]:null}
-function gmSugerencia(x){const r=((state.config||{}).gmailReglas||{})[normN(x.persona).join(" ")];
+function gmSugerencia(x){if(x.tipo==="pagotc")return {t:"Pago de tarjeta: no es un gasto",k:"pagotc"};const r=((state.config||{}).gmailReglas||{})[normN(x.persona).join(" ")];
   if(x.tipo==="compra"){const d=parseD(x.fecha),mb=toBaseEn(x.monto,x.moneda,x.fecha);
     const dup=Object.values(state.vars).flat().some(v=>Math.abs(vBase(v)-mb)<1&&Math.abs(parseD(v.fecha)-d)<=864e5*1.5);
     return dup?{t:"Posible duplicado: ya anotaste un gasto igual",k:"dup"}:null}
@@ -1385,24 +1405,25 @@ function gmSugerencia(x){const r=((state.config||{}).gmailReglas||{})[normN(x.pe
   return null}
 function aprenderDig(dig,cid){if(!dig||!cid)return;const c=cuentas().find(x=>x.id===cid);if(!c||c.dig||!["credito","debito","corriente"].includes(c.tipo))return;if(cuentas().some(x=>x.dig===dig))return;
   state.cuentas=cuentas().map(x=>x.id===cid?{...x,dig}:x);setTimeout(()=>toast(`${c.nombre}: Luka la reconocerá por los dígitos ${dig}`),1600)}
-function gmMarcar(id,e){const v=gmVistos();v[id]={e,t:Date.now()};const lim=Date.now()-120*864e5;for(const k of Object.keys(v))if(v[k].t<lim)delete v[k];gmPend=gmPend.filter(x=>x.id!==id)}
+function gmMarcar(id,e){const x=gmPend.find(y=>y.id===id),v=gmVistos();(x?gmIds(x):[id]).forEach(i=>v[i]={e,t:Date.now()});const lim=Date.now()-120*864e5;for(const k of Object.keys(v))if(v[k].t<lim)delete v[k];gmPend=gmPend.filter(x=>x.id!==id)}
 function gmailMarcar(id,e){gmMarcar(id,e);store.saveRegistro()}
-function gmPendientes(){return gmPend.filter(x=>!gmVistos()[x.id]&&(x.tipo!=="entrada"||fOn("fIngresos")))}
+function gmPendientes(){return gmPend.filter(x=>!gmIds(x).some(i=>gmVistos()[i])&&(x.tipo!=="entrada"||fOn("fIngresos")))}
 async function gmailRevisar(forzar){const g=gmCfg();if(!fOn("fGmail")||!g.url||!g.key||gmEstado==="cargando")return;if(!forzar&&Date.now()-gmUlt<180000)return;
   gmEstado="cargando";gmUlt=Date.now();
   try{const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),25000);
     const r=await fetch(`${g.url}${g.url.includes("?")?"&":"?"}k=${encodeURIComponent(g.key)}&d=30`,{signal:ctrl.signal,cache:"no-store",redirect:"follow"});clearTimeout(to);
     const j=await r.json();if(!j||!j.ok)throw new Error(j&&j.error==="clave"?"clave":"respuesta");
-    const l=(j.correos||[]).map(c=>{try{return parseCorreo(c)}catch(e){return null}}).filter(x=>x&&x.monto>0);
+    const l=gmJuntar((j.correos||[]).map(c=>{try{return parseCorreo(c)}catch(e){return null}}).filter(x=>x&&x.monto>0));
     /* reglas recordadas: se aplican solas */
-    let cambio=false;l.forEach(x=>{if(gmVistos()[x.id])return;const sg=gmSugerencia(x);if(sg&&sg.k==="regla"&&sg.r.a==="no"){gmMarcar(x.id,"d");cambio=true}});
+    let cambio=false;l.forEach(x=>{if(gmIds(x).some(i=>gmVistos()[i]))return;const sg=gmSugerencia(x);if(sg&&sg.k==="regla"&&sg.r.a==="no"){gmMarcar(x.id,"d");cambio=true}});
     gmPend=l.sort((a,b)=>b.fecha.localeCompare(a.fecha));gmEstado="";
-    {const nuevos=l.filter(x=>!gmVistos()[x.id]);meta.gmailDiag={n:(j.correos||[]).length,rec:l.length,vistos:l.length-nuevos.length,ocultos:nuevos.filter(x=>x.tipo==="entrada"&&!fOn("fIngresos")).length,t:Date.now()}}meta.gmailOk=Date.now();meta.gmailError="";saveMeta();if(cambio)store.saveRegistro();
+    {const nuevos=l.filter(x=>!gmIds(x).some(i=>gmVistos()[i]));meta.gmailDiag={n:(j.correos||[]).length,rec:l.length,vistos:l.length-nuevos.length,ocultos:nuevos.filter(x=>x.tipo==="entrada"&&!fOn("fIngresos")).length,t:Date.now()}}meta.gmailOk=Date.now();meta.gmailError="";saveMeta();if(cambio)store.saveRegistro();
   }catch(e){gmEstado="";meta.gmailError=e.message==="clave"?"El script no aceptó la clave. Vuelve a configurarlo.":"No se pudo revisar tu correo. Revisa tu conexión o la configuración.";saveMeta()}
   if(["inicio","ajustes"].includes(ui.tab)&&!sheetAbierta())render()}
 const MEDIO_TXT=x=>[x.medio,x.banco].filter(Boolean).join(" · ");
+const gmTarjeta=x=>{const c=gmCuenta(x);return c?c.nombre:`Tarjeta ${x.banco}`};
 function filaPend(x){const sg=gmSugerencia(x);
-  return `<li class="pend-li"><button class="row btn" data-pend="${esc(x.id)}"><div class="av av-mail">${ICO_MAIL}</div><div class="mid"><div class="t">${esc(x.comercio)}</div><div class="s">${parseD(x.fecha).getDate()} ${MES3(parseD(x.fecha).getMonth()).toLowerCase()}${x.medio?" · "+esc(x.medio):""}${sg?`<span class="pend-sug ${sg.k==="regla"||sg.k==="comp"?"ok":""}">${esc(sg.t)}</span>`:""}</div></div><div class="amt ${x.tipo==="entrada"?"saldo-pos":""}">${x.tipo==="entrada"?"+":""}${x.moneda!=="CLP"?montoOrig(x.monto,x.moneda):clp(x.monto)}</div></button><button class="ibtn pend-x" data-pendx="${esc(x.id)}" aria-label="Descartar">×</button></li>`}
+  return `<li class="pend-li"><button class="row btn" data-pend="${esc(x.id)}"><div class="av av-mail">${ICO_MAIL}</div><div class="mid"><div class="t">${esc(x.tipo==="pagotc"?`Pago ${gmTarjeta(x)}`:x.comercio)}</div><div class="s">${parseD(x.fecha).getDate()} ${MES3(parseD(x.fecha).getMonth()).toLowerCase()}${x.medio?" · "+esc(x.medio):""}${sg?`<span class="pend-sug ${sg.k==="regla"||sg.k==="comp"?"ok":""}">${esc(sg.t)}</span>`:""}</div></div><div class="amt ${x.tipo==="entrada"?"saldo-pos":""}">${x.tipo==="entrada"?"+":""}${x.moneda!=="CLP"?montoOrig(x.monto,x.moneda):clp(x.monto)}</div></button><button class="ibtn pend-x" data-pendx="${esc(x.id)}" aria-label="Descartar">×</button></li>`}
 function cardPend(){if(!fOn("fGmail"))return "";const l=gmPendientes();if(!l.length)return "";
   return `<section class="card"><div class="card-head"><div>${t2("Por confirmar","gmail")}<p class="sub">${l.length===1?"1 movimiento detectado en tu correo":`${l.length} movimientos detectados en tu correo`}</p></div></div>
     <ul class="list">${l.slice(0,4).map(filaPend).join("")}</ul>${l.length>4?`<button class="linkbtn" data-pendtodos>Ver todos (${l.length})</button>`:""}</section>`}
@@ -1411,6 +1432,11 @@ function gmPlantilla(x){const c=gmCuenta(x),cat=categoriaSugerida(x.comercio);
   return {_gmail:x.id,_dig:x.dig||"",_cambio:true,notas:x.hora?`Hora: ${x.hora}`:"",descripcion:x.comercio,monto:x.monto,moneda:x.moneda,fecha:x.fecha,cuotas:x.cuotas||1,medio:x.medio||lastVar.medio,cuenta:c?c.nombre:"",cuentaId:c?c.id:"",categoria:cat||undefined}}
 function abrirPend(id){const x=gmPend.find(y=>y.id===id);if(!x)return;
   if(x.tipo==="compra"){openVarForm(null,null,gmPlantilla(x));return}
+  if(x.tipo==="pagotc"){
+    openSheet(`<h3 style="margin:0 0 10px;font-size:20px">Pago de tarjeta de crédito</h3>
+    <div class="pend-det"><b>${clp(x.monto)}</b><span>${esc(gmTarjeta(x))}${x.dig?" ····"+esc(x.dig):""} · ${fmtD(x.fecha)}${x.hora?" · "+esc(x.hora):""}</span>${x.origen?`<span>Pagado desde ${esc(x.origen)}</span>`:""}${gmIds(x).length>1?`<span>Detectado en 2 correos: la transferencia y el comprobante de la tarjeta</span>`:""}<span class="pend-sug ok">No es un gasto: las compras con esta tarjeta ya se anotan una por una</span></div>
+    <div class="backup-actions" style="gap:8px;display:grid"><button class="btn-p" data-pendacc="pagotc" data-id="${esc(x.id)}">Es un pago de tarjeta</button><button class="btn-s" data-pendacc="gasto" data-id="${esc(x.id)}">Agregar como gasto</button></div>
+    <div class="actions" style="margin-top:10px"><button class="btn-s grow" data-close>Decidir después</button></div>`);return}
   const sg=gmSugerencia(x),nom=normN(x.persona).join(" ");
   const btns=[];
   if(x.tipo==="salida"){
@@ -1430,6 +1456,9 @@ function abrirPend(id){const x=gmPend.find(y=>y.id===id);if(!x)return;
 function accionPend(acc,id,persona){const x=gmPend.find(y=>y.id===id);if(!x)return;const rec=$("#pendRecordar")&&$("#pendRecordar").checked,nom=normN(x.persona).join(" ");
   const regla=a=>{if(rec&&nom){state.config={...(state.config||{}),gmailReglas:{...((state.config||{}).gmailReglas||{}),[nom]:a}}}};
   if(acc==="no"){regla({a:"no"});gmMarcar(id,"d");store.saveRegistro();closeSheet();render();toast(x.tipo==="entrada"?"Marcado: no es un ingreso":"Marcado: no es un gasto");return}
+  if(acc==="pagotc"){const c=gmCuenta(x);if(c&&x.dig)aprenderDig(x.dig,c.id);
+    state.pagosTc=[...(state.pagosTc||[]),{id:uid("t"),fecha:x.fecha,hora:x.hora||"",monto:x.monto,cuentaId:c?c.id:"",tarjeta:c?c.nombre:x.banco,dig:x.dig||"",origen:x.origen||"",correos:gmIds(x)}];
+    gmMarcar(id,"t");store.saveRegistro();closeSheet();render();toast("Pago de tarjeta registrado");return}
   if(acc==="lepague"||acc==="mepago"){state.compPagos=[...compPagos(),{id:uid("p"),persona,monto:x.monto,dir:acc==="mepago"?"recibi":"pague",fecha:x.fecha}];gmMarcar(id,"a");store.saveRegistro();closeSheet();render();toast(acc==="mepago"?`Pago de ${persona} registrado`:`Pago a ${persona} registrado`);return}
   if(acc==="ingreso"){closeSheet();setTimeout(()=>openIngForm(null,null,"ocasional",x.monto,{nombre:x.comercio,fecha:x.fecha,_gmail:x.id}),250);return}
   if(acc==="gasto"){const sg=gmSugerencia(x),pl={...gmPlantilla(x),medio:"Transferencia"};if(sg&&sg.k==="regla"&&sg.r.cat)pl.categoria=sg.r.cat;
@@ -2737,7 +2766,7 @@ async function dbxSubir(){
   if(sincronizando){scheduleSync();return}
   sincronizando=true;dbxEstado="subiendo";if(ui.tab==="ajustes")render();
   try{
-    const datos={app:"mis-gastos",version:1,modificado:state.modificado||Date.now(),gastos:state.gastos,vars:state.vars,presupuestos:state.presupuestos||{},config:state.config||{},cuentas:state.cuentas||[],categorias:state.categorias||null,grupos:state.grupos||[],archivados:state.archivados||[],tasasDia:state.tasasDia||{},ingresos:state.ingresos||{fijos:[],extra:{}},compPagos:state.compPagos||[],gmailVistos:state.gmailVistos||{}};
+    const datos={app:"mis-gastos",version:1,modificado:state.modificado||Date.now(),gastos:state.gastos,vars:state.vars,presupuestos:state.presupuestos||{},config:state.config||{},cuentas:state.cuentas||[],categorias:state.categorias||null,grupos:state.grupos||[],archivados:state.archivados||[],tasasDia:state.tasasDia||{},ingresos:state.ingresos||{fijos:[],extra:{}},compPagos:state.compPagos||[],pagosTc:state.pagosTc||[],gmailVistos:state.gmailVistos||{}};
     await dbxSubirArchivo(DBX_DATOS,new Blob([JSON.stringify(datos)],{type:"application/json"}));
     if(excelOn()&&window.JSZip){const blob=await generarExcel();await dbxSubirArchivo(DBX_EXCEL,blob);meta.ultimoRespaldo=iso(today);meta.ultimoRespaldoTs=Date.now()}
     meta.pendiente=false;meta.dbxUltima=Date.now();meta.dbxError="";
@@ -2753,7 +2782,7 @@ async function dbxBajar(forzar,subirSiempre){
     const r=await dbxBajarArchivo(DBX_DATOS);
     const remoto=r?await r.json():null;
     if(remoto&&remoto.app==="mis-gastos"&&(remoto.modificado||0)>(state.modificado||0)){
-      state={...state,gastos:remoto.gastos||[],vars:remoto.vars||{},presupuestos:remoto.presupuestos||state.presupuestos||{},config:remoto.config||state.config||{},cuentas:remoto.cuentas||state.cuentas||[],categorias:remoto.categorias||state.categorias||null,grupos:remoto.grupos||state.grupos||[],archivados:remoto.archivados||state.archivados||[],tasasDia:{...(remoto.tasasDia||{}),...(state.tasasDia||{})},ingresos:remoto.ingresos||state.ingresos||{fijos:[],extra:{}},compPagos:remoto.compPagos||state.compPagos||[],gmailVistos:{...(state.gmailVistos||{}),...(remoto.gmailVistos||{})},modificado:remoto.modificado};migrarPlan();migrarCuentaIds();aplicarCategorias();guardarLocal();meta.pendiente=false;
+      state={...state,gastos:remoto.gastos||[],vars:remoto.vars||{},presupuestos:remoto.presupuestos||state.presupuestos||{},config:remoto.config||state.config||{},cuentas:remoto.cuentas||state.cuentas||[],categorias:remoto.categorias||state.categorias||null,grupos:remoto.grupos||state.grupos||[],archivados:remoto.archivados||state.archivados||[],tasasDia:{...(remoto.tasasDia||{}),...(state.tasasDia||{})},ingresos:remoto.ingresos||state.ingresos||{fijos:[],extra:{}},compPagos:remoto.compPagos||state.compPagos||[],pagosTc:remoto.pagosTc||state.pagosTc||[],gmailVistos:{...(state.gmailVistos||{}),...(remoto.gmailVistos||{})},modificado:remoto.modificado};migrarPlan();migrarCuentaIds();aplicarCategorias();guardarLocal();meta.pendiente=false;
       meta.dbxUltima=Date.now();meta.dbxError="";saveMeta();toast("Datos actualizados desde Dropbox");
     }else if(!remoto||(state.modificado||0)>(remoto.modificado||0)||meta.pendiente){dbxEstado="";await dbxSubir();return}
     else{meta.dbxUltima=Date.now();meta.dbxError="";saveMeta()}
@@ -2911,7 +2940,7 @@ document.addEventListener("click",e=>{
   if(b.hasAttribute("data-gmconectar")){gmConectar();return}
   if(b.hasAttribute("data-gmquitar")){dialogo({titulo:"¿Desconectar Gmail?",texto:"Luka dejará de revisar tu correo. Para borrar el script, elimínalo en script.google.com.",botones:[{t:"Desconectar",c:"btn-d",fn:()=>{const c={...(state.config||{})};delete c.gmail;state.config=c;gmPend=[];store.saveRegistro();closeSheet();render();toast("Gmail desconectado")}},{t:"Cancelar",c:"btn-s"}]});return}
   if(d.pend){closeSheet();setTimeout(()=>abrirPend(d.pend),sheetAbierta()?250:0);return}
-  if(d.pendx){const id=d.pendx;gmMarcar(id,"d");store.saveRegistro();if($("#pendSheet")){if(gmPendientes().length)openPendTodos();else closeSheet()}render();toastDeshacer("Movimiento descartado",()=>{delete gmVistos()[id];gmailRevisar(true);store.saveRegistro();render()});return}
+  if(d.pendx){const id=d.pendx,ids=gmIds(gmPend.find(x=>x.id===id)||{id});gmMarcar(id,"d");store.saveRegistro();if($("#pendSheet")){if(gmPendientes().length)openPendTodos();else closeSheet()}render();toastDeshacer("Movimiento descartado",()=>{ids.forEach(i=>delete gmVistos()[i]);gmailRevisar(true);store.saveRegistro();render()});return}
   if(b.hasAttribute("data-pendtodos")){openPendTodos();return}
   if(d.pendacc){accionPend(d.pendacc,d.id,d.p);return}
   if(d.lockmet){const m=d.lockmet;closeSheet();setTimeout(()=>activarMetodo(m),250);return}
