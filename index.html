@@ -83,7 +83,7 @@ nav.bottom button[aria-current="true"]{color:var(--primary)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .stat{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--shadow);padding:14px}
 .stat b{display:block;font-size:19px;letter-spacing:-.02em}
-.stats .stat{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center!important;gap:4px;padding:14px 6px}
+.stats .stat{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center!important;gap:4px;padding:12px 6px}
 .stats .stat span{display:block;font-size:12px;line-height:1.35;text-wrap:balance}
 .stat span{font-size:12.5px;color:var(--ink-3);font-weight:500}
 /* Donut */
@@ -448,9 +448,18 @@ body.teclado nav.bottom,body.teclado .fab{display:none!important}
 .chiprow{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:3px 4px 3px 8px}
 .chiprow:focus-within{border-color:var(--primary)}
 .fp-info{margin:-6px 0 0!important;font-size:12.5px!important;color:var(--ink-2)!important}
-.f label.fpern{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fila-cuo{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start}
+.cuo-der{display:grid;gap:5px;justify-items:end}
+.cuo-tit{display:flex;align-items:center;gap:8px;height:18px;font-size:12.5px;font-weight:700;color:var(--ink-2);white-space:nowrap}
+.cuo-tit .switch{transform:scale(.8);margin:-6px -4px -6px 0}
+.cuo-campos{display:flex;align-items:center;gap:8px}.cuo-campos[hidden],.cuo-sin[hidden]{display:none}
+.cuo-campos input{width:60px!important;text-align:center;font-weight:700!important}.cuo-campos span{font-weight:600;color:var(--ink-2)}
+.cuo-sin{height:44px;display:flex;align-items:center;color:var(--ink-3);font-size:14px;font-weight:600}
+.fp-fila{display:grid;grid-template-columns:1fr;gap:12px;align-items:end}
+.fp-fila.con-n{grid-template-columns:1fr 1fr}.fp-fila.con-n .fp-info{margin:0 0 4px!important;align-self:center;padding-top:22px}
 .f label .ibtn{padding:0 2px;line-height:0;vertical-align:-2px}.f label .ibtn svg{width:15px;height:15px}
-.fila-comp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start}
+.fila-comp{display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:12px;align-items:start}
+.fila-comp>label:last-child .stepper{width:100%;justify-content:space-between}
 .lbl-pers{white-space:nowrap}
 .chiptxt::-webkit-calendar-picker-indicator,.chiptxt::-webkit-list-button{display:none!important;opacity:0}
 .chipadd{flex:none;width:34px;height:34px;border:0;border-radius:9px;background:var(--primary-soft);color:var(--primary);font-size:20px;font-weight:700;line-height:1;cursor:pointer}
@@ -587,7 +596,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 .amount-in span.amt-conv-in{position:absolute;right:12px;bottom:5px;font-size:12.5px;font-weight:700;color:var(--ink-2);display:flex;align-items:center;gap:4px;line-height:1.2;white-space:nowrap}
 .amount-in .ib-conv{font-size:15px;padding:0 2px}
 .lbl-cuotas{text-align:left}
-.lbl-cuotas .stepper,.lbl-pers .stepper{justify-self:end}
+
 .chiprow{min-height:44px;box-sizing:border-box}
 
 .cuo-cont{font-weight:500;color:var(--ink-3)}
@@ -680,7 +689,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="2.0";
+const APP_VERSION="2.01";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -974,6 +983,9 @@ const INFO={
   ingresos:["Ingresos y ahorro","Los ingresos fijos, como el sueldo, una pensión o un arriendo que recibes, se anotan una vez y se cuentan todos los meses desde el mes que indiques. Los ocasionales, como un bono o una venta, se anotan uno por uno.<br><br>«Te queda» es lo que recibes en el mes menos lo que gastas: los gastos fijos del mes y los variables que registraste. Es lo que ahorras ese mes. Si defines una meta de ahorro, la barra muestra cuánto llevas.<br><br>Si un ingreso fijo cambia, el nuevo monto rige desde el mes actual, salvo que marques corregir los meses anteriores."],
   proxpago:["Próximo pago","Si el gasto está pausado, indica desde cuándo vuelve a cobrarse."],
   esahorro:["Es ahorro","Se suma a «Ahorrado este mes» en Ingresos y ahorro."],
+  frecuencia:["Frecuencia","Cada cuánto se cobra este gasto: todos los meses, cada tres meses, una vez al año, o cada cierta cantidad de meses que tú eliges en Personalizada."],
+  estadofijo:["Estado","<b>Activa:</b> se cobra normalmente.<br><b>Pausada:</b> deja de contarse por un tiempo, por ejemplo si suspendiste una suscripción; puedes indicar cuándo vuelve.<br><b>Cancelada:</b> ya no se cobra, pero los meses anteriores lo conservan."],
+  descuento:["Descuento","Si tienes un descuento fijo sobre este gasto, escribe el porcentaje y Luka lo restará del valor. Por ejemplo, 10 % de descuento por pagar con cierta tarjeta."],
   fechapago:["Fecha de pago","Escribe cualquier fecha en que se paga este gasto, por ejemplo la del último pago o la del próximo. Luka toma el día y, si no es mensual, también el mes, para calcular los cobros siguientes.<br><br>Si el gasto está pausado, indica la fecha en que vuelve a cobrarse. Si aún no lo sabes, déjala en blanco."],
   datos:["Tus datos","Tus gastos se guardan en este teléfono y, si conectas Dropbox, también en tu carpeta de Dropbox. No se envían a ningún otro servidor. La app solo se conecta a internet para obtener los valores de las monedas e indicadores y para sincronizar con tu Dropbox."]};
 const ib=k=>`<button type="button" class="ibtn" data-info="${k}" aria-label="Más información">${I('<circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/>')}</button>`;
@@ -1776,7 +1788,7 @@ function cardFunciones(){const a=cfgAlzas(),m=metaAhorro();
     ${fOn("fIngresos")?opc("Meta de ahorro mensual",m?clp(m):"Definir","data-cfgmeta"):""}
     ${fila("fCompartidos","Gastos compartidos","Lleva la cuenta de lo que te deben","Activar gastos compartidos")}
     ${fila("fGmail","Pagos desde Gmail","Detecta compras y transferencias en tu correo","Activar pagos desde Gmail")}
-    ${fOn("fGmail")&&gmCfg().url?`<div class="pref pref-sub"><div><span>${meta.gmailError?"Error al revisar tu correo":`Conectado${meta.gmailOk?`<small style="display:block;color:var(--ink-3);font-weight:500">Revisado ${fechaGuardado(meta.gmailOk)}</small>`:""}`}</span></div><div class="gm-btns"><button class="btn-s" data-gmhist style="padding:6px 12px;font-size:13px">Historial</button><button class="btn-s" data-gmsetup style="padding:6px 12px;font-size:13px">Configurar</button></div></div>`:""}
+    ${fOn("fGmail")&&gmCfg().url?`<div class="pref pref-sub"><div><span>${meta.gmailError?"Error al revisar tu correo":`Conectado${meta.gmailOk?`<small style="display:block;font-size:13px;color:inherit;font-weight:500">Revisado ${fechaGuardado(meta.gmailOk)}</small>`:""}`}</span></div><div class="gm-btns"><button class="btn-s" data-gmhist style="padding:6px 12px;font-size:13px">Historial</button><button class="btn-s" data-gmsetup style="padding:6px 12px;font-size:13px">Configurar</button></div></div>`:""}
     ${cardBloqueo()}
   </section>`}
 function openAlzasForm(){const a=cfgAlzas();let modo=a.modo;
@@ -2239,7 +2251,7 @@ function openCuentaDet_(id){const c=cuentas().find(x=>x.id===id);if(!c)return;
   const movs=[...vs,...tr,...pg].sort((a,b)=>b.f.localeCompare(a.f)).slice(0,40),fj=state.gastos.filter(g=>idDe(g)===id);
   openSheet(`<div class="card-head" style="margin:0 0 2px;gap:10px"><h3 style="margin:0;font-size:20px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.nombre)}</h3><button class="btn-s" data-cuenta-edit="${id}" style="padding:6px 12px;font-size:13px;flex:none">Editar</button></div><p class="sub" style="margin:0 0 10px;font-size:13px">${esc(TIPOS_CTA[c.tipo]||"Otro")}${c.dig?" ····"+esc(c.dig):""}${c.tipo==="credito"&&c.diaFact?` · factura el ${c.diaFact}${c.diaVenc?` · vence el ${c.diaVenc}`:""}`:""}</p>
     ${c.tipo==="credito"&&c.diaFact?tjCols(c):""}
-    ${fj.length&&movs.length?`<div class="chips una" role="group" id="ctaFiltro" style="margin:4px 0 2px"><button type="button" class="chip" data-ctaf="todo" aria-pressed="true">Todo</button><button type="button" class="chip" data-ctaf="mov" aria-pressed="false">Movimientos</button><button type="button" class="chip" data-ctaf="fijo" aria-pressed="false">Fijos</button></div>`:""}
+    ${fj.length&&movs.length?`<div class="chips una" role="group" id="ctaFiltro" style="margin:8px 0 -2px"><button type="button" class="chip" data-ctaf="todo" aria-pressed="true">Todo</button><button type="button" class="chip" data-ctaf="mov" aria-pressed="false">Movimientos</button><button type="button" class="chip" data-ctaf="fijo" aria-pressed="false">Fijos</button></div>`:""}
     <div data-ctas="mov"><div class="tc-sec"><span>Movimientos</span><span>${movs.length||""}</span></div>${movs.length?`<ul class="list">${movs.map(x=>x.html).join("")}</ul>`:`<p class="sub" style="margin:0">Aún no hay movimientos con esta ${c.tipo==="credito"||c.tipo==="debito"?"tarjeta":"cuenta"}.</p>`}</div>
     ${fj.length?`<div data-ctas="fijo"><div class="tc-sec"><span>Gastos fijos</span><span>${fj.length}</span></div><ul class="list">${fj.map(rowGasto).join("")}</ul></div>`:""}`);
   const fl=$("#ctaFiltro");if(fl)fl.addEventListener("click",e=>{const b=e.target.closest("[data-ctaf]");if(!b)return;const k=b.dataset.ctaf;
@@ -2426,19 +2438,18 @@ function openForm(id,pre){
     <label class="full">Nombre<input name="nombre" required value="${esc(g.nombre)}" placeholder="Ej.: Netflix"></label>
     <label>Categoría<select name="categoria">${CATS.map(c=>`<option data-c="${CAT_COLOR[c]||CAT_COLOR.Otro||"#999"}" ${c===g.categoria?"selected":""}>${esc(c)}</option>`).join("")}</select></label>
     ${campoMoneda(g.moneda||base())}
-    <label>Frecuencia<select name="per" id="fPer">${PERIODOS.map(([v,t])=>`<option value="${v}" ${v===pSel?"selected":""}>${t}</option>`).join("")}<option value="x" ${pSel==="x"?"selected":""}>Personalizada…</option></select></label>
+    <label for="fPer"><span>Frecuencia${ib("frecuencia")}</span><select name="per" id="fPer">${PERIODOS.map(([v,t])=>`<option value="${v}" ${v===pSel?"selected":""}>${t}</option>`).join("")}<option value="x" ${pSel==="x"?"selected":""}>Personalizada…</option></select></label>
     <label for="fFechaPago"><span>Fecha de pago${ib("fechapago")}</span><input id="fFechaPago" name="fechaPago" type="date" value="${esc(g.estado==="Pausada"?(g.proximoPago||""):fpAct)}"></label>
-    <label id="fPerN" class="full fpern"><span>Cada cuántos meses</span>${stepper("perN",pSel==="x"?p:5,2,24)}</label>
-    <p class="hint full fp-info" id="fpInfo"></p>
-    <label>Estado<select name="estado">${opt(ESTADOS,g.estado)}</select></label>
-    ${campoKP("Descuento (%)","descuento",Math.round((g.descuento||0)*1000)/10,"pct")}
+    <div class="full fp-fila"><label id="fPerN"><span>Cada cuántos meses</span>${stepper("perN",pSel==="x"?p:5,2,24)}</label><p class="hint fp-info" id="fpInfo"></p></div>
+    <label for="fEstado"><span>Estado${ib("estadofijo")}</span><select name="estado" id="fEstado">${opt(ESTADOS,g.estado)}</select></label>
+    ${campoKP(`<span>Descuento (%)${ib("descuento")}</span>`,"descuento",Math.round((g.descuento||0)*1000)/10,"pct",'id="fDesc"').replace("<label>",'<label for="fDesc">')}
     ${campoMedio(g.cuenta,g.medio,g.cuentaId)}
     ${nuevaCuentaBox()}
     <div class="full fila-comp"><label>Comparten contigo${campoChips(g.comparten||[])}</label><label class="lbl-pers">Personas que pagan${stepper("personas",g.personas||1,1,20)}</label></div>
     ${fOn("fCompartidos")?campoPagador(g.comparten||[],g.pagador).replace(">Lo pagó<",">Lo paga<"):""}
-    ${campoDesde(id?(g.desde||""):mkey(today))}
-    <label>Cuotas pagadas${stepper("cuotasPagadas",g.cuotasPagadas??1,0,480)}</label>
-    <label>Total de cuotas${stepper("cuotasTotal",g.cuotasTotal??1,1,480)}</label>
+    <div class="full fila-cuo">${campoDesde(id?(g.desde||""):mkey(today))}<div class="cuo-der"><div class="cuo-tit">Pago en cuotas<label class="switch"><input type="checkbox" name="enCuotas" ${(Number(g.cuotasTotal)||1)>1?"checked":""} aria-label="Pago en cuotas"><span></span></label></div>
+      <div class="cuo-campos" ${(Number(g.cuotasTotal)||1)>1?"":"hidden"}><input name="cuotasPagadas" data-kp="ent" data-raw="${g.cuotasPagadas??1}" inputmode="none" autocomplete="off" value="${g.cuotasPagadas??1}" aria-label="Cuotas pagadas"><span>de</span><input name="cuotasTotal" data-kp="ent" data-raw="${g.cuotasTotal>1?g.cuotasTotal:12}" inputmode="none" autocomplete="off" value="${g.cuotasTotal>1?g.cuotasTotal:12}" aria-label="Total de cuotas"></div>
+      <div class="cuo-sin" ${(Number(g.cuotasTotal)||1)>1?"hidden":""}>Sin cuotas</div></div></div>
     <label class="full">Notas<textarea name="notas" placeholder="Plan, condiciones, recordatorios…">${esc(g.notas||"")}</textarea></label>
     ${id?`<label class="full check"><input type="checkbox" name="corregir"> Corregir también los meses anteriores<span class="hint">Márcalo si el valor estaba mal. Si no, el cambio rige desde ${MESES[today.getMonth()].toLowerCase()}.</span></label>`:""}
     <div class="full actions" style="margin-top:4px"><button class="btn-p grow" type="submit">${id?"Guardar cambios":"Agregar gasto fijo"}</button><button class="btn-s" type="button" data-close>Cancelar</button></div>
@@ -2448,11 +2459,12 @@ function openForm(id,pre){
   const fpVal={Activa:fpAct,Cancelada:fpAct,Pausada:g.estado==="Pausada"?(g.proximoPago||""):""};let estAnt=fm.estado.value;
   const syncFP=()=>{const v=fm.fechaPago.value,e=fm.estado.value,inf=$("#fpInfo");const d=parseD(v);
     const nota=d&&d.getDate()>=29?" En meses más cortos, se considera el último día.":"";
-    if(e==="Pausada")inf.textContent=v?`Pausado: vuelve a cobrarse el ${fechaLarga(v).toLowerCase()}.`:"Pausado sin fecha de regreso. Si sabes cuándo vuelve a cobrarse, escríbela arriba.";
+    if(e==="Pausada")inf.textContent=v?`Pausado: vuelve a cobrarse el ${fechaLarga(v).toLowerCase()}.`:"Pausado sin fecha de regreso. Si sabes cuándo vuelve a cobrarse, escríbela en Fecha de pago.";
     else if(e==="Cancelada")inf.textContent="Cancelado: ya no se cobra.";
     else{const f=v&&proxCobroDesde(v,perAct());inf.textContent=f?`Próximo cobro: ${fechaLarga(iso(f)).toLowerCase()}.${nota}`:"Elige una fecha en que se paga este gasto."}};
-  const syncPer=()=>{const v=fm.per.value;$("#fPerN").style.display=v==="x"?"":"none";syncFP()};syncPer();fm.per.addEventListener("change",syncPer);
+  const syncPer=()=>{const v=fm.per.value;$("#fPerN").style.display=v==="x"?"":"none";$(".fp-fila").classList.toggle("con-n",v==="x");syncFP()};syncPer();fm.per.addEventListener("change",syncPer);
   fm.perN.addEventListener("input",syncFP);fm.perN.addEventListener("change",syncFP);fm.fechaPago.addEventListener("input",syncFP);fm.fechaPago.addEventListener("change",syncFP);
+  fm.enCuotas.addEventListener("change",()=>{const on=fm.enCuotas.checked;fm.querySelector(".cuo-campos").hidden=!on;fm.querySelector(".cuo-sin").hidden=on;marcarSucio(fm)});
   fm.estado.addEventListener("change",()=>{fpVal[estAnt]=fm.fechaPago.value;estAnt=fm.estado.value;fm.fechaPago.value=fpVal[estAnt]||"";syncFP()});
   vigilarMoneda(fm);vigilarMedio(fm);prepararControles(fm);prepararChips(fm);vigilarPagador(fm);
   if(pre&&(pre.nombre||pre.valor))marcarSucio(fm);
@@ -2470,7 +2482,7 @@ function openForm(id,pre){
       mesCobro:pp>1?MESES[keyToDate(ini).getMonth()]:"Todos",estado:f.get("estado"),moneda:monedaDeEtiqueta(f.get("moneda")),valor,
       descuento:Math.min(Math.max(numIn(f.get("descuento")),0),100)/100,personas:Math.max(1,parseInt(f.get("personas"))||1),
       comparten:String(f.get("comparten")||"").split("|").map(x=>x.trim()).filter(Boolean),dia:diaN,
-      desde:f.get("desde")||"",medio:mp.medio,cuenta:mp.cuenta,cuentaId:mp.cuentaId,cuotasPagadas:parseInt(f.get("cuotasPagadas"))||0,cuotasTotal:Math.max(1,parseInt(f.get("cuotasTotal"))||1),ultimoPago:ultP,proximoPago:est==="Pausada"?fp:"",notas:f.get("notas").trim()};
+      desde:f.get("desde")||"",medio:mp.medio,cuenta:mp.cuenta,cuentaId:mp.cuentaId,cuotasPagadas:f.get("enCuotas")?Math.max(0,Math.round(numIn(f.get("cuotasPagadas")))||0):1,cuotasTotal:f.get("enCuotas")?Math.max(1,Math.round(numIn(f.get("cuotasTotal")))||1):1,ultimoPago:ultP,proximoPago:est==="Pausada"?fp:"",notas:f.get("notas").trim()};
     if(!obj.desde)delete obj.desde;
     if(fOn("fCompartidos")){const pg=f.get("pagador")||"";if(pg&&obj.comparten.includes(pg))obj.pagador=pg}else if(id){const ant=state.gastos.find(x=>x.id===id);if(ant&&ant.pagador)obj.pagador=ant.pagador}
     if(id){const ant=state.gastos.find(x=>x.id===id);versionar(ant,obj,mkey(today),!!f.get("corregir"))}
@@ -2528,8 +2540,8 @@ function openVarForm(id,mes,plantilla){
     ${campoMoneda(v.moneda||baseMon())}
     ${campoMedio(v.cuenta,v.medio,v.cuentaId)}
     ${nuevaCuentaBox()}
-    ${campoGrupos(v.grupos||[]).replace('class="full grp-f"','class="grp-f"')}
-    <label class="lbl-cuotas"><span>Cuotas <span class="cuo-cont" id="cuotaInfo">(Contado)</span></span>${stepper("cuotas",nCuotas(v),1,48)}</label>
+    <div class="full fila-comp">${campoGrupos(v.grupos||[]).replace('class="full grp-f"','class="grp-f"')}
+    <label class="lbl-cuotas"><span>Cuotas <span class="cuo-cont" id="cuotaInfo">(Contado)</span></span>${stepper("cuotas",nCuotas(v),1,48)}</label></div>
     ${fOn("fCompartidos")?`<div class="full fila-comp"><label>Comparten contigo${campoChips(v.comparten||[])}</label><label class="lbl-pers">Personas que pagan${stepper("personas",nPers(v),1,20)}</label></div>${campoPagador(v.comparten||[],v.pagador).replace('class="full fpag"','class="fpag"')}`:""}
     <label class="full">Notas<textarea name="notas" style="min-height:50px">${esc(v.notas||"")}</textarea></label>
     <div class="full actions" style="margin-top:4px"><button class="btn-p grow" type="submit">${id?"Guardar cambios":"Agregar gasto"}</button><button class="btn-s" type="button" data-close>Cancelar</button></div>
@@ -2601,10 +2613,10 @@ function infoMonto(form){const inp=form.querySelector("[data-kp=monto]"),sel=for
 function campoKP(label,name,val,tipo,extra){const r=aRaw(val);return `<label>${label}<input name="${name}" data-kp="${tipo}" data-raw="${r}" inputmode="none" autocomplete="off" value="${fmtRaw(r)}" ${extra||""}></label>`}
 function stepper(name,val,min,max,cls){return `<div class="stepper ${cls||""}" data-min="${min}" data-max="${max}"><button type="button" data-step="-1" aria-label="Menos">−</button><input name="${name}" value="${val}" readonly inputmode="none" aria-label="${name}"><button type="button" data-step="1" aria-label="Más">+</button></div>`}
 const MES3=m=>MESES[m].slice(0,3);
-function txtDesde(k){if(!k)return "Desde siempre";const d=keyToDate(k);return MES3(d.getMonth())+" "+d.getFullYear()}
+function txtDesde(k){if(!k)return "Siempre";const d=keyToDate(k);return MES3(d.getMonth())+" "+d.getFullYear()}
 function campoDesde(sel){const y=sel?keyToDate(sel).getFullYear():today.getFullYear();
   return `<label>Lo pago desde<div class="dd messel"><input type="hidden" name="desde" value="${esc(sel||"")}"><button type="button" class="picker" data-meses><span>${txtDesde(sel)}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button>
-  <div class="mpanel mgrid" hidden data-ano="${y}"><div class="mg-head"><button type="button" data-mano="-1" aria-label="Año anterior">‹</button><b></b><button type="button" data-mano="1" aria-label="Año siguiente">›</button></div><div class="mg-meses"></div><button type="button" class="mg-siempre" data-mes="">Desde siempre</button></div></div></label>`}
+  <div class="mpanel mgrid" hidden data-ano="${y}"><div class="mg-head"><button type="button" data-mano="-1" aria-label="Año anterior">‹</button><b></b><button type="button" data-mano="1" aria-label="Año siguiente">›</button></div><div class="mg-meses"></div><button type="button" class="mg-siempre" data-mes="">Siempre</button></div></div></label>`}
 function prepararMeses(form){form.querySelectorAll(".messel").forEach(w=>{const hid=w.querySelector("input"),btn=w.querySelector("[data-meses]"),pan=w.querySelector(".mgrid");
   const hoyK=mkey(today),minY=today.getFullYear()-15;
   const pintar=()=>{const y=Number(pan.dataset.ano);pan.querySelector(".mg-head b").textContent=y;
@@ -2757,7 +2769,7 @@ function vigilarCuenta(form){const sel=form.querySelector("[name=cuenta]"),box=f
     state.cuentas=[...cuentas(),c];store.saveRegistro();refrescarSelect(sel,opcionesCuenta(n));prev=n;box.hidden=true;
     if(MEDIO_DE_TIPO[c.tipo])fijarSelect(medio,MEDIO_DE_TIPO[c.tipo]);toast("Cuenta agregada")});}
 const grupos=()=>state.grupos||(state.grupos=[]);
-function campoGrupos(sel){return `<fieldset class="full grp-f" style="border:0;padding:0;margin:0"><legend style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px">Grupos <span style="font-weight:500;color:var(--ink-3)">(opcional)</span></legend>
+function campoGrupos(sel){return `<fieldset class="full grp-f" style="border:0;padding:0;margin:0"><legend style="font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px;padding:0">Grupos <span style="font-weight:500;color:var(--ink-3)">(opcional)</span></legend>
   <div class="chips grp-chips"><button type="button" class="chip grp-new ${grupos().length?"mini":""}" aria-label="Nuevo grupo">${grupos().length?"+":"+ Nuevo grupo"}</button>${grupos().map(g=>`<label class="chip gchip"><input type="checkbox" name="grupo" value="${g.id}" ${sel.includes(g.id)?"checked":""}>${esc(g.nombre)}</label>`).join("")}</div>
   <div class="grp-box" hidden><input class="grp-nombre" placeholder="Ej.: Viaje a Lima" aria-label="Nombre del grupo"><button type="button" class="btn-p grp-ok">Crear</button></div></fieldset>`}
 function vigilarGrupos(form){const f=form.querySelector(".grp-f");if(!f)return;const box=f.querySelector(".grp-box");
