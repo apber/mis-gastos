@@ -541,7 +541,27 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 .gm-pasos b{color:var(--ink)}
 .pend-det{background:var(--surface-2);border-radius:14px;padding:12px 14px;margin:0 0 12px}
 .pend-det b{display:block;font-size:22px}
-.pend-det span{font-size:13px;color:var(--ink-2)}
+.pend-det span{font-size:13px;color:var(--ink-2);display:block}
+.pend-det .pend-sug{margin-top:4px}
+.amt-info{display:grid;gap:4px;margin:-4px 2px 2px;font-size:13px;color:var(--ink-3)}
+.amt-conv{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--ink-2)}
+.ib-conv{border:0;background:none;color:var(--primary);font-size:15px;padding:0 4px;cursor:pointer;line-height:1}
+.amt-det{font-size:12.5px;color:var(--ink-3)}
+.gi-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px}
+.gi-mini{display:flex;gap:2px;padding:3px;border-radius:11px;background:var(--surface-2);flex-shrink:0}
+.gi-mini button{width:36px;height:30px;border:0;border-radius:8px;background:none;color:var(--ink-3);font:800 20px/1 inherit;display:grid;place-items:center;cursor:pointer}
+.gi-mini .gm-g[aria-pressed=true]{background:color-mix(in srgb,var(--bad) 15%,var(--surface));color:var(--bad);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.gi-mini .gm-i[aria-pressed=true]{background:color-mix(in srgb,var(--good) 17%,var(--surface));color:var(--good);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.amount-in.ing input{color:var(--good)!important}
+.gmh-pend{color:var(--warn);font-weight:700}
+.gm-btns{display:flex;gap:6px;flex-shrink:0}
+.tj-col.pp-pronto{box-shadow:inset 0 0 0 2px var(--warn)}
+.tj-col.pp-vencida{box-shadow:inset 0 0 0 2px var(--bad)}
+.tj-col.pp-ok{box-shadow:inset 0 0 0 2px var(--good)}
+.tj-col small.tj-pag{color:var(--good);font-weight:700}
+.tj-col small.tj-ven{color:var(--bad);font-weight:700}
+.tc-sec{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 4px;font-size:13px;font-weight:800;color:var(--ink-2)}
+.ia dd.ia-ah{color:var(--good)}
 .check.rec{flex-wrap:nowrap;align-items:flex-start}
 .check.rec input{flex:none;margin-top:2px}
 
@@ -607,7 +627,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="1.96";
+const APP_VERSION="1.97";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -786,7 +806,7 @@ function proximos(nMeses=12){
 const LS="mis-gastos-v1",LSMETA="mis-gastos-meta";
 let meta={ultimoRespaldo:""};
 function initStore(){
-  try{const r=localStorage.getItem(LS);if(r){const d=JSON.parse(r);state={gastos:d.gastos||[],tasas:d.tasas||state.tasas,vars:d.vars||{},presupuestos:d.presupuestos||{},config:d.config||{},cuentas:d.cuentas,categorias:d.categorias,grupos:d.grupos||[],archivados:d.archivados||[],tasasDia:d.tasasDia||{},ingresos:d.ingresos||{fijos:[],extra:{}},compPagos:d.compPagos||[],pagosTc:d.pagosTc||[],gmailVistos:d.gmailVistos||{},modificado:d.modificado||0}}}catch(e){}
+  try{const r=localStorage.getItem(LS);if(r){const d=JSON.parse(r);state={gastos:d.gastos||[],tasas:d.tasas||state.tasas,vars:d.vars||{},presupuestos:d.presupuestos||{},config:d.config||{},cuentas:d.cuentas,categorias:d.categorias,grupos:d.grupos||[],archivados:d.archivados||[],tasasDia:d.tasasDia||{},ingresos:d.ingresos||{fijos:[],extra:{}},compPagos:d.compPagos||[],pagosTc:d.pagosTc||[],traspasos:d.traspasos||[],gmailVistos:d.gmailVistos||{},modificado:d.modificado||0}}}catch(e){}
   migrarCuentas();if(migrarCuentaIds())guardarLocal();if(migrarPlan())guardarLocal();aplicarCategorias();
   try{const m=localStorage.getItem(LSMETA);if(m)meta={...meta,...JSON.parse(m)}}catch(e){}
   borrarBaseAntigua();
@@ -969,7 +989,7 @@ const cuando=i=>i===0?"Hoy":i===1?"Mañana":`En ${i} días`;
 function cardAvisos(){
   if(!avisosOn())return "";
   const n=diasAviso(),list=proximosCobros(n);
-  const tj=cuentas().filter(c=>c.tipo==="credito").map(c=>({c,pp:porPagarTarjeta(c)})).filter(x=>x.pp&&x.pp.total>=1&&x.pp.dias<=n);
+  const tj=[];
   if(!list.length&&!tj.length)return "";
   const total=list.reduce((a,x)=>a+x.v,0);
   const filaTj=x=>`<li><button class="row btn" data-tarjeta="${x.c.id}"><div class="day"><b>${x.pp.vence.getDate()}</b><span>${MESES[x.pp.vence.getMonth()].slice(0,3).toLowerCase()}</span></div>${icCuenta("credito")}<div class="mid"><div class="t">${esc(x.c.nombre)}</div><div class="s">Vence aprox. ${x.pp.dias===0?"hoy":x.pp.dias===1?"mañana":"en "+x.pp.dias+" días"}</div></div><div class="amt" style="color:var(--ink-2)">${clp(x.pp.total)}</div></button></li>`;
@@ -1165,7 +1185,7 @@ function cardIngresos(){if(!fOn("fIngresos"))return "";const d=today,k=mkey(d);
   const ing=ingresoMes(d),gas=gastoMes(d,false)+totalVar(k),queda=ing-gas,meta=metaAhorro();
   const pm=meta?Math.max(0,Math.min(1,queda/meta)):0;
   return `<section class="card"><div class="card-head"><div>${t2("Ingresos y ahorro","ingresos")}<p class="sub one">${MESES[d.getMonth()]} ${d.getFullYear()}</p></div><button class="btn-s" data-ingver style="padding:6px 12px;font-size:13px">Ver</button></div>
-    <dl class="ia"><dt>Ingresos</dt><dd>${clp(ing)}</dd><dt>Gastos</dt><dd>−${clp(gas)}</dd><dt class="ia-tot">Te queda</dt><dd class="ia-tot ${queda<0?"neg":""}">${queda<0?"−":""}${clp(Math.abs(queda))}</dd></dl>
+    <dl class="ia"><dt>Ingresos</dt><dd>${clp(ing)}</dd><dt>Gastos</dt><dd>−${clp(gas)}</dd><dt class="ia-tot">Te queda</dt><dd class="ia-tot ${queda<0?"neg":""}">${queda<0?"−":""}${clp(Math.abs(queda))}</dd>${ahorroMes(k)>0?`<dt>Ahorrado este mes</dt><dd class="ia-ah">${clp(ahorroMes(k))}</dd>`:""}</dl>
     ${queda<0?`<p class="ia-nota">Este mes gastas más de lo que recibes</p>`:""}
     ${meta?`<div class="progress"><i style="width:${pm*100}%;background:var(--good)"></i></div><div class="remaining"><span>${queda>=meta?"¡Meta cumplida!":queda>0?`Te faltan ${clp(meta-queda)}`:"Aún no ahorras este mes"}</span><span>Meta ${clp(meta)}</span></div>`:""}
   </section>`}
@@ -1186,9 +1206,9 @@ function openIngForm(id,mes,tipoIni,montoPrev,pre){
   const fijo=id?ingresos().fijos.find(x=>x.id===id):null,ext=id&&!fijo?findIngExtra(id,mes):null;
   const tipo=id?(fijo?"fijo":"ocasional"):(tipoIni||(ingresos().fijos.length?"ocasional":"fijo"));
   const cur=fijo?(fijo.vals||[])[(fijo.vals||[]).length-1]||{}:{};
-  const v=fijo?{nombre:fijo.nombre,monto:cur.valor,moneda:cur.moneda||base(),desde:fijo.desde||""}:ext?{nombre:ext.nombre,monto:ext.monto,moneda:ext.moneda||base(),fecha:ext.fecha}:{nombre:pre?.nombre||"",monto:montoPrev??"",moneda:base(),desde:mkey(today),fecha:pre?.fecha||iso(today)};
-  openSheet(`${id?"":`<div class="seg light seg-tipo blk-modo" role="group" aria-label="Tipo de ingreso"><button type="button" data-ingtipo="fijo" aria-pressed="${tipo==="fijo"}">Fijo</button><button type="button" data-ingtipo="ocasional" aria-pressed="${tipo==="ocasional"}">Ocasional</button></div><p class="tipo-hint">${tipo==="fijo"?"Se repite todos los meses, como el sueldo o una pensión":"Se recibe una vez, como un bono o una venta"}</p>`}
-  <h3 style="margin:0 0 14px;font-size:20px">${id?"Editar ingreso":tipo==="fijo"?"Nuevo ingreso fijo":"Nuevo ingreso ocasional"}</h3>
+  const v=fijo?{nombre:fijo.nombre,monto:cur.valor,moneda:cur.moneda||base(),desde:fijo.desde||""}:ext?{nombre:ext.nombre,monto:ext.monto,moneda:ext.moneda||base(),fecha:ext.fecha}:{nombre:pre?.nombre||"",monto:montoPrev??"",moneda:pre?.moneda||base(),desde:mkey(today),fecha:pre?.fecha||iso(today)};
+  openSheet(`${id?"":`<div class="seg light seg-tipo blk-modo" role="group" aria-label="Tipo de ingreso"><button type="button" data-ingtipo="ocasional" aria-pressed="${tipo==="ocasional"}">Ocasional</button><button type="button" data-ingtipo="fijo" aria-pressed="${tipo==="fijo"}">Fijo</button></div><p class="tipo-hint">${tipo==="fijo"?"Se repite todos los meses, como el sueldo o una pensión":"Se recibe una vez, como un bono o una venta"}</p>`}
+  ${tituloGI(id?"Editar ingreso":pre&&pre._gi&&fOn("fIngresos")?"Nuevo ingreso":tipo==="fijo"?"Nuevo ingreso fijo":"Nuevo ingreso ocasional","ingreso",!id&&pre&&pre._gi)}
   <form class="f" id="iForm">
     ${campoMonto("monto",v.monto,v.moneda)}
     <label class="full">Nombre<input name="nombre" autocomplete="off" value="${esc(v.nombre)}" placeholder="${tipo==="fijo"?"Ej.: Sueldo, pensión, arriendo":"Ej.: Bono, venta, devolución"}"></label>
@@ -1198,8 +1218,8 @@ function openIngForm(id,mes,tipoIni,montoPrev,pre){
     <div class="full actions" style="margin-top:4px"><button class="btn-p grow" type="submit">${id?"Guardar cambios":"Agregar ingreso"}</button><button class="btn-s" type="button" data-close>Cancelar</button></div>
     ${id?`<div class="full"><button class="btn-d" type="button" data-ingdel="${id}" data-mes="${mes||""}" style="width:100%">Eliminar ingreso</button></div>`:""}
   </form>`);
-  const fm=$("#iForm");vigilarMoneda(fm);prepararControles(fm);
-  document.querySelectorAll("[data-ingtipo]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.ingtipo===tipo)return;swapDir=b.dataset.ingtipo==="fijo"?"sw-r":"sw-l";openIngForm(null,null,b.dataset.ingtipo,fm.monto.dataset.raw?numIn(fm.monto.value):"",{nombre:(fm.nombre.value||"").trim()})}));
+  const fm=$("#iForm");vigilarMoneda(fm);prepararControles(fm);const ai=fm.querySelector(".amount-in");if(ai)ai.classList.add("ing");
+  document.querySelectorAll("[data-ingtipo]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.ingtipo===tipo)return;swapDir=b.dataset.ingtipo==="fijo"?"sw-l":"sw-r";openIngForm(null,null,b.dataset.ingtipo,fm.monto.dataset.raw?numIn(fm.monto.value):"",{nombre:(fm.nombre.value||"").trim(),moneda:fm.moneda.value,_gi:pre&&pre._gi})}));
   if(!id)setTimeout(()=>abrirKP($("#iForm [name=monto]")),120);
   fm.addEventListener("submit",e=>{e.preventDefault();cerrarKP();const f=new FormData(fm);const monto=numIn(f.get("monto"));
     if(!(monto>0)){toast("Ingresa un monto mayor que cero");return}
@@ -1215,7 +1235,7 @@ function openIngForm(id,mes,tipoIni,montoPrev,pre){
         n.vals=vals;I0.fijos=I0.fijos.map(x=>x.id===id?n:x)}}
     else{const fecha=f.get("fecha")||iso(today),nk=fecha.slice(0,7);const obj={id:id||uid("e"),nombre,monto,moneda,fecha};
       if(id&&mes!==nk){I0.extra[mes]=(I0.extra[mes]||[]).filter(x=>x.id!==id);if(!I0.extra[mes].length)delete I0.extra[mes]}
-      const l=I0.extra[nk]||[];I0.extra[nk]=id&&mes===nk?l.map(x=>x.id===id?obj:x):[...l,obj];if(pre&&pre._gmail)gmailMarcar(pre._gmail,"a")}
+      const l=I0.extra[nk]||[];I0.extra[nk]=id&&mes===nk?l.map(x=>x.id===id?obj:x):[...l,obj];if(pre&&pre._gmail)gmailMarcar(pre._gmail,"a",{l:"Ingreso ocasional",ref:{k:"ing",id:obj.id}})}
     store.saveRegistro();closeSheet();render();toast(id?"Cambios guardados":`Ingreso agregado: ${clp(toBase(monto,moneda))}`)});
 }
 function borrarIngreso(id,mes){const I0=ingresos(),f=I0.fijos.find(x=>x.id===id);
@@ -1397,7 +1417,7 @@ function gmSugerencia(x){if(x.tipo==="pagotc")return {t:"Pago de tarjeta: no es 
     const dup=Object.values(state.vars).flat().some(v=>Math.abs(vBase(v)-mb)<1&&Math.abs(parseD(v.fecha)-d)<=864e5*1.5);
     return dup?{t:"Posible duplicado: ya anotaste un gasto igual",k:"dup"}:null}
   if(x.persona&&x.propio&&mismoNombre(x.persona,x.propio))return {t:"Traspaso entre tus cuentas",k:"propia"};
-  if(r)return {t:r.a==="no"?"Recordado: no es un gasto":`Recordado: ${r.cat||"gasto"}`,k:"regla",r};
+  if(r)return {t:r.a==="no"?(x.tipo==="entrada"?"Recordado: no es un ingreso":"Recordado: no es un gasto"):r.a==="traspaso"?`Recordado: ${r.ahorro?"ahorro":"traspaso entre tus cuentas"}`:`Recordado: ${r.cat||"gasto"}`,k:"regla",r};
   if(x.tipo==="salida"){const d=parseD(x.fecha);
     const g=state.gastos.find(g=>{if(g.estado!=="Activa"||!cobraEnMes(g,d))return false;const c=calc(g,d),dd=Math.abs((Number(g.dia)||1)-d.getDate());return dd<=6&&(Math.abs(c.conDesc-x.monto)<=Math.max(1000,c.conDesc*.03)||Math.abs(c.pp-x.monto)<=Math.max(1000,c.pp*.03))});
     if(g)return {t:`Parece el pago de ${g.nombre}, que ya está en tus fijos`,k:"fijo",g}}
@@ -1405,8 +1425,8 @@ function gmSugerencia(x){if(x.tipo==="pagotc")return {t:"Pago de tarjeta: no es 
   return null}
 function aprenderDig(dig,cid){if(!dig||!cid)return;const c=cuentas().find(x=>x.id===cid);if(!c||c.dig||!["credito","debito","corriente"].includes(c.tipo))return;if(cuentas().some(x=>x.dig===dig))return;
   state.cuentas=cuentas().map(x=>x.id===cid?{...x,dig}:x);setTimeout(()=>toast(`${c.nombre}: Luka la reconocerá por los dígitos ${dig}`),1600)}
-function gmMarcar(id,e){const x=gmPend.find(y=>y.id===id),v=gmVistos();(x?gmIds(x):[id]).forEach(i=>v[i]={e,t:Date.now()});const lim=Date.now()-120*864e5;for(const k of Object.keys(v))if(v[k].t<lim)delete v[k];gmPend=gmPend.filter(x=>x.id!==id)}
-function gmailMarcar(id,e){gmMarcar(id,e);store.saveRegistro()}
+function gmMarcar(id,e,info){const x=gmPend.find(y=>y.id===id),v=gmVistos();(x?gmIds(x):[id]).forEach(i=>v[i]={e,t:Date.now(),...(info||{})});const lim=Date.now()-120*864e5;for(const k of Object.keys(v))if(v[k].t<lim)delete v[k]}
+function gmailMarcar(id,e,info){gmMarcar(id,e,info);store.saveRegistro()}
 function gmPendientes(){return gmPend.filter(x=>!gmIds(x).some(i=>gmVistos()[i])&&(x.tipo!=="entrada"||fOn("fIngresos")))}
 async function gmailRevisar(forzar){const g=gmCfg();if(!fOn("fGmail")||!g.url||!g.key||gmEstado==="cargando")return;if(!forzar&&Date.now()-gmUlt<180000)return;
   gmEstado="cargando";gmUlt=Date.now();
@@ -1415,7 +1435,7 @@ async function gmailRevisar(forzar){const g=gmCfg();if(!fOn("fGmail")||!g.url||!
     const j=await r.json();if(!j||!j.ok)throw new Error(j&&j.error==="clave"?"clave":"respuesta");
     const l=gmJuntar((j.correos||[]).map(c=>{try{return parseCorreo(c)}catch(e){return null}}).filter(x=>x&&x.monto>0));
     /* reglas recordadas: se aplican solas */
-    let cambio=false;l.forEach(x=>{if(gmIds(x).some(i=>gmVistos()[i]))return;const sg=gmSugerencia(x);if(sg&&sg.k==="regla"&&sg.r.a==="no"){gmMarcar(x.id,"d");cambio=true}});
+    let cambio=false;l.forEach(x=>{if(gmIds(x).some(i=>gmVistos()[i]))return;const sg=gmSugerencia(x);if(sg&&sg.k==="regla"&&sg.r.a==="no"){gmIds(x).forEach(i=>gmVistos()[i]={e:"d",t:Date.now(),l:"Descartado (recordado)"});cambio=true}});
     gmPend=l.sort((a,b)=>b.fecha.localeCompare(a.fecha));gmEstado="";
     {const nuevos=l.filter(x=>!gmIds(x).some(i=>gmVistos()[i]));meta.gmailDiag={n:(j.correos||[]).length,rec:l.length,vistos:l.length-nuevos.length,ocultos:nuevos.filter(x=>x.tipo==="entrada"&&!fOn("fIngresos")).length,t:Date.now()}}meta.gmailOk=Date.now();meta.gmailError="";saveMeta();if(cambio)store.saveRegistro();
   }catch(e){gmEstado="";meta.gmailError=e.message==="clave"?"El script no aceptó la clave. Vuelve a configurarlo.":"No se pudo revisar tu correo. Revisa tu conexión o la configuración.";saveMeta()}
@@ -1439,14 +1459,20 @@ function abrirPend(id){const x=gmPend.find(y=>y.id===id);if(!x)return;
     <div class="actions" style="margin-top:10px"><button class="btn-s grow" data-close>Decidir después</button></div>`);return}
   const sg=gmSugerencia(x),nom=normN(x.persona).join(" ");
   const btns=[];
+  const esTr=sg&&(sg.k==="propia"||(sg.k==="regla"&&sg.r.a==="traspaso")),esNo=sg&&(sg.k==="fijo"||(sg.k==="regla"&&sg.r.a==="no")),bt=(p,acc,txt,extra)=>`<button class="${p?"btn-p":"btn-s"}" data-pendacc="${acc}" data-id="${esc(x.id)}" ${extra||""}>${txt}</button>`;
+  const prim=sg&&sg.k==="comp"?"comp":esTr?"tr":esNo?"no":"base";
   if(x.tipo==="salida"){
-    if(sg&&sg.k==="comp")btns.push(`<button class="btn-p" data-pendacc="lepague" data-id="${esc(x.id)}" data-p="${esc(sg.p)}">Le pagué a ${esc(sg.p)}</button>`);
-    btns.push(`<button class="${sg&&["propia","fijo"].includes(sg.k)?"btn-s":"btn-p"}" data-pendacc="gasto" data-id="${esc(x.id)}">Agregar como gasto</button>`);
-    btns.push(`<button class="${sg&&["propia","fijo"].includes(sg.k)?"btn-p":"btn-s"}" data-pendacc="no" data-id="${esc(x.id)}">${sg&&sg.k==="fijo"?"Ya está en mis fijos":"No es un gasto"}</button>`)}
+    if(sg&&sg.k==="comp")btns.push(bt(true,"lepague",`Le pagué a ${esc(sg.p)}`,`data-p="${esc(sg.p)}"`));
+    btns.push(bt(prim==="base","gasto","Agregar como gasto"));
+    btns.push(bt(prim==="tr","traspaso","Traspaso entre mis cuentas"));
+    btns.push(bt(prim==="no","no",sg&&sg.k==="fijo"?"Ya está en mis fijos":"No es un gasto"))}
   else{
-    if(sg&&sg.k==="comp")btns.push(`<button class="btn-p" data-pendacc="mepago" data-id="${esc(x.id)}" data-p="${esc(sg.p)}">${esc(sg.p)} me pagó</button>`);
-    btns.push(`<button class="${sg&&sg.k==="propia"?"btn-s":"btn-p"}" data-pendacc="ingreso" data-id="${esc(x.id)}">Agregar como ingreso</button>`);
-    btns.push(`<button class="${sg&&sg.k==="propia"?"btn-p":"btn-s"}" data-pendacc="no" data-id="${esc(x.id)}">No es un ingreso</button>`)}
+    const fi=fOn("fIngresos")?ingFijosMes(parseD(x.fecha)).find(y=>Math.abs(y.m-toBaseEn(x.monto,x.moneda,x.fecha))<=Math.max(1000,y.m*.03)):null;
+    if(sg&&sg.k==="comp")btns.push(bt(true,"mepago",`${esc(sg.p)} me pagó`,`data-p="${esc(sg.p)}"`));
+    if(fi)btns.push(bt(prim==="base","ingfijo",`Es mi ${esc(fi.f.nombre)}`,`data-p="${esc(fi.f.id)}"`));
+    btns.push(bt(prim==="base"&&!fi,"ingreso","Agregar como ingreso"));
+    btns.push(bt(prim==="tr","traspaso","Traspaso entre mis cuentas"));
+    btns.push(bt(prim==="no","no","No es un ingreso"))}
   openSheet(`<h3 style="margin:0 0 10px;font-size:20px">${x.tipo==="salida"?"Transferencia que hiciste":"Transferencia que recibiste"}</h3>
     <div class="pend-det"><b>${clp(x.monto)}</b><span>${esc(x.persona||"Sin nombre")} · ${fmtD(x.fecha)} · ${esc(x.banco)}</span>${sg?`<span class="pend-sug ${sg.k==="comp"||sg.k==="regla"?"ok":""}">${esc(sg.t)}</span>`:""}</div>
     ${x.persona&&x.tipo==="salida"?`<label class="check rec" style="margin:0 0 12px"><input type="checkbox" id="pendRecordar"><span style="flex:1;min-width:0">Recordar mi elección para transferencias a ${esc(x.persona)}</span></label>`:""}
@@ -1455,14 +1481,63 @@ function abrirPend(id){const x=gmPend.find(y=>y.id===id);if(!x)return;
   $(".sheet").dataset.regla=nom}
 function accionPend(acc,id,persona){const x=gmPend.find(y=>y.id===id);if(!x)return;const rec=$("#pendRecordar")&&$("#pendRecordar").checked,nom=normN(x.persona).join(" ");
   const regla=a=>{if(rec&&nom){state.config={...(state.config||{}),gmailReglas:{...((state.config||{}).gmailReglas||{}),[nom]:a}}}};
-  if(acc==="no"){regla({a:"no"});gmMarcar(id,"d");store.saveRegistro();closeSheet();render();toast(x.tipo==="entrada"?"Marcado: no es un ingreso":"Marcado: no es un gasto");return}
+  if(acc==="no"){const sg=gmSugerencia(x);regla({a:"no"});gmMarcar(id,"d",{l:x.tipo==="entrada"?"No es un ingreso":sg&&sg.k==="fijo"?"Ya estaba en tus fijos":"No es un gasto"});store.saveRegistro();closeSheet();render();toast(x.tipo==="entrada"?"Marcado: no es un ingreso":"Marcado: no es un gasto");return}
   if(acc==="pagotc"){const c=gmCuenta(x);if(c&&x.dig)aprenderDig(x.dig,c.id);
-    state.pagosTc=[...(state.pagosTc||[]),{id:uid("t"),fecha:x.fecha,hora:x.hora||"",monto:x.monto,cuentaId:c?c.id:"",tarjeta:c?c.nombre:x.banco,dig:x.dig||"",origen:x.origen||"",correos:gmIds(x)}];
-    gmMarcar(id,"t");store.saveRegistro();closeSheet();render();toast("Pago de tarjeta registrado");return}
-  if(acc==="lepague"||acc==="mepago"){state.compPagos=[...compPagos(),{id:uid("p"),persona,monto:x.monto,dir:acc==="mepago"?"recibi":"pague",fecha:x.fecha}];gmMarcar(id,"a");store.saveRegistro();closeSheet();render();toast(acc==="mepago"?`Pago de ${persona} registrado`:`Pago a ${persona} registrado`);return}
+    const tid=uid("t");state.pagosTc=[...(state.pagosTc||[]),{id:tid,fecha:x.fecha,hora:x.hora||"",monto:x.monto,cuentaId:c?c.id:"",tarjeta:c?c.nombre:x.banco,dig:x.dig||"",origen:x.origen||"",correos:gmIds(x)}];
+    gmMarcar(id,"t",{l:"Pago de tarjeta",ref:{k:"tc",id:tid}});store.saveRegistro();closeSheet();render();toast("Pago de tarjeta registrado");return}
+  if(acc==="traspaso"){closeSheet();setTimeout(()=>openTraspaso(x,rec),250);return}
+  if(acc==="ingfijo"){const f=ingresos().fijos.find(y=>y.id===persona);gmMarcar(id,"a",{l:`Ingreso fijo: ${f?f.nombre:"ingreso"}`});store.saveRegistro();closeSheet();render();toast(`Marcado como tu ${f?f.nombre:"ingreso fijo"}`);return}
+  if(acc==="lepague"||acc==="mepago"){const pid=uid("p");state.compPagos=[...compPagos(),{id:pid,persona,monto:x.monto,dir:acc==="mepago"?"recibi":"pague",fecha:x.fecha}];gmMarcar(id,"a",{l:acc==="mepago"?`${persona} te pagó`:`Le pagaste a ${persona}`,ref:{k:"cp",id:pid}});store.saveRegistro();closeSheet();render();toast(acc==="mepago"?`Pago de ${persona} registrado`:`Pago a ${persona} registrado`);return}
   if(acc==="ingreso"){closeSheet();setTimeout(()=>openIngForm(null,null,"ocasional",x.monto,{nombre:x.comercio,fecha:x.fecha,_gmail:x.id}),250);return}
   if(acc==="gasto"){const sg=gmSugerencia(x),pl={...gmPlantilla(x),medio:"Transferencia"};if(sg&&sg.k==="regla"&&sg.r.cat)pl.categoria=sg.r.cat;
     if(rec&&nom)pl._regla=nom;closeSheet();setTimeout(()=>openVarForm(null,null,pl),250)}}
+/* ---------- traspasos entre cuentas propias (y ahorro) ---------- */
+const traspasos=()=>state.traspasos||(state.traspasos=[]);
+const ahorroMes=k=>traspasos().filter(t=>t.ahorro&&t.fecha.startsWith(k)).reduce((a,t)=>a+toBaseEn(t.monto,t.moneda,t.fecha),0);
+function ctaBanco(bk){if(!bk)return "";const l=cuentas().filter(c=>c.tipo!=="credito"&&sinAcento(c.nombre).includes(bk));return l.length===1?l[0].id:""}
+const nomCta=id=>{const c=cuentas().find(x=>x.id===id);return c?c.nombre:"Otra cuenta"};
+function openTraspaso(x,rec){const r=((state.config||{}).gmailReglas||{})[normN(x.persona).join(" ")];
+  const bkDe=(x.de||"").split("@")[1]?.split(".")[0]||"";let desde=x.tipo==="salida"?ctaBanco(x.bk):"",hacia=x.tipo==="entrada"?ctaBanco(bkDe):"";
+  if(r&&r.a==="traspaso"){desde=r.desde||desde;hacia=r.hacia||hacia}
+  const ctas=cuentas().filter(c=>c.tipo!=="credito"),opc=sel=>`<option value="">Otra cuenta</option>${ctas.map(c=>`<option value="${c.id}" ${c.id===sel?"selected":""}>${esc(c.nombre)}</option>`).join("")}`;
+  openSheet(`<h3 style="margin:0 0 4px;font-size:20px">Traspaso entre tus cuentas</h3><p class="sub" style="margin:0 0 10px">No cuenta como gasto ni como ingreso.</p>
+    <div class="pend-det"><b>${x.moneda!==base()?montoOrig(x.monto,x.moneda):clp(x.monto)}</b><span>${esc(x.persona||x.comercio||"")} · ${fmtD(x.fecha)}${x.banco?" · "+esc(x.banco):""}</span></div>
+    <form class="f" id="trForm"><label>Desde<select name="desde">${opc(desde)}</select></label><label>Hacia<select name="hacia">${opc(hacia)}</select></label>
+    <label class="full check"><input type="checkbox" name="ahorro" ${r&&r.ahorro?"checked":""}> <span style="flex:1;min-width:0">Es ahorro<span class="hint" style="display:block">Se suma a «Ahorrado este mes» en Ingresos y ahorro.</span></span></label>
+    ${x.persona?`<label class="full check"><input type="checkbox" name="recordar" ${rec||(r&&r.a==="traspaso")?"checked":""}> <span style="flex:1;min-width:0">Recordar para transferencias ${x.tipo==="salida"?"a":"de"} ${esc(x.persona)}</span></label>`:""}
+    <div class="full actions"><button class="btn-p grow" type="submit">Guardar traspaso</button><button class="btn-s" type="button" data-close>Cancelar</button></div></form>`);
+  $("#trForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target),ah=!!f.get("ahorro"),tid=uid("tr");
+    traspasos().push({id:tid,fecha:x.fecha,monto:x.monto,moneda:x.moneda||"CLP",desde:f.get("desde")||"",hacia:f.get("hacia")||"",ahorro:ah,nota:x.persona||x.comercio||"",correos:gmIds(x)});
+    const nom=normN(x.persona).join(" ");if(f.get("recordar")&&nom)state.config={...(state.config||{}),gmailReglas:{...((state.config||{}).gmailReglas||{}),[nom]:{a:"traspaso",ahorro:ah,desde:f.get("desde")||"",hacia:f.get("hacia")||""}}};
+    gmMarcar(x.id,"a",{l:ah?"Ahorro":"Traspaso entre tus cuentas",ref:{k:"tr",id:tid}});store.saveRegistro();closeSheet();render();toast(ah?"Ahorro registrado":"Traspaso registrado")})}
+/* ---------- historial de detecciones de Gmail (últimos 30 días) ---------- */
+const gmEstadoDe=x=>gmIds(x).map(i=>gmVistos()[i]).find(Boolean)||null;
+const gmTitulo=x=>x.tipo==="pagotc"?`Pago ${gmTarjeta(x)}`:x.comercio;
+const gmLabel=v=>v?(v.l||(v.e==="d"?"Descartado":v.e==="t"?"Pago de tarjeta":"Confirmado")):"Por confirmar";
+const gmMonto=x=>`${x.tipo==="entrada"?"+":""}${x.moneda!==base()?montoOrig(x.monto,x.moneda):clp(x.monto)}`;
+function gmDiagTxt(){const d=meta.gmailDiag;if(!d)return "";return `Última revisión (${fechaGuardado(d.t)}): ${d.n} correo${d.n===1?"":"s"} de los últimos 30 días, ${d.rec} reconocido${d.rec===1?"":"s"}${d.vistos?`, ${d.vistos} ya confirmado${d.vistos===1?"":"s"} o descartado${d.vistos===1?"":"s"}`:""}${d.ocultos?`, ${d.ocultos} oculto${d.ocultos===1?"":"s"} porque Ingresos y ahorro está apagado`:""}.`}
+function openGmHist(){const l=[...gmPend].sort((a,b)=>(b.fecha+(b.hora||"")).localeCompare(a.fecha+(a.hora||"")));
+  const fila=x=>{const v=gmEstadoDe(x),d=parseD(x.fecha);return `<li><button class="row btn" data-gmh="${esc(x.id)}"><div class="av av-mail">${ICO_MAIL}</div><div class="mid"><div class="t">${esc(gmTitulo(x))}</div><div class="s">${d.getDate()} ${MES3(d.getMonth()).toLowerCase()}${x.hora?" "+esc(x.hora):""} · <span class="${v?"":"gmh-pend"}">${esc(gmLabel(v))}</span></div></div><div class="amt ${x.tipo==="entrada"?"saldo-pos":""}">${gmMonto(x)}</div></button></li>`};
+  openSheet(`<div id="gmHist"><h3 style="margin:0 0 4px;font-size:20px">Historial de detecciones</h3><p class="sub" style="margin:0 0 10px">Lo que Luka encontró en tu correo en los últimos 30 días. Toca uno para ver el detalle o cambiar tu decisión.</p>
+    ${meta.gmailDiag?`<p class="sub" style="margin:0 0 12px;padding:10px 12px;background:var(--surface-2);border-radius:12px">${esc(gmDiagTxt())}</p>`:""}
+    ${l.length?`<ul class="list">${l.map(fila).join("")}</ul>`:gmEstado==="cargando"?`<div class="empty"><b>Revisando tu correo…</b></div>`:`<div class="empty"><b>Sin detecciones</b>No hay avisos de pagos reconocidos en los últimos 30 días.</div>`}</div>`);
+  if(!gmPend.length&&gmEstado!=="cargando"&&gmCfg().url){gmailRevisar(true).then(()=>{if($("#gmHist")&&gmPend.length)openGmHist()})}}
+function openGmDet(id){const x=gmPend.find(y=>y.id===id);if(!x)return;const v=gmEstadoDe(x);if(!v){abrirPend(id);return}
+  const r=v.ref||{},extra=[x.origen?`Desde ${x.origen}`:"",x.tipo==="pagotc"&&x.dig?`Tarjeta terminada en ${x.dig}`:"",x.medio&&x.tipo==="compra"?MEDIO_TXT(x):"",gmIds(x).length>1?"Detectado en 2 correos":""].filter(Boolean);
+  openSheet(`<h3 style="margin:0 0 10px;font-size:20px">${esc(gmTitulo(x))}</h3>
+    <div class="pend-det"><b>${gmMonto(x)}</b><span>${fmtD(x.fecha)}${x.hora?" · "+esc(x.hora):""}${x.banco?" · "+esc(x.banco):""}</span>${extra.map(t=>`<span>${esc(t)}</span>`).join("")}<span class="pend-sug ok">Decidiste: ${esc(gmLabel(v))}${v.t?" · "+esc(fechaGuardado(v.t)):""}</span></div>
+    <p class="sub" style="margin:0 0 12px">${r.k&&r.k!=="fijo"?"Si te equivocaste, puedes devolverlo a Por confirmar: Luka eliminará lo que se creó desde este correo.":r.k==="fijo"?"Si te equivocaste, puedes devolverlo a Por confirmar. El gasto fijo que creaste se mantiene; edítalo o elimínalo desde Fijos si hace falta.":"Si te equivocaste, puedes devolverlo a Por confirmar."}</p>
+    <div class="actions"><button class="btn-p grow" data-gmdeshacer="${esc(x.id)}">Volver a Por confirmar</button><button class="btn-s" data-close>Cerrar</button></div>`)}
+function quitarRefGm(r){if(!r||!r.k)return;
+  if(r.k==="var")for(const k of Object.keys(state.vars)){const n=state.vars[k].length;state.vars[k]=state.vars[k].filter(v=>v.id!==r.id);if(state.vars[k].length!==n){if(!state.vars[k].length)delete state.vars[k];store.saveMes(k)}}
+  if(r.k==="ing"){const e=ingresos().extra;for(const k of Object.keys(e)){e[k]=e[k].filter(v=>v.id!==r.id);if(!e[k].length)delete e[k]}}
+  if(r.k==="tc")state.pagosTc=(state.pagosTc||[]).filter(p=>p.id!==r.id);
+  if(r.k==="tr")state.traspasos=traspasos().filter(p=>p.id!==r.id);
+  if(r.k==="cp")state.compPagos=compPagos().filter(p=>p.id!==r.id)}
+function gmDeshacer(id){const x=gmPend.find(y=>y.id===id);if(!x)return;const v=gmEstadoDe(x),r=v&&v.ref;
+  const fin=()=>{quitarRefGm(r);gmIds(x).forEach(i=>delete gmVistos()[i]);store.saveRegistro();closeSheet();render();toast("Volvió a Por confirmar")};
+  const txt=r&&{var:"el gasto variable",ing:"el ingreso",tc:"el pago de tarjeta",tr:"el traspaso",cp:"el pago registrado"}[r.k];
+  if(txt)dialogo({titulo:"¿Volver a Por confirmar?",texto:`Se eliminará ${txt} que creaste desde este correo.`,botones:[{t:"Volver a Por confirmar",c:"btn-p",fn:fin},{t:"Cancelar",c:"btn-s"}]});else fin()}
 /* script para copiar en script.google.com */
 function gmScript(key){return `// Luka · pagos desde Gmail
 // Este script corre solo en tu cuenta de Google. Cuando Luka lo pide, entrega el texto
@@ -1508,7 +1583,6 @@ function openGmailSetup(nuevo){gmSetupNuevo=!!nuevo;const g=gmCfg();const key=g.
     <li>En <b>Configuración del proyecto</b> (⚙), marca <b>Mostrar el archivo de manifiesto «appsscript.json»</b>. Vuelve al editor, abre ese archivo, borra su contenido y pega este otro: <button class="btn-s" type="button" data-gmcopia="manif" style="padding:4px 10px;font-size:13px">Copiar permisos</button><br>Así el script solo puede <b>leer</b> tu correo.</li>
     <li>Toca <b>Implementar › Nueva implementación</b>, elige <b>Aplicación web</b> y toca <b>Implementar</b>. Google te pedirá permiso: si dice que la app no está verificada, toca <b>Configuración avanzada</b> y luego <b>Ir a…</b>. Es normal: el script es tuyo y corre solo en tu cuenta.</li>
     <li>Copia la <b>URL de la aplicación web</b> y pégala aquí:</li></ol>
-  ${g.url&&meta.gmailDiag?`<p class="sub" style="margin:0 0 12px;padding:10px 12px;background:var(--surface-2);border-radius:12px">Última revisión (${fechaGuardado(meta.gmailDiag.t)}): ${meta.gmailDiag.n} correo${meta.gmailDiag.n===1?"":"s"} de los últimos 30 días, ${meta.gmailDiag.rec} reconocido${meta.gmailDiag.rec===1?"":"s"}${meta.gmailDiag.vistos?`, ${meta.gmailDiag.vistos} ya confirmado${meta.gmailDiag.vistos===1?"":"s"} o descartado${meta.gmailDiag.vistos===1?"":"s"}`:""}${meta.gmailDiag.ocultos?`, ${meta.gmailDiag.ocultos} oculto${meta.gmailDiag.ocultos===1?"":"s"} porque Ingresos y ahorro está apagado`:""}.</p>`:""}
   <form class="f" id="gmForm" onsubmit="return false"><label class="full">URL de la aplicación web<input name="url" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(g.url||"")}" placeholder="https://script.google.com/macros/s/…/exec"></label>
   <div class="full actions"><button class="btn-p grow" type="button" data-gmconectar>Conectar</button><button class="btn-s" type="button" data-close>Cancelar</button></div>
   ${g.url?`<div class="full"><button class="btn-d" type="button" data-gmquitar style="width:100%">Desconectar Gmail</button></div>`:""}</form>`)}
@@ -1544,7 +1618,7 @@ function cardFunciones(){const a=cfgAlzas(),m=metaAhorro();
     ${fOn("fIngresos")?opc("Meta de ahorro mensual",m?clp(m):"Definir","data-cfgmeta"):""}
     ${fila("fCompartidos","Gastos compartidos","Lleva la cuenta de lo que te deben","Activar gastos compartidos")}
     ${fila("fGmail","Pagos desde Gmail","Detecta compras y transferencias en tu correo","Activar pagos desde Gmail")}
-    ${fOn("fGmail")&&gmCfg().url?opc(meta.gmailError?"Error al revisar tu correo":`Conectado${meta.gmailOk?" · revisado "+fechaGuardado(meta.gmailOk):""}`,"Configurar","data-gmsetup"):""}
+    ${fOn("fGmail")&&gmCfg().url?`<div class="pref pref-sub"><div><span>${meta.gmailError?"Error al revisar tu correo":`Conectado${meta.gmailOk?" · revisado "+fechaGuardado(meta.gmailOk):""}`}</span></div><div class="gm-btns"><button class="btn-s" data-gmhist style="padding:6px 12px;font-size:13px">Historial</button><button class="btn-s" data-gmsetup style="padding:6px 12px;font-size:13px">Configurar</button></div></div>`:""}
     ${cardBloqueo()}
   </section>`}
 function openAlzasForm(){const a=cfgAlzas();let modo=a.modo;
@@ -1694,16 +1768,33 @@ function porPagarTarjeta(c){if(!c.diaFact||!c.diaVenc)return null;const p=period
   let vence=new Date(y,m,Math.min(V,eom(new Date(y,m,1)).getDate()));if(vence<=cierre){m++;vence=new Date(y,m,Math.min(V,eom(new Date(y,m,1)).getDate()))}
   const hoy0=new Date(today.getFullYear(),today.getMonth(),today.getDate());if(hoy0>vence)return null;
   return {total:r.total,vence,dias:Math.round((vence-hoy0)/864e5)}}
+/* último estado de cuenta: total, vencimiento y lo pagado según los pagos detectados en Gmail */
+function estadoTarjeta(c){if(!c.diaFact||!c.diaVenc)return null;const p=periodoTarjeta(c);if(!p)return null;
+  const ant=new Date(p.inicio);ant.setDate(ant.getDate()-1);const r=cargosTarjeta(c,ant);if(!r)return null;
+  const cierre=r.p.cierre;let y=cierre.getFullYear(),m=cierre.getMonth();const V=Math.min(Math.max(parseInt(c.diaVenc)||1,1),31);
+  let vence=new Date(y,m,Math.min(V,eom(new Date(y,m,1)).getDate()));if(vence<=cierre){m++;vence=new Date(y,m,Math.min(V,eom(new Date(y,m,1)).getDate()))}
+  const hoy0=new Date(today.getFullYear(),today.getMonth(),today.getDate()),lim=new Date(vence);lim.setDate(lim.getDate()+20);
+  const pagado=(state.pagosTc||[]).filter(x=>x.cuentaId===c.id&&x.fecha>iso(cierre)&&x.fecha<=iso(lim)).reduce((a,x)=>a+x.monto,0);
+  return {total:r.total,vence,dias:Math.round((vence-hoy0)/864e5),pagado,cierre}}
 function cardTarjetas(){const l=cuentas().filter(c=>c.tipo==="credito"&&c.diaFact);if(!l.length)return "";
   const fm=d=>d.getDate()+" "+MESES[d.getMonth()].slice(0,3).toLowerCase();
   return `<section class="card">${t2("Tarjetas de crédito","tarjetas")}<p class="sub">Lo que llevas en el período y lo que debes pagar</p><ul class="tj-lista">${l.map(c=>{const r=cargosTarjeta(c),pp=porPagarTarjeta(c);
-    const pagar=pp&&pp.total>=1?`<b>${clp(pp.total)}</b><small>vence el ${fm(pp.vence)}</small>`:c.diaVenc?`<b class="tj-nada">Nada por pagar</b><small>&nbsp;</small>`:`<b class="tj-nada">Sin vencimiento</b><small>agrégalo en Ajustes</small>`;
+    const e=estadoTarjeta(c);let cls="",pagar;
+    if(!c.diaVenc)pagar=`<b class="tj-nada">Sin vencimiento</b><small>agrégalo en Ajustes</small>`;
+    else if(!e||e.total<1||(e.dias<0&&e.dias<-20))pagar=`<b class="tj-nada">Nada por pagar</b><small>&nbsp;</small>`;
+    else if(e.pagado>=e.total-1){cls="pp-ok";pagar=`<b>${clp(e.total)}</b><small class="tj-pag">Pagada ✓</small>`}
+    else if(e.dias<0){cls="pp-vencida";pagar=`<b>${clp(e.total-e.pagado)}</b><small class="tj-ven">venció el ${fm(e.vence)}</small>`}
+    else{cls=e.dias<=5?"pp-pronto":"";pagar=`<b>${clp(e.total-e.pagado)}</b><small>${e.pagado>0?`pagado ${clp(e.pagado)} · `:""}vence el ${fm(e.vence)}</small>`}
     return `<li><button class="tj btn" data-tarjeta="${c.id}"><div class="tj-nom">${icCuenta("credito","av-sm")}<b>${esc(c.nombre)}</b><span class="tj-ch">›</span></div>
-      <div class="tj-cols"><div class="tj-col"><span>Período actual</span><b>${clp(r.total)}</b><small>cierra el ${fm(r.p.cierre)}</small></div><div class="tj-col"><span>Por pagar</span>${pagar}</div></div></button></li>`}).join("")}</ul></section>`}
+      <div class="tj-cols"><div class="tj-col"><span>Período actual</span><b>${clp(r.total)}</b><small>cierra el ${fm(r.p.cierre)}</small></div><div class="tj-col ${cls}"><span>Por pagar</span>${pagar}</div></div></button></li>`}).join("")}</ul></section>`}
 function openTarjeta(id){const c=cuentas().find(x=>x.id===id);if(!c)return;const r=cargosTarjeta(c);
   openSheet(`<h3 style="margin:0 0 2px;font-size:20px">${esc(c.nombre)}</h3><p class="sub" style="margin:0 0 6px">Período del ${fmtD(iso(r.p.inicio))} al ${fmtD(iso(r.p.cierre))} · ${clp(r.total)}</p>
     ${r.out.length?`<ul class="list">${r.out.map(y=>y.t==="var"?rowMov(y.x).replace('<div class="s">',`<div class="s">${fmtD(y.fecha)} · `):`<li><button class="row btn" data-open="${y.g.id}">${avG(y.g)}<div class="mid"><div class="t">${esc(y.g.nombre)}</div><div class="s">${fmtD(y.fecha)} · Gasto fijo</div></div><div class="amt">${clp(y.m)}</div></button></li>`).join("")}</ul>`:`<div class="empty"><b>Sin cargos</b>No hay gastos registrados con esta tarjeta en el período.</div>`}
-    <p class="sub" style="margin:10px 0 0">Incluye solo lo registrado en la app con esta tarjeta.</p>`)}
+    <p class="sub" style="margin:10px 0 0">Incluye solo lo registrado en la app con esta tarjeta.</p>
+    ${(()=>{const l=(state.pagosTc||[]).filter(p=>p.cuentaId===c.id).sort((a,b)=>(b.fecha+b.hora).localeCompare(a.fecha+a.hora)).slice(0,12);if(!l.length&&!fOn("fGmail"))return "";
+      return `<div class="tc-sec"><span>Pagos detectados</span><span>${l.length?l.length:""}</span></div>${l.length?`<ul class="list">${l.map(p=>`<li><div class="row">${icCuenta("credito","av-sm")}<div class="mid"><div class="t">${clp(p.monto)}</div><div class="s">${fmtD(p.fecha)}${p.hora?" · "+esc(p.hora):""}${p.origen?" · desde "+esc(p.origen):""}${(p.correos||[]).length>1?" · 2 correos":""}</div></div><button class="btn-s" data-tcmover="${p.id}" style="padding:5px 10px;font-size:12.5px">No corresponde</button></div></li>`).join("")}</ul>`:`<p class="sub" style="margin:0">Aún no hay pagos detectados en tu correo para esta tarjeta.</p>`}`})()}`)}
+function moverPagoTc(pid){const p=(state.pagosTc||[]).find(x=>x.id===pid);if(!p)return;const otras=cuentas().filter(c=>c.tipo==="credito"&&c.id!==p.cuentaId);
+  dialogo({titulo:"¿A qué tarjeta corresponde este pago?",texto:`${clp(p.monto)} del ${fmtD(p.fecha)}.`,botones:[...otras.map(c=>({t:c.nombre,c:"btn-s",fn:()=>{p.cuentaId=c.id;p.tarjeta=c.nombre;store.saveRegistro();closeSheet();render();toast(`Pago asignado a ${c.nombre}`)}})),{t:"A ninguna",c:"btn-s",fn:()=>{p.cuentaId="";store.saveRegistro();closeSheet();render();toast("Pago desvinculado")}},{t:"Cancelar",c:"btn-s"}]})}
 function openStat(k){
   const act=state.gastos.filter(g=>g.estado==="Activa");
   if(k==="anual"){const l=act.map(g=>({g,v:calc(g).anual})).sort((a,b)=>b.v-a.v);const tot=l.reduce((a,x)=>a+x.v,0);
@@ -1981,6 +2072,7 @@ function openCuentaForm(id){const c=id?cuentas().find(x=>x.id===id):{nombre:"",t
     <label class="full" id="ctaDigW">Últimos 4 dígitos (opcional)<input name="dig" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off" value="${esc(c.dig||"")}" placeholder="Ej.: 1234"><span class="hint">Así Luka reconoce esta tarjeta en los avisos de tu banco.</span></label>
     <div class="full cta-dias" id="ctaDiaW">${campoDiaOpc("Día de facturación","diaFact",c.diaFact,"Cierra tu estado de cuenta")}${campoDiaOpc("Día de vencimiento","diaVenc",c.diaVenc,"Último día para pagar")}</div>
     ${id?`<p class="sub full" style="margin:0">${uso?`Usada en ${uso} gasto${uso===1?"":"s"}. Si la renombras, se actualizan todos.`:"Sin gastos asociados."}</p>`:""}
+    ${id&&traspasos().some(t=>t.desde===id||t.hacia===id)?`<div class="full"><div class="tc-sec" style="margin-top:4px"><span>Traspasos</span></div><ul class="list">${traspasos().filter(t=>t.desde===id||t.hacia===id).sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,10).map(t=>`<li><div class="row"><div class="mid"><div class="t">${t.desde===id?"Hacia "+esc(nomCta(t.hacia)):"Desde "+esc(nomCta(t.desde))}${t.ahorro?" · ahorro":""}</div><div class="s">${fmtD(t.fecha)}${t.nota?" · "+esc(t.nota):""}</div></div><div class="amt ${t.hacia===id?"saldo-pos":""}">${t.hacia===id?"+":"−"}${t.moneda!==base()?montoOrig(t.monto,t.moneda):clp(t.monto)}</div></div></li>`).join("")}</ul></div>`:""}
     <div class="full actions"><button class="btn-p grow" type="submit">Guardar</button>${id?`<button class="btn-d" type="button" data-cuenta-del="${id}">Eliminar</button>`:`<button class="btn-s" type="button" data-close>Cancelar</button>`}</div></form>`);
   const ds=()=>{const t=$("#ctaTipo").value;$("#ctaDiaW").style.display=t==="credito"?"":"none";$("#ctaDigW").style.display=["credito","debito","corriente"].includes(t)?"":"none"};ds();$("#ctaTipo").addEventListener("change",ds);
   prepararControles($("#ctaForm"));$("#ctaForm").addEventListener("submit",e=>{e.preventDefault();const f=new FormData(e.target);const n=f.get("nombre").trim();if(!n)return;
@@ -2082,7 +2174,7 @@ let swapDir=null;
 function openSheet(html){if(swapDir&&$(".sheet")){const sh=$(".sheet");const dir=swapDir;swapDir=null;cerrarKP();sh.scrollTop=0;
     sh.innerHTML=`<div class="grab"></div><div class="swap ${dir}">${html}</div>`;mejorarSelects($("#modal"));return}
   swapDir=null;if(!(history.state&&history.state.hoja))marca();document.documentElement.classList.add("modal-open");$("#modal").innerHTML=`<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div></div>`;
-  $("#scrim").addEventListener("click",e=>{if(e.target.id==="scrim")pedirCierre()});
+  $("#scrim").addEventListener("click",e=>{if(e.target.id==="scrim"&&Date.now()-kpCerradoT>450)pedirCierre()});
   mejorarSelects($("#modal"));arrastreHoja();
   const f=$(".sheet input:not([type=radio]),.sheet button");f&&f.focus({preventScroll:true});}
 function cerrarHoja(){if(gmSetupNuevo&&$("#gmForm")){gmSetupNuevo=false;if(!gmCfg().url){state.config={...(state.config||{}),fGmail:false};store.saveRegistro();setTimeout(render,0)}}cerrandoHoja=true;cerrarKP();cerrandoHoja=false;$("#modal").innerHTML="";document.documentElement.classList.remove("modal-open")}
@@ -2115,7 +2207,7 @@ function openForm(id,pre){
   const g=id?state.gastos.find(x=>x.id===id):{...{nombre:"",categoria:CATS.includes("Streaming")?"Streaming":CATS[0],periodo:1,moneda:base(),valor:"",descuento:0,personas:1,comparten:[],dia:1,estado:"Activa",medio:"Crédito",cuenta:"",cuotasPagadas:1,cuotasTotal:1,ultimoPago:"",proximoPago:"",notas:""},...(pre||{})};
   const p=per(g),pSel=PERIODOS.some(x=>x[0]===p)?p:"x",prox=proximoMesCobro(g);
   const mesesOpc=Array.from({length:24},(_,i)=>addM(today,i)).map(d=>`<option value="${mkey(d)}" ${mkey(d)===mkey(prox)?"selected":""}>${MESES[d.getMonth()]} ${d.getFullYear()}</option>`).join("");
-  openSheet(`${id?"":selTipo("fijo")}<h3 style="margin:0 0 14px;font-size:20px">${id?"Editar gasto fijo":"Nuevo gasto fijo"}</h3>
+  openSheet(`${id?"":selTipo("fijo")}${tituloGI(id?"Editar gasto fijo":"Nuevo gasto fijo","gasto",!id&&!(pre&&pre._gmail))}
   <form class="f" id="gForm" data-nuevo="${id?"":"1"}" ${pre&&pre._gmail?`data-gmail="${esc(pre._gmail)}" data-fecha="${esc(pre._fecha||"")}" data-dig="${esc(pre._dig||"")}"`:""}>
     ${campoMonto("valor",g.valor,g.moneda||base())}
     <label class="full">Nombre<input name="nombre" required value="${esc(g.nombre)}" placeholder="Ej.: Netflix"></label>
@@ -2161,7 +2253,7 @@ function openForm(id,pre){
     if(fOn("fCompartidos")){const pg=f.get("pagador")||"";if(pg&&obj.comparten.includes(pg))obj.pagador=pg}else if(id){const ant=state.gastos.find(x=>x.id===id);if(ant&&ant.pagador)obj.pagador=ant.pagador}
     if(id){const ant=state.gastos.find(x=>x.id===id);versionar(ant,obj,mkey(today),!!f.get("corregir"))}
     state.gastos=id?state.gastos.map(x=>x.id===id?obj:x):[...state.gastos,obj];
-    if(!id&&pre&&pre._gmail){aprenderDig(pre._dig,obj.cuentaId);gmMarcar(pre._gmail,"a")}
+    if(!id&&pre&&pre._gmail){aprenderDig(pre._dig,obj.cuentaId);gmMarcar(pre._gmail,"a",{l:"Gasto fijo",ref:{k:"fijo",id:obj.id}})}
     store.saveRegistro();closeSheet();render();toast(id?"Cambios guardados":"Gasto fijo agregado");});
 }
 
@@ -2191,6 +2283,11 @@ function openVarDetail(id,mes){
   <div class="actions"><button class="btn-p grow" data-editvar="${v.id}" data-mes="${mes}">Editar</button><button class="btn-s" data-dupvar="${v.id}" data-mes="${mes}">Repetir hoy</button><button class="btn-d" data-delvar="${v.id}" data-mes="${mes}">Eliminar</button></div>`);
 }
 let lastVar={categoria:"Supermercado",medio:"Débito",cuenta:"",moneda:null};
+const selGI=act=>fOn("fIngresos")?`<div class="gi-mini" role="group" aria-label="Gasto o ingreso"><button type="button" data-gi="gasto" class="gm-g" aria-pressed="${act==="gasto"}" aria-label="Gasto">−</button><button type="button" data-gi="ingreso" class="gm-i" aria-pressed="${act==="ingreso"}" aria-label="Ingreso">+</button></div>`:"";
+const tituloGI=(t,act,con)=>con&&fOn("fIngresos")?`<div class="gi-row"><h3 style="margin:0;font-size:20px">${t}</h3>${selGI(act)}</div>`:`<h3 style="margin:0 0 14px;font-size:20px">${t}</h3>`;
+function cambiarGI(a){const fv=$("#vForm"),fg=$("#gForm"),fi=$("#iForm");
+  if(a==="ingreso"&&(fv||fg)){const f=fv||fg,fd=new FormData(f);swapDir="sw-l";openIngForm(null,null,undefined,numIn(fd.get(fv?"monto":"valor"))||"",{nombre:(fd.get(fv?"descripcion":"nombre")||"").trim(),moneda:fd.get("moneda")||"",_gi:1})}
+  else if(a==="gasto"&&fi){const fd=new FormData(fi);swapDir="sw-r";openVarForm(null,null,{descripcion:(fd.get("nombre")||"").trim(),monto:numIn(fd.get("monto"))||"",moneda:fd.get("moneda")||undefined,_cambio:1})}}
 const selTipo=act=>`<div class="seg light seg-tipo" role="group" aria-label="Tipo de gasto"><button type="button" data-switch="var" aria-pressed="${act==="var"}">Variable</button><button type="button" data-switch="fijo" aria-pressed="${act==="fijo"}">Fijo</button></div><p class="tipo-hint">${act==="var"?"Lo que compras en el día a día: supermercado, salidas, transporte.":"Lo que se cobra solo cada cierto tiempo: arriendo, cuentas, suscripciones, seguros."}</p>`;
 function cambiarTipo(a){const fv=$("#vForm"),fg=$("#gForm");swapDir=a==="fijo"?"sw-l":"sw-r";
   if(a==="fijo"&&fv){const f=new FormData(fv);const mp=leerMedio(f.get("mp"));openForm(null,{nombre:(f.get("descripcion")||"").trim(),valor:numIn(f.get("monto"))||"",moneda:f.get("moneda")||base(),medio:mp.medio,cuenta:mp.cuenta,cuentaId:mp.cuentaId,notas:(f.get("notas")||"").trim(),_gmail:fv.dataset.gmail||"",_fecha:f.get("fecha")||"",_dig:fv.dataset.dig||""})}
@@ -2198,7 +2295,7 @@ function cambiarTipo(a){const fv=$("#vForm"),fg=$("#gForm");swapDir=a==="fijo"?"
 function openVarForm(id,mes,plantilla){
   const v=id?findVar(id,mes):{cuotas:plantilla?._gmail?(plantilla.cuotas||1):1,grupos:[],descripcion:plantilla?.descripcion||"",categoria:plantilla?.categoria||lastVar.categoria,monto:plantilla?.monto??"",moneda:plantilla?.moneda||lastVar.moneda||baseMon(),fecha:plantilla?._gmail&&plantilla.fecha?plantilla.fecha:iso(today),medio:plantilla?.medio||lastVar.medio,cuenta:plantilla?.cuenta??lastVar.cuenta,cuentaId:plantilla?plantilla.cuentaId:lastVar.cuentaId,notas:plantilla?._gmail?(plantilla.notas||""):""};
   const frec=id||(plantilla&&(!plantilla._cambio||plantilla._gmail))?[]:frecuentes();
-  openSheet(`${id?"":selTipo("var")}<h3 style="margin:0 0 14px;font-size:20px">${id?"Editar gasto variable":"Nuevo gasto variable"}</h3>
+  openSheet(`${id?"":selTipo("var")}${tituloGI(id?"Editar gasto variable":"Nuevo gasto variable","gasto",!id&&!(plantilla&&plantilla._gmail))}
   ${frec.length?`<div class="chips" style="margin:-4px 0 14px" aria-label="Gastos frecuentes">${frec.map((x,i)=>`<button type="button" class="chip frec" data-frec="${i}"><i style="display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px;background:${VCAT_COLOR[x.categoria]||VCAT_COLOR.Otro}"></i>${esc(x.descripcion)}</button>`).join("")}</div>`:""}
   <form class="f" id="vForm" data-nuevo="${id?"":"1"}" ${plantilla?._gmail?`data-gmail="${esc(plantilla._gmail)}" data-dig="${esc(plantilla._dig||"")}"`:""}>
     ${campoMonto("monto",v.monto,v.moneda||baseMon())}
@@ -2240,7 +2337,7 @@ function openVarForm(id,mes,plantilla){
     const mm=movsMes(nk).filter(x=>x.v.id!==id);const antes={cat:mm.filter(x=>x.v.categoria===obj.categoria).reduce((a,x)=>a+x.m,0),tot:mm.reduce((a,x)=>a+x.m,0)};
     if(id&&mes!==nk){state.vars[mes]=(state.vars[mes]||[]).filter(x=>x.id!==id);if(!state.vars[mes].length)delete state.vars[mes];store.saveMes(mes)}
     const list=state.vars[nk]||[];state.vars[nk]=id&&mes===nk?list.map(x=>x.id===id?obj:x):[...list,obj];
-    store.saveMes(nk);if(plantilla&&plantilla._regla)state.config={...(state.config||{}),gmailReglas:{...((state.config||{}).gmailReglas||{}),[plantilla._regla]:{a:"gasto",cat:obj.categoria}}};if(plantilla&&plantilla._gmail){aprenderDig(plantilla._dig,obj.cuentaId);gmailMarcar(plantilla._gmail,"a")}lastVar={categoria:obj.categoria,medio:obj.medio,cuenta:obj.cuenta,cuentaId:obj.cuentaId,moneda:null};
+    store.saveMes(nk);if(plantilla&&plantilla._regla)state.config={...(state.config||{}),gmailReglas:{...((state.config||{}).gmailReglas||{}),[plantilla._regla]:{a:"gasto",cat:obj.categoria}}};if(plantilla&&plantilla._gmail){aprenderDig(plantilla._dig,obj.cuentaId);gmailMarcar(plantilla._gmail,"a",{l:"Gasto variable",ref:{k:"var",id:obj.id}})}lastVar={categoria:obj.categoria,medio:obj.medio,cuenta:obj.cuenta,cuentaId:obj.cuentaId,moneda:null};
     closeSheet();render();
     const alertas=avisoPresupuesto(obj.categoria,nk,antes);
     if(alertas.length)openSheet(`<h3 style="margin:0 0 10px">${alertas.some(a=>a.startsWith("Te pasaste"))?"Presupuesto superado":"Atención con el presupuesto"}</h3>${alertas.map(a=>`<p style="margin:0 0 8px">${esc(a)}</p>`).join("")}<div class="actions"><button class="btn-p grow" data-close>Entendido</button><button class="btn-s" data-close data-tab="mov">Ver presupuestos</button></div>`);
@@ -2252,7 +2349,27 @@ function decimalesMoneda(c){if(c==="UF")return 4;if(c==="UTM")return 0;try{retur
 function simboloMoneda(c){if(c==="UF"||c==="UTM")return c;try{const p=new Intl.NumberFormat("es-CL",{style:"currency",currency:c,currencyDisplay:["CLP","USD"].includes(c)?"symbol":"narrowSymbol"}).formatToParts(1).find(x=>x.type==="currency");return p?p.value:c}catch(e){return c}}
 const aRaw=v=>{const n=Number(v);if(v===""||v==null||!isFinite(n))return "";return String(n).replace(".",",")};
 function fmtRaw(r){if(!r)return "";const [e,d]=r.split(",");const ent=(e||"0").replace(/^0+(?=\d)/,"").replace(/\B(?=(\d{3})+(?!\d))/g,".");return d!==undefined?ent+","+d:ent}
-function campoMonto(name,val,cod){const r=aRaw(val);return `<div class="full amount-in"><span class="amt-sym">${esc(simboloMoneda(cod))}</span><input name="${name}" data-kp="monto" data-raw="${r}" inputmode="none" autocomplete="off" placeholder="0" aria-label="Monto" value="${fmtRaw(r)}"></div>`}
+function campoMonto(name,val,cod){const r=aRaw(val);return `<div class="full amount-in"><span class="amt-sym">${esc(simboloMoneda(cod))}</span><input name="${name}" data-kp="monto" data-raw="${r}" inputmode="none" autocomplete="off" placeholder="0" aria-label="Monto" value="${fmtRaw(r)}"></div><div class="full amt-info" hidden></div>`}
+const fmtEn=(n,cod)=>cod===base()&&!ui.oculto?fmtBase().format(n):montoOrig(n,cod);
+function detConv(cod,fe){const td=tasasDia()[fe],b=base(),u=toBaseEn(1,cod,fe);
+  return td&&td[cod]>0&&td[b]>0?`Convertido con el valor del ${cod} del ${fmtD(fe)} (1 ${cod} = ${clp(u)}).`:`Luka aún no tiene el valor del ${cod} del ${fmtD(fe)}; por ahora usa el de hoy (1 ${cod} = ${clp(u)}).`}
+/* bajo el monto: equivalente en la moneda principal y aviso de decimales; al guardar, pregunta si los decimales no calzan con la moneda */
+function infoMonto(form){const inp=form.querySelector("[data-kp=monto]"),sel=form.querySelector("[name=moneda]"),box=form.querySelector(".amt-info");if(!inp||!sel||!box)return;
+  const cod=()=>monedaDeEtiqueta(sel.value)||sel.value||base();
+  const upd=()=>{const c=cod(),raw=inp.dataset.raw||"",dd=(raw.split(",")[1]||"").length,cd=decimalesMoneda(c),n=numIn(inp.value);let h="";
+    if(dd>cd)h=`<span class="amt-dec">${cd?`${esc(c)} usa hasta ${cd} decimales.`:`${esc(c)} no usa decimales.`} Si el monto es en otra moneda, cámbiala abajo.</span>`;
+    else if(c!==base()&&n>0&&tasaOK(c)){const fe=(form.querySelector("[name=fecha]")||{}).value||"",pas=fe&&fe<iso(today);
+      h=`<span class="amt-conv">≈ ${clp(toBaseEn(n,c,pas?fe:""))} ${esc(base())}${pas?`<button type="button" class="ib-conv" aria-label="Cómo se convirtió">ⓘ</button>`:""}</span>${pas?`<span class="amt-det" hidden>${esc(detConv(c,fe))}</span>`:""}`}
+    box.innerHTML=h;box.hidden=!h};
+  inp.addEventListener("input",upd);sel.addEventListener("change",upd);const fe=form.querySelector("[name=fecha]");if(fe)fe.addEventListener("change",upd);
+  box.addEventListener("click",e=>{if(e.target.closest(".ib-conv")){const d=box.querySelector(".amt-det");if(d)d.hidden=!d.hidden}});upd();
+  form.addEventListener("submit",e=>{if(form.dataset.decOk)return;const c=cod(),raw=inp.dataset.raw||"",[ent,dd]=raw.split(","),cd=decimalesMoneda(c);if(dd===undefined||dd.length<=cd)return;
+    e.preventDefault();e.stopImmediatePropagation();cerrarKP();const ops=[];
+    if(dd.length<=3&&(cd===0||dd.length===3)){const mil=Number((ent||"0")+dd.padEnd(3,"0"));ops.push(mil)}
+    const red=Math.round(Number((ent||"0")+"."+dd)*10**cd)/10**cd;if(!ops.includes(red))ops.push(red);
+    const usar=n=>{inp.dataset.raw=aRaw(n);inp.value=fmtRaw(inp.dataset.raw);upd();form.dataset.decOk="1";form.requestSubmit();delete form.dataset.decOk};
+    dialogo({titulo:`${c} ${cd?`usa hasta ${cd} decimales`:"no usa decimales"}. ¿Qué quisiste anotar?`,texto:`Escribiste ${fmtRaw(raw)}.`,botones:[...ops.map((n,i)=>({t:fmtEn(n,c),c:i?"btn-s":"btn-p",fn:()=>usar(n)})),
+      {t:"Cambiar moneda",c:"btn-s",fn:()=>setTimeout(()=>{const pk=sel.nextElementSibling&&sel.nextElementSibling.querySelector(".picker");if(pk){pk.scrollIntoView({block:"center"});pk.click()}},300)}]})},{capture:true})}
 function campoKP(label,name,val,tipo,extra){const r=aRaw(val);return `<label>${label}<input name="${name}" data-kp="${tipo}" data-raw="${r}" inputmode="none" autocomplete="off" value="${fmtRaw(r)}" ${extra||""}></label>`}
 function stepper(name,val,min,max,cls){return `<div class="stepper ${cls||""}" data-min="${min}" data-max="${max}"><button type="button" data-step="-1" aria-label="Menos">−</button><input name="${name}" value="${val}" readonly inputmode="none" aria-label="${name}"><button type="button" data-step="1" aria-label="Más">+</button></div>`}
 const MES3=m=>MESES[m].slice(0,3);
@@ -2350,7 +2467,7 @@ function prepararControles(form){
     pan.addEventListener("click",e=>{const d=e.target.closest("[data-dia]");if(!d)return;e.stopPropagation();hid.value=d.dataset.dia;btn.querySelector("span").textContent="Día "+d.dataset.dia;const nt=w.parentNode.querySelector(".dnote");if(nt)nt.hidden=Number(d.dataset.dia)<29;pan.querySelectorAll("[data-dia]").forEach(x=>x.classList.toggle("on",x===d));pan.hidden=true;hid.dispatchEvent(new Event("change",{bubbles:true}))})});
   form.querySelectorAll("[data-kp]").forEach(inp=>{inp.addEventListener("focus",()=>abrirKP(inp));inp.addEventListener("click",()=>abrirKP(inp));
     inp.addEventListener("input",e=>{if(e.isTrusted&&!e.inputType?.startsWith("insertReplacement")){const r=String(inp.value).replace(/\./g,"").replace(/[^\d,]/g,"");inp.dataset.raw=r}})});
-  const sync=form.querySelector("[name=moneda]"),sym=form.querySelector(".amt-sym");if(sync&&sym)sync.addEventListener("change",()=>{sym.textContent=simboloMoneda(sync.value)});
+  const sync=form.querySelector("[name=moneda]"),sym=form.querySelector(".amt-sym");if(sync&&sym)sync.addEventListener("change",()=>{sym.textContent=simboloMoneda(sync.value)});infoMonto(form);
   form.addEventListener("input",e=>{if(e.isTrusted||e.target.closest(".stepper")||e.target.dataset.kp)marcarSucio(form)});
   form.addEventListener("change",e=>{if(!e.target.classList.contains("nat")||e.isTrusted===false)marcarSucio(form)});
 }
@@ -2358,7 +2475,7 @@ function marcarSucio(form){form.dataset.dirty="1"}
 /* ---------- teclado numérico propio ---------- */
 let kpInp=null;
 function kpConfig(inp){const t=inp.dataset.kp;const f=inp.form;let dec=0;
-  if(t==="monto"){const m=f&&f.querySelector("[name=moneda]");dec=decimalesMoneda(m?m.value:base())}else if(t==="pct")dec=1;else if(t==="base")dec=decimalesMoneda(base());return {dec,mil:t==="monto"||t==="base"}}
+  if(t==="monto")dec=4;else if(t==="pct")dec=1;else if(t==="base")dec=decimalesMoneda(base());return {dec,mil:t==="monto"||t==="base"}}
 function abrirKP(inp){if(!inp||!inp.isConnected)return;
   const ae=document.activeElement;if(ae&&ae!==inp&&!ae.dataset?.kp&&/^(INPUT|TEXTAREA)$/.test(ae.tagName))ae.blur();
   if(sheetAbierta()&&!(history.state&&history.state.kp))marca({kp:1});
@@ -2378,8 +2495,8 @@ function abrirKP(inp){if(!inp||!inp.isConnected)return;
   setTimeout(()=>inp.scrollIntoView({block:"center",behavior:"smooth"}),60)}
 function kpPintar(){if(!kpInp)return;kpInp.value=fmtRaw(kpInp.dataset.raw||"");kpInp.dispatchEvent(new Event("input",{bubbles:true}))}
 let cerrandoHoja=false;
-function cerrarKP(porAtras){if(!porAtras&&!cerrandoHoja&&kpInp&&history.state&&history.state.kp){volviendo=true;history.back()}const kp=$("#kp");if(kp)kp.classList.remove("on");document.body.classList.remove("kp-open");document.querySelectorAll(".kp-activo").forEach(x=>x.classList.remove("kp-activo"));if(kpInp)kpInp.blur();kpInp=null}
-let kpCerrarPend=false;document.addEventListener("pointerdown",e=>{kpCerrarPend=!!(kpInp&&!e.target.closest("#kp,[data-kp]"))},true);
+function cerrarKP(porAtras){if(!porAtras&&!cerrandoHoja&&kpInp&&history.state&&history.state.kp){volviendo=true;history.back()}const kp=$("#kp");if(kp&&kp.classList.contains("on"))kpCerradoT=Date.now();if(kp)kp.classList.remove("on");document.body.classList.remove("kp-open");document.querySelectorAll(".kp-activo").forEach(x=>x.classList.remove("kp-activo"));if(kpInp)kpInp.blur();kpInp=null}
+let kpCerrarPend=false,kpCerradoT=0;document.addEventListener("pointerdown",e=>{kpCerrarPend=!!(kpInp&&!e.target.closest("#kp,[data-kp],.seg-tipo,.gi-mini"))},true);
 document.addEventListener("pointerup",()=>{if(kpCerrarPend){kpCerrarPend=false;setTimeout(()=>{if(kpInp&&!(document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.kp))cerrarKP()},0)}},true);
 
 function fijarSelect(sel,val){if(!sel)return;sel.value=val;if(sel._ddSync)sel._ddSync()}
@@ -2766,7 +2883,7 @@ async function dbxSubir(){
   if(sincronizando){scheduleSync();return}
   sincronizando=true;dbxEstado="subiendo";if(ui.tab==="ajustes")render();
   try{
-    const datos={app:"mis-gastos",version:1,modificado:state.modificado||Date.now(),gastos:state.gastos,vars:state.vars,presupuestos:state.presupuestos||{},config:state.config||{},cuentas:state.cuentas||[],categorias:state.categorias||null,grupos:state.grupos||[],archivados:state.archivados||[],tasasDia:state.tasasDia||{},ingresos:state.ingresos||{fijos:[],extra:{}},compPagos:state.compPagos||[],pagosTc:state.pagosTc||[],gmailVistos:state.gmailVistos||{}};
+    const datos={app:"mis-gastos",version:1,modificado:state.modificado||Date.now(),gastos:state.gastos,vars:state.vars,presupuestos:state.presupuestos||{},config:state.config||{},cuentas:state.cuentas||[],categorias:state.categorias||null,grupos:state.grupos||[],archivados:state.archivados||[],tasasDia:state.tasasDia||{},ingresos:state.ingresos||{fijos:[],extra:{}},compPagos:state.compPagos||[],pagosTc:state.pagosTc||[],traspasos:state.traspasos||[],gmailVistos:state.gmailVistos||{}};
     await dbxSubirArchivo(DBX_DATOS,new Blob([JSON.stringify(datos)],{type:"application/json"}));
     if(excelOn()&&window.JSZip){const blob=await generarExcel();await dbxSubirArchivo(DBX_EXCEL,blob);meta.ultimoRespaldo=iso(today);meta.ultimoRespaldoTs=Date.now()}
     meta.pendiente=false;meta.dbxUltima=Date.now();meta.dbxError="";
@@ -2782,7 +2899,7 @@ async function dbxBajar(forzar,subirSiempre){
     const r=await dbxBajarArchivo(DBX_DATOS);
     const remoto=r?await r.json():null;
     if(remoto&&remoto.app==="mis-gastos"&&(remoto.modificado||0)>(state.modificado||0)){
-      state={...state,gastos:remoto.gastos||[],vars:remoto.vars||{},presupuestos:remoto.presupuestos||state.presupuestos||{},config:remoto.config||state.config||{},cuentas:remoto.cuentas||state.cuentas||[],categorias:remoto.categorias||state.categorias||null,grupos:remoto.grupos||state.grupos||[],archivados:remoto.archivados||state.archivados||[],tasasDia:{...(remoto.tasasDia||{}),...(state.tasasDia||{})},ingresos:remoto.ingresos||state.ingresos||{fijos:[],extra:{}},compPagos:remoto.compPagos||state.compPagos||[],pagosTc:remoto.pagosTc||state.pagosTc||[],gmailVistos:{...(state.gmailVistos||{}),...(remoto.gmailVistos||{})},modificado:remoto.modificado};migrarPlan();migrarCuentaIds();aplicarCategorias();guardarLocal();meta.pendiente=false;
+      state={...state,gastos:remoto.gastos||[],vars:remoto.vars||{},presupuestos:remoto.presupuestos||state.presupuestos||{},config:remoto.config||state.config||{},cuentas:remoto.cuentas||state.cuentas||[],categorias:remoto.categorias||state.categorias||null,grupos:remoto.grupos||state.grupos||[],archivados:remoto.archivados||state.archivados||[],tasasDia:{...(remoto.tasasDia||{}),...(state.tasasDia||{})},ingresos:remoto.ingresos||state.ingresos||{fijos:[],extra:{}},compPagos:remoto.compPagos||state.compPagos||[],pagosTc:remoto.pagosTc||state.pagosTc||[],traspasos:remoto.traspasos||state.traspasos||[],gmailVistos:{...(state.gmailVistos||{}),...(remoto.gmailVistos||{})},modificado:remoto.modificado};migrarPlan();migrarCuentaIds();aplicarCategorias();guardarLocal();meta.pendiente=false;
       meta.dbxUltima=Date.now();meta.dbxError="";saveMeta();toast("Datos actualizados desde Dropbox");
     }else if(!remoto||(state.modificado||0)>(remoto.modificado||0)||meta.pendiente){dbxEstado="";await dbxSubir();return}
     else{meta.dbxUltima=Date.now();meta.dbxError="";saveMeta()}
@@ -2940,9 +3057,14 @@ document.addEventListener("click",e=>{
   if(b.hasAttribute("data-gmconectar")){gmConectar();return}
   if(b.hasAttribute("data-gmquitar")){dialogo({titulo:"¿Desconectar Gmail?",texto:"Luka dejará de revisar tu correo. Para borrar el script, elimínalo en script.google.com.",botones:[{t:"Desconectar",c:"btn-d",fn:()=>{const c={...(state.config||{})};delete c.gmail;state.config=c;gmPend=[];store.saveRegistro();closeSheet();render();toast("Gmail desconectado")}},{t:"Cancelar",c:"btn-s"}]});return}
   if(d.pend){closeSheet();setTimeout(()=>abrirPend(d.pend),sheetAbierta()?250:0);return}
-  if(d.pendx){const id=d.pendx,ids=gmIds(gmPend.find(x=>x.id===id)||{id});gmMarcar(id,"d");store.saveRegistro();if($("#pendSheet")){if(gmPendientes().length)openPendTodos();else closeSheet()}render();toastDeshacer("Movimiento descartado",()=>{ids.forEach(i=>delete gmVistos()[i]);gmailRevisar(true);store.saveRegistro();render()});return}
+  if(d.pendx){const id=d.pendx,ids=gmIds(gmPend.find(x=>x.id===id)||{id});gmMarcar(id,"d",{l:"Descartado"});store.saveRegistro();if($("#pendSheet")){if(gmPendientes().length)openPendTodos();else closeSheet()}render();toastDeshacer("Movimiento descartado",()=>{ids.forEach(i=>delete gmVistos()[i]);gmailRevisar(true);store.saveRegistro();render()});return}
   if(b.hasAttribute("data-pendtodos")){openPendTodos();return}
   if(d.pendacc){accionPend(d.pendacc,d.id,d.p);return}
+  if(b.hasAttribute("data-gmhist")){openGmHist();return}
+  if(d.gmh){const id=d.gmh;closeSheet();setTimeout(()=>openGmDet(id),250);return}
+  if(d.gmdeshacer){gmDeshacer(d.gmdeshacer);return}
+  if(d.gi){cambiarGI(d.gi);return}
+  if(d.tcmover){moverPagoTc(d.tcmover);return}
   if(d.lockmet){const m=d.lockmet;closeSheet();setTimeout(()=>activarMetodo(m),250);return}
   if(b.hasAttribute("data-cfgmeta")){openMetaForm();return}
   if(d.histsel!==undefined){ui.histSel=Number(d.histsel);render();return}
