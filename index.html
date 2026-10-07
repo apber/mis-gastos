@@ -171,7 +171,8 @@ form.f{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 form.f .full{grid-column:1/-1}
 form.f label{display:grid;gap:5px;align-content:start;font-size:12.5px;font-weight:700;color:var(--ink-2)}
 form.f input,form.f select,form.f textarea{border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:10px 12px;font-weight:600;font-size:15px;width:100%;min-width:0}
-form.f textarea{min-height:70px;resize:vertical}
+form.f textarea{min-height:70px;resize:none;overflow-y:hidden;line-height:1.4}
+textarea.tope{overflow-y:auto}
 .hint{font-size:12px;color:var(--ink-3);font-weight:500}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;z-index:60;box-shadow:var(--shadow)}
 .banner{background:color-mix(in srgb,var(--warn) 14%,var(--surface));border-radius:14px;padding:10px 14px;font-size:13.5px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -574,6 +575,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 .pend-det b{display:block;font-size:22px}
 .pend-det span{font-size:13px;color:var(--ink-2);display:block}
 .pend-det .pend-sug{margin-top:4px}
+.lista-fijos{margin-left:-10px}.lista-fijos .day{width:34px;margin-right:-3px}.lista-fijos .row .av{margin-left:2px;margin-right:5px}
 .s b.cuando{font-weight:700;color:var(--primary)}
 .gm-nav{display:flex;align-items:center;justify-content:space-between;margin:-2px 0 6px;color:var(--ink-3);font-size:12.5px;font-weight:700}
 .gm-nb{border:0;background:var(--primary-soft);color:var(--primary);width:40px;height:34px;border-radius:12px;font-size:22px;line-height:1;cursor:pointer}
@@ -690,7 +692,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="2.02";
+const APP_VERSION="2.03";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -1928,8 +1930,8 @@ function viewInicio(){
     <div class="card-head"><div><h2>Cobros fijos de ${mesTxt}</h2><p class="sub">${pend.length?`Faltan ${clp(totalMes-pagado)} por cobrar`:"Ya se cobró todo este mes"}</p></div></div>
     <div class="progress"><i style="width:${totalMes?pagado/totalMes*100:0}%"></i></div>
     <div class="remaining"><span>Cobrado ${clp(pagado)}</span><span>Total ${clp(totalMes)}</span></div>
-    <ul class="list" style="margin-top:8px">${(porVenir.length?porVenir:mesItems.slice(-3)).slice(0,4).map(rowDay).join("")}</ul>
-    ${sigMes.length?`<div class="tc-sec" style="margin-top:6px"><span>Próximo mes</span><span>${clp(sigMes.reduce((a,x)=>a+x.v,0))}</span></div><ul class="list">${sigMes.slice(0,4).map(x=>`<li><button class="row btn" data-open="${x.g.id}"><div class="day"><b>${x.d.getDate()}</b><span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${cuando(x.i)}${x.tipo==="Se reactiva"?" · Se reactiva":""}</div></div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>`:""}
+    <ul class="list lista-fijos" style="margin-top:8px">${(porVenir.length?porVenir:mesItems.slice(-3)).slice(0,4).map(rowDay).join("")}</ul>
+    ${sigMes.length?`<div class="tc-sec" style="margin-top:6px"><span>Próximo mes</span><span>${clp(sigMes.reduce((a,x)=>a+x.v,0))}</span></div><ul class="list lista-fijos">${sigMes.slice(0,4).map(x=>`<li><button class="row btn" data-open="${x.g.id}"><div class="day"><b>${x.d.getDate()}</b><span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s"><b class="cuando">${cuando(x.i)}</b> · ${x.tipo==="Se reactiva"?"Se reactiva":frecTxt(x.g)}</div>${medioHTML(x.g)?`<div class="s s-medio">${medioHTML(x.g)}</div>`:""}</div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>`:""}
   </section>
   </div>`;
 }
@@ -1997,8 +1999,9 @@ function openStat_(k){
     openSheet(`<h3 style="margin:0 0 4px;font-size:20px">Fijos activos</h3><p class="sub" style="margin:0 0 10px">${l.length} gastos fijos activos</p><ul class="list">${l.map(rowGasto).join("")}</ul>`)}
   else{const kk=mkey(today),l=movsMes(kk).sort((a,b)=>b.fecha.localeCompare(a.fecha));
     openSheet(`<h3 style="margin:0 0 4px;font-size:20px">Variables de ${MESES[today.getMonth()].toLowerCase()}</h3><p class="sub" style="margin:0 0 10px">${l.length} movimiento${l.length===1?"":"s"}, ${clp(totalVar(kk))} en total</p>${l.length?`<ul class="list">${l.map(rowMov).join("")}</ul>`:`<div class="empty"><b>Sin movimientos</b>Aún no registras gastos variables este mes.</div>`}`)}}
-function rowDay(x){const past=x.dia<today.getDate(),dif=x.dia-today.getDate();
-  return `<li><button class="row btn ${past?"past":""}" data-open="${x.g.id}"><div class="day"><b>${x.dia}</b><span>${MESES[today.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${dif>=0&&avisosOn()&&dif<=diasAviso()?`<b class="cuando">${cuando(dif)}</b> · `:""}${esc([x.g.medio,x.g.cuenta].filter(Boolean).join(" · "))}</div></div><div class="amt">${clp(x.v)}</div></button></li>`}
+const frecTxt=g=>per(g)===1?"Mensual":per(g)===12?"Anual":nombrePer(per(g));
+function rowDay(x){const past=x.dia<today.getDate(),dif=x.dia-today.getDate(),md=medioHTML(x.g);
+  return `<li><button class="row btn ${past?"past":""}" data-open="${x.g.id}"><div class="day"><b>${x.dia}</b><span>${MESES[today.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${dif>=0&&avisosOn()&&dif<=diasAviso()?`<b class="cuando">${cuando(dif)}</b> · `:""}${frecTxt(x.g)}</div>${md?`<div class="s s-medio">${md}</div>`:""}</div><div class="amt">${clp(x.v)}</div></button></li>`}
 function rowMov(x){const v=x.v;
   const sub=[x.cuota?`Cuota ${x.cuota}/${x.n}`:"",v.categoria,v.cuenta||v.medio].filter(Boolean).join(" · ");
   return `<li><button class="row btn" data-openvar="${v.id}" data-mes="${v.fecha.slice(0,7)}">${avV(v)}<div class="mid"><div class="t">${esc(v.descripcion||v.categoria)}</div><div class="s">${esc(sub)}</div></div><div class="amt">${clp(x.m)}${x.cuota?`<div class="s">de ${clp(vParte(v))}</div>`:nPers(v)>1?`<div class="s">de ${clp(vBase(v))}</div>`:v.moneda&&v.moneda!==base()?`<div class="s">${montoOrig(v.monto,v.moneda)}</div>`:""}</div></button></li>`}
@@ -2336,7 +2339,6 @@ function viewAjustes(){
   ${cardFunciones()}
   ${cardCuentas()}
   ${cardCategorias()}
-  <section class="card"><div class="card-head" style="margin:0"><div>${t2("Presupuestos","presupuestos")}<p class="sub one">${nPres?`${nPres} presupuesto${nPres===1?"":"s"} definido${nPres===1?"":"s"}`:"Aún no defines presupuestos"}</p></div><button class="btn-s" data-editpres style="padding:6px 12px;font-size:13px">${nPres?"Editar":"Definir"}</button></div></section>
   ${cardDropbox()}
   ${cardApariencia()}
   ${cardSeguridad()}</div>`;
@@ -2748,6 +2750,10 @@ function kpPintar(){if(!kpInp)return;kpInp.value=fmtRaw(kpInp.dataset.raw||"");k
 let cerrandoHoja=false;
 function cerrarKP(porAtras){if(!porAtras&&!cerrandoHoja&&kpInp&&history.state&&history.state.kp){volviendo=true;history.back()}const kp=$("#kp");if(kp&&kp.classList.contains("on"))kpCerradoT=Date.now();if(kp)kp.classList.remove("on");document.body.classList.remove("kp-open");document.querySelectorAll(".kp-activo").forEach(x=>x.classList.remove("kp-activo"));if(kpInp)kpInp.blur();kpInp=null}
 let kpCerrarPend=false,kpCerradoT=0;document.addEventListener("pointerdown",e=>{kpCerrarPend=!!(kpInp&&!e.target.closest("#kp,[data-kp],.seg-tipo,.gi-mini,input,textarea"))},true);
+/* notas que crecen con el texto, hasta unas 8 líneas */
+function ajustarNota(t){if(!t||t.tagName!=="TEXTAREA")return;t.style.height="auto";const max=Math.round(parseFloat(getComputedStyle(t).lineHeight)*8+22);const h=t.scrollHeight+2;t.style.height=Math.min(h,max)+"px";t.classList.toggle("tope",h>max)}
+document.addEventListener("input",e=>{if(e.target.tagName==="TEXTAREA")ajustarNota(e.target)});
+new MutationObserver(()=>{document.querySelectorAll("#modal textarea:not([data-aj])").forEach(t=>{t.dataset.aj="1";requestAnimationFrame(()=>ajustarNota(t))})}).observe(document.documentElement,{childList:true,subtree:true});
 document.addEventListener("focusin",e=>{const t=e.target;if(kpInp&&t!==kpInp&&!(t.dataset&&t.dataset.kp)&&/^(INPUT|TEXTAREA)$/.test(t.tagName))cerrarKP()});
 document.addEventListener("pointerup",()=>{if(kpCerrarPend){kpCerrarPend=false;setTimeout(()=>{if(kpInp&&!(document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.kp))cerrarKP()},0)}},true);
 

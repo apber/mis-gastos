@@ -1,5 +1,5 @@
 // Guarda la app en el teléfono para que abra rápido y funcione sin internet.
-const CACHE = "luka-2.02";
+const CACHE = "luka-2.03";
 const ARCHIVOS = ["./", "index.html", "jszip.min.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-192.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon.ico", "favicon-32.png"];
 
 self.addEventListener("install", e => {
