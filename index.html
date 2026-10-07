@@ -83,7 +83,7 @@ nav.bottom button[aria-current="true"]{color:var(--primary)}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .stat{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--shadow);padding:14px}
 .stat b{display:block;font-size:19px;letter-spacing:-.02em}
-.stats .stat{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center!important;gap:4px;padding:12px 6px}
+.stats .stat{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center!important;gap:4px;padding:10px 6px 11px}
 .stats .stat span{display:block;font-size:12px;line-height:1.35;text-wrap:balance}
 .stat span{font-size:12.5px;color:var(--ink-3);font-weight:500}
 /* Donut */
@@ -574,6 +574,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 .pend-det b{display:block;font-size:22px}
 .pend-det span{font-size:13px;color:var(--ink-2);display:block}
 .pend-det .pend-sug{margin-top:4px}
+.s b.cuando{font-weight:700;color:var(--primary)}
 .gm-nav{display:flex;align-items:center;justify-content:space-between;margin:-2px 0 6px;color:var(--ink-3);font-size:12.5px;font-weight:700}
 .gm-nb{border:0;background:var(--primary-soft);color:var(--primary);width:40px;height:34px;border-radius:12px;font-size:22px;line-height:1;cursor:pointer}
 .gm-nb:disabled{opacity:.35;cursor:default}
@@ -689,7 +690,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="2.01";
+const APP_VERSION="2.02";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -964,7 +965,7 @@ const INFO={
   presupuestos:["Presupuestos","Cada barra muestra cuánto llevas del límite que definiste para el mes. Verde: bajo el 80%. Amarillo: entre el 80% y el 100%. Rojo: te pasaste.<br><br>El total que escribes manda. Si las categorías suman menos, la diferencia queda sin asignar y cubre las categorías sin presupuesto propio; si suman más, la app te avisa al guardar. Si dejas el total en blanco, se calcula solo como la suma de las categorías. También puedes definir solo un total.<br><br>Durante el mes en curso, desde el día 3, si vas camino a pasarte de un presupuesto aparece en amarillo “A este ritmo llegarás a…”, una proyección según tu promedio diario. Toca una barra para ver la proyección aunque vayas bien. Al registrar un gasto que te hace cruzar el 80% o el 100%, la app te avisa."],
   proximos:["Próximos cobros","Incluye los cobros fijos de los próximos días: gastos mensuales activos, pagos anuales que caen en esas fechas y gastos pausados que se reactivan. Si registraste el día de vencimiento de una tarjeta de crédito, también aparece su pago, con lo que Luka estima que facturó. Ese pago no se suma al total: sus compras ya están contadas en tus gastos.<br><br>Puedes cambiar los días de anticipación, o desactivar los avisos, en Ajustes."],
   moneda:["Moneda e indicadores","La moneda principal es la que se usa para todos los totales, gráficos y presupuestos.<br><br>La UF, la UTM, el dólar y el euro en pesos vienen del Banco Central de Chile, vía mindicador.cl. Las demás monedas vienen de bancos centrales de todo el mundo, vía frankfurter.dev, con valores diarios. Se actualizan solos al abrir la app; si una fuente falla, se usan los últimos valores guardados.<br><br>Cada gasto en otra moneda se convierte con el valor de su fecha: las compras, con el del día de la compra, y los gastos fijos de meses ya cerrados, con el del día de cobro. El mes en curso y los siguientes usan el valor de hoy. Así, si sube la UF o el dólar, tus meses pasados no cambian.<br><br>En el peso argentino y el bolívar venezolano se usa el tipo de cambio oficial, que puede ser muy distinto del que realmente pagas."],
-  avisos:["Avisos y calendario","Los cobros fijos cercanos aparecen en el Resumen. Para recibir recordatorios con la app cerrada, exporta tus cobros al calendario: se crean eventos que se repiten cada mes o año, con aviso el día anterior a las 9:00.<br><br>Para importarlo a Google Calendar, ábrelo desde el computador en calendar.google.com > Configuración > Importar y exportar. Te recomendamos crear antes un calendario llamado “Luka” e importar ahí: si cambias tus gastos fijos, lo borras y vuelves a importar sin duplicados. Los montos son aproximados, porque la UF y las divisas cambian."],
+  avisos:["Avisos","Los cobros fijos de los próximos días aparecen en «Cobros fijos» del Resumen, con cuántos días faltan; en los últimos días del mes también ves los del mes siguiente. Las alertas de alzas te avisan cuando un gasto fijo sube más del límite que elijas.<br><br> Para recibir recordatorios con la app cerrada, exporta tus cobros al calendario: se crean eventos que se repiten cada mes o año, con aviso el día anterior a las 9:00.<br><br>Para importarlo a Google Calendar, ábrelo desde el computador en calendar.google.com > Configuración > Importar y exportar. Te recomendamos crear antes un calendario llamado “Luka” e importar ahí: si cambias tus gastos fijos, lo borras y vuelves a importar sin duplicados. Los montos son aproximados, porque la UF y las divisas cambian."],
   dropbox:["Sincronizar","Luka guarda tus datos en tu nube (hoy Dropbox) cada vez que haces un cambio, así no los pierdes si cambias o pierdes el teléfono. Si instalas Luka en otro teléfono y conectas la misma cuenta, tus datos aparecen solos.<br><br>«Sincronizar» actualiza todo en el momento, sin esperar."],
   respaldo:["Respaldo en Excel","Luka mantiene tus gastos en un Excel con resúmenes y gráficos, que se actualiza solo en tu nube (hoy Dropbox) cada vez que haces un cambio.<br><br>«Respaldar en Excel» descarga una copia en tu teléfono. «Cargar desde mi Excel» hace lo contrario: reemplaza los gastos de Luka por los de un Excel de Luka que tengas. Úsalo solo si editaste ese Excel y quieres traer esos cambios.<br><br>Si desactivas esta opción, tus datos siguen guardándose en tu nube; solo deja de generarse el Excel."],
   preferencias:["Preferencias","Activa solo las funciones que usas: las secciones de cada una aparecen en Ajustes cuando están activadas.<br><br>“Deshacer al eliminar” te da unos segundos para recuperar un gasto borrado; si eliges “No”, la app te pedirá confirmar antes de borrar."],
@@ -987,6 +988,7 @@ const INFO={
   estadofijo:["Estado","<b>Activa:</b> se cobra normalmente.<br><b>Pausada:</b> deja de contarse por un tiempo, por ejemplo si suspendiste una suscripción; puedes indicar cuándo vuelve.<br><b>Cancelada:</b> ya no se cobra, pero los meses anteriores lo conservan."],
   descuento:["Descuento","Si tienes un descuento fijo sobre este gasto, escribe el porcentaje y Luka lo restará del valor. Por ejemplo, 10 % de descuento por pagar con cierta tarjeta."],
   fechapago:["Fecha de pago","Escribe cualquier fecha en que se paga este gasto, por ejemplo la del último pago o la del próximo. Luka toma el día y, si no es mensual, también el mes, para calcular los cobros siguientes.<br><br>Si el gasto está pausado, indica la fecha en que vuelve a cobrarse. Si aún no lo sabes, déjala en blanco."],
+  seguridad:["Seguridad y datos","<b>Bloqueo:</b> pide desbloquear Luka al abrirla, con el desbloqueo del teléfono o un PIN propio.<br><br><b>Deshacer al eliminar:</b> te da unos segundos para recuperar un gasto borrado; si eliges «No», Luka te pedirá confirmar antes de borrar.<br><br><b>Tus datos:</b> se guardan en este teléfono y, si conectas Dropbox, también en tu carpeta de Dropbox. No se envían a ningún otro servidor."],
   datos:["Tus datos","Tus gastos se guardan en este teléfono y, si conectas Dropbox, también en tu carpeta de Dropbox. No se envían a ningún otro servidor. La app solo se conecta a internet para obtener los valores de las monedas e indicadores y para sincronizar con tu Dropbox."]};
 const ib=k=>`<button type="button" class="ibtn" data-info="${k}" aria-label="Más información">${I('<circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r=".6" fill="currentColor"/>')}</button>`;
 const t2=(titulo,k)=>`<h2 class="ht">${titulo}${ib(k)}</h2>`;
@@ -1777,19 +1779,32 @@ function openCatFijos_(cat,k){const d=keyToDate(k),fin=eom(d),l=[];
   openSheet(`<h3 style="margin:0 0 4px;font-size:20px">${esc(cat)}</h3><p class="sub" style="margin:0 0 10px">${MESES[d.getMonth()]} ${d.getFullYear()} · ${clp(tot)}</p>
     <ul class="list">${l.map(x=>`<li><button class="row btn" ${x.existe?`data-open="${x.g0.id}"`:'style="cursor:default"'}>${avG(x.g0)}<div class="mid"><div class="t">${esc(x.g0.nombre)}</div><div class="s">${per(x.g)===1?"Día "+(x.g.dia||"—"):nombrePer(per(x.g))}${x.existe?"":" · Ya no existe"}</div></div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>`)}
 /* Ajustes > Funciones */
-function cardFunciones(){const a=cfgAlzas(),m=metaAhorro();
-  const fila=(k,t,sub,lbl)=>`<div class="pref"><div><b>${t}</b><span>${sub}</span></div>${sw(k,fOn(k),lbl)}</div>`;
-  const opc=(t,btn,attr)=>`<div class="pref pref-sub"><div><span>${t}</span></div><button class="btn-s" ${attr} style="padding:6px 12px;font-size:13px">${btn}</button></div>`;
+const filaF=(k,t,sub,lbl)=>`<div class="pref"><div><b>${t}</b><span>${sub}</span></div>${sw(k,fOn(k),lbl)}</div>`;
+const opcF=(t,btn,attr)=>`<div class="pref pref-sub"><div><span>${t}</span></div><button class="btn-s" ${attr} style="padding:6px 12px;font-size:13px">${btn}</button></div>`;
+/* Ajustes > Avisos: cobros cercanos, calendario y alertas de alzas */
+function cardAvisosAj(){const a=cfgAlzas();
+  return `<section class="card">${t2("Avisos","avisos")}
+    <div class="pref"><div><b>Avisos de cobros</b><span>Los cobros que vienen y el calendario</span></div>${sw("avisos",avisosOn(),"Activar avisos")}</div>
+    ${avisosOn()?`<div class="pref pref-sub"><div><span>Avisar con anticipación de</span></div><select id="diasAviso" data-compact="1">${[3,5,7,14].map(n=>`<option value="${n}" ${n===diasAviso()?"selected":""}>${n} días</option>`).join("")}</select></div>
+    <div class="backup-actions" style="margin:8px 0 4px"><button class="btn-s" type="button" data-ics><span class="ic">${I('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>')}</span><span>Exportar cobros al calendario<small>Eventos que se repiten, con aviso el día anterior</small></span></button></div>`:""}
+    ${filaF("fAlzas","Alertas de alzas","Avisa cuando sube un gasto fijo","Activar alertas de alzas")}
+    ${fOn("fAlzas")?opcF("Avisar cuando suba más de",a.modo==="monto"?(a.monto?clp(a.monto):"Definir"):fmtPct(a.pct),"data-cfgalzas"):""}
+  </section>`}
+/* Ajustes > Seguridad y datos */
+function cardSeguridad(){const nVar=Object.values(state.vars).reduce((a,l)=>a+l.length,0);
+  return `<section class="card">${t2("Seguridad y datos","seguridad")}
+    ${cardBloqueo()}
+    <div class="pref"><div><b>Deshacer al eliminar</b><span>Tiempo para recuperar un gasto borrado</span></div><select id="cfgDeshacer" data-compact="1">${[[0,"No"],[1,"1 s"],[3,"3 s"],[5,"5 s"],[10,"10 s"]].map(([v,l])=>`<option value="${v}" ${v===segDeshacer()?"selected":""}>${l}</option>`).join("")}</select></div>
+    <dl class="kv" style="margin-top:12px"><dt>Gastos fijos</dt><dd>${state.gastos.length}</dd><dt>Gastos variables</dt><dd>${nVar}</dd><dt>Meses con variables</dt><dd>${Object.keys(state.vars).length}</dd><dt>Versión de la app</dt><dd>${APP_VERSION}</dd></dl>
+  </section>`}
+function cardFunciones(){const m=metaAhorro();const fila=filaF,opc=opcF;
   return `<section class="card">${t2("Funciones","funciones")}<p class="sub" style="margin:2px 0 2px">Activa solo lo que usas</p>
-    ${fila("fAnual","Resumen anual","Tu año completo en el Historial","Activar resumen anual")}
-    ${fila("fAlzas","Alertas de alzas","Avisa cuando sube un gasto fijo","Activar alertas de alzas")}
-    ${fOn("fAlzas")?opc("Avisar cuando suba más de",a.modo==="monto"?(a.monto?clp(a.monto):"Definir"):fmtPct(a.pct),"data-cfgalzas"):""}
     ${fila("fIngresos","Ingresos y ahorro","Lo que recibes y lo que te queda","Activar ingresos y ahorro")}
     ${fOn("fIngresos")?opc("Meta de ahorro mensual",m?clp(m):"Definir","data-cfgmeta"):""}
     ${fila("fCompartidos","Gastos compartidos","Lleva la cuenta de lo que te deben","Activar gastos compartidos")}
+    ${fila("fAnual","Resumen anual","Tu año completo en el Historial","Activar resumen anual")}
     ${fila("fGmail","Pagos desde Gmail","Detecta compras y transferencias en tu correo","Activar pagos desde Gmail")}
     ${fOn("fGmail")&&gmCfg().url?`<div class="pref pref-sub"><div><span>${meta.gmailError?"Error al revisar tu correo":`Conectado${meta.gmailOk?`<small style="display:block;font-size:13px;color:inherit;font-weight:500">Revisado ${fechaGuardado(meta.gmailOk)}</small>`:""}`}</span></div><div class="gm-btns"><button class="btn-s" data-gmhist style="padding:6px 12px;font-size:13px">Historial</button><button class="btn-s" data-gmsetup style="padding:6px 12px;font-size:13px">Configurar</button></div></div>`:""}
-    ${cardBloqueo()}
   </section>`}
 function openAlzasForm(){const a=cfgAlzas();let modo=a.modo;
   openSheet(`<h3 style="margin:0 0 6px;font-size:20px">Alertas de alzas</h3><p class="sub" style="margin:0 0 14px">Avisar en el Resumen cuando un gasto fijo suba más de:</p>
@@ -1875,7 +1890,8 @@ function viewInicio(){
   const mesItems=state.gastos.filter(g=>cobraEsteMes(g)&&calc(g).pp>=1).map(g=>({g,v:calc(g).pp,dia:Number(g.dia)||1})).sort((a,b)=>a.dia-b.dia);
   const pagado=mesItems.filter(x=>x.dia<=today.getDate()).reduce((a,b)=>a+b.v,0);
   const totalMes=mesItems.reduce((a,b)=>a+b.v,0);
-  const pend=mesItems.filter(x=>x.dia>today.getDate());
+  const pend=mesItems.filter(x=>x.dia>today.getDate()),porVenir=mesItems.filter(x=>x.dia>=today.getDate());
+  const sigMes=avisosOn()?proximosCobros(diasAviso()).filter(x=>x.d.getMonth()!==today.getMonth()):[];
   const vcats=varPorCategoria(k),vlast=movsMes(k).filter(x=>!x.arrastre).sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,3);
   const prevVar=totalVar(mkey(addM(today,-1)));
   setTimeout(()=>bindHeroChart(ch));
@@ -1898,7 +1914,6 @@ function viewInicio(){
     ${cardPend()}
     ${cardIngresos()}
     ${cardComp()}
-    ${cardAvisos()}
     ${cardAlzas()}
     ${cardTarjetas()}
     ${cardPresupuestos(k,true)}
@@ -1913,7 +1928,8 @@ function viewInicio(){
     <div class="card-head"><div><h2>Cobros fijos de ${mesTxt}</h2><p class="sub">${pend.length?`Faltan ${clp(totalMes-pagado)} por cobrar`:"Ya se cobró todo este mes"}</p></div></div>
     <div class="progress"><i style="width:${totalMes?pagado/totalMes*100:0}%"></i></div>
     <div class="remaining"><span>Cobrado ${clp(pagado)}</span><span>Total ${clp(totalMes)}</span></div>
-    <ul class="list" style="margin-top:8px">${(pend.length?pend:mesItems.slice(-3)).slice(0,4).map(rowDay).join("")}</ul>
+    <ul class="list" style="margin-top:8px">${(porVenir.length?porVenir:mesItems.slice(-3)).slice(0,4).map(rowDay).join("")}</ul>
+    ${sigMes.length?`<div class="tc-sec" style="margin-top:6px"><span>Próximo mes</span><span>${clp(sigMes.reduce((a,x)=>a+x.v,0))}</span></div><ul class="list">${sigMes.slice(0,4).map(x=>`<li><button class="row btn" data-open="${x.g.id}"><div class="day"><b>${x.d.getDate()}</b><span>${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${cuando(x.i)}${x.tipo==="Se reactiva"?" · Se reactiva":""}</div></div><div class="amt">${clp(x.v)}</div></button></li>`).join("")}</ul>`:""}
   </section>
   </div>`;
 }
@@ -1981,8 +1997,8 @@ function openStat_(k){
     openSheet(`<h3 style="margin:0 0 4px;font-size:20px">Fijos activos</h3><p class="sub" style="margin:0 0 10px">${l.length} gastos fijos activos</p><ul class="list">${l.map(rowGasto).join("")}</ul>`)}
   else{const kk=mkey(today),l=movsMes(kk).sort((a,b)=>b.fecha.localeCompare(a.fecha));
     openSheet(`<h3 style="margin:0 0 4px;font-size:20px">Variables de ${MESES[today.getMonth()].toLowerCase()}</h3><p class="sub" style="margin:0 0 10px">${l.length} movimiento${l.length===1?"":"s"}, ${clp(totalVar(kk))} en total</p>${l.length?`<ul class="list">${l.map(rowMov).join("")}</ul>`:`<div class="empty"><b>Sin movimientos</b>Aún no registras gastos variables este mes.</div>`}`)}}
-function rowDay(x){const past=x.dia<=today.getDate();
-  return `<li><button class="row btn ${past?"past":""}" data-open="${x.g.id}"><div class="day"><b>${x.dia}</b><span>${MESES[today.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${esc([x.g.medio,x.g.cuenta].filter(Boolean).join(" · "))}</div></div><div class="amt">${clp(x.v)}</div></button></li>`}
+function rowDay(x){const past=x.dia<today.getDate(),dif=x.dia-today.getDate();
+  return `<li><button class="row btn ${past?"past":""}" data-open="${x.g.id}"><div class="day"><b>${x.dia}</b><span>${MESES[today.getMonth()].slice(0,3).toLowerCase()}</span></div>${avG(x.g)}<div class="mid"><div class="t">${esc(x.g.nombre)}</div><div class="s">${dif>=0&&avisosOn()&&dif<=diasAviso()?`<b class="cuando">${cuando(dif)}</b> · `:""}${esc([x.g.medio,x.g.cuenta].filter(Boolean).join(" · "))}</div></div><div class="amt">${clp(x.v)}</div></button></li>`}
 function rowMov(x){const v=x.v;
   const sub=[x.cuota?`Cuota ${x.cuota}/${x.n}`:"",v.categoria,v.cuenta||v.medio].filter(Boolean).join(" · ");
   return `<li><button class="row btn" data-openvar="${v.id}" data-mes="${v.fecha.slice(0,7)}">${avV(v)}<div class="mid"><div class="t">${esc(v.descripcion||v.categoria)}</div><div class="s">${esc(sub)}</div></div><div class="amt">${clp(x.m)}${x.cuota?`<div class="s">de ${clp(vParte(v))}</div>`:nPers(v)>1?`<div class="s">de ${clp(vBase(v))}</div>`:v.moneda&&v.moneda!==base()?`<div class="s">${montoOrig(v.monto,v.moneda)}</div>`:""}</div></button></li>`}
@@ -2201,8 +2217,15 @@ function cardDropbox(){
   else{const u=meta.dbxUltima?fechaGuardado(meta.dbxUltima):"";
     const estado=dbxEstado==="subiendo"?"Guardando…":dbxEstado==="bajando"?"Revisando…":meta.dbxError?esc(meta.dbxError):meta.pendiente?"Cambios por guardar":u?`Guardado ${u}`:"Conectado";
     dbx=fila("Dropbox",estado,`<button class="btn-s" data-dbxsync ${dbxEstado?"disabled":""}>Sincronizar</button><button class="btn-d" data-dbxoff>Desconectar</button>`)}
+  const dias=meta.ultimoRespaldo?Math.floor((today-parseD(meta.ultimoRespaldo))/864e5):null;
   return `<section class="card">${t2("Sincronizar","dropbox")}<p class="sub" style="margin:2px 0 0">Guarda tus datos en tu nube y úsalos en otro teléfono</p>
-    ${dbx}</section>`;
+    ${dbx}
+    <div class="pref" style="margin-top:6px"><div><b>Respaldo en Excel${ib("respaldo")}</b><span>Genera tu Excel al día en Dropbox</span></div>${sw("excel",excelOn(),"Activar respaldo en Excel")}</div>
+    ${excelOn()?`<p class="sub one" style="margin:0 0 10px">${meta.ultimoRespaldo?`Último respaldo: ${meta.ultimoRespaldoTs?fechaGuardado(meta.ultimoRespaldoTs):dias===0?"hoy":dias===1?"ayer":fmtD(meta.ultimoRespaldo)}`:"Aún no has hecho un respaldo"}</p>
+    <div class="backup-actions">
+      <button class="btn-s" data-backup><span class="ic">${I('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>')}</span><span>Respaldar en Excel<small>Descarga una copia al teléfono</small></span></button>
+      <button class="btn-s" data-restore><span class="ic">${I('<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 7V4h16v3"/>')}</span><span>Cargar desde mi Excel<small>Reemplaza los gastos de Luka por los del archivo</small></span></button>
+    </div>`:""}</section>`;
 }
 
 
@@ -2251,7 +2274,7 @@ function openCuentaDet_(id){const c=cuentas().find(x=>x.id===id);if(!c)return;
   const movs=[...vs,...tr,...pg].sort((a,b)=>b.f.localeCompare(a.f)).slice(0,40),fj=state.gastos.filter(g=>idDe(g)===id);
   openSheet(`<div class="card-head" style="margin:0 0 2px;gap:10px"><h3 style="margin:0;font-size:20px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.nombre)}</h3><button class="btn-s" data-cuenta-edit="${id}" style="padding:6px 12px;font-size:13px;flex:none">Editar</button></div><p class="sub" style="margin:0 0 10px;font-size:13px">${esc(TIPOS_CTA[c.tipo]||"Otro")}${c.dig?" ····"+esc(c.dig):""}${c.tipo==="credito"&&c.diaFact?` · factura el ${c.diaFact}${c.diaVenc?` · vence el ${c.diaVenc}`:""}`:""}</p>
     ${c.tipo==="credito"&&c.diaFact?tjCols(c):""}
-    ${fj.length&&movs.length?`<div class="chips una" role="group" id="ctaFiltro" style="margin:8px 0 -2px"><button type="button" class="chip" data-ctaf="todo" aria-pressed="true">Todo</button><button type="button" class="chip" data-ctaf="mov" aria-pressed="false">Movimientos</button><button type="button" class="chip" data-ctaf="fijo" aria-pressed="false">Fijos</button></div>`:""}
+    ${fj.length&&movs.length?`<div class="chips una" role="group" id="ctaFiltro" style="margin:10px 0 -4px"><button type="button" class="chip" data-ctaf="todo" aria-pressed="true">Todo</button><button type="button" class="chip" data-ctaf="mov" aria-pressed="false">Movimientos</button><button type="button" class="chip" data-ctaf="fijo" aria-pressed="false">Fijos</button></div>`:""}
     <div data-ctas="mov"><div class="tc-sec"><span>Movimientos</span><span>${movs.length||""}</span></div>${movs.length?`<ul class="list">${movs.map(x=>x.html).join("")}</ul>`:`<p class="sub" style="margin:0">Aún no hay movimientos con esta ${c.tipo==="credito"||c.tipo==="debito"?"tarjeta":"cuenta"}.</p>`}</div>
     ${fj.length?`<div data-ctas="fijo"><div class="tc-sec"><span>Gastos fijos</span><span>${fj.length}</span></div><ul class="list">${fj.map(rowGasto).join("")}</ul></div>`:""}`);
   const fl=$("#ctaFiltro");if(fl)fl.addEventListener("click",e=>{const b=e.target.closest("[data-ctaf]");if(!b)return;const k=b.dataset.ctaf;
@@ -2309,26 +2332,14 @@ function viewAjustes(){
     <dl class="kv" style="margin-top:12px">${indicadores().map(c=>{const v=toBase(1,c),f=(t.fechas||{})[c];return `<dt>${esc(nombreMoneda(c))} <span style="color:var(--ink-3)">(${c})</span></dt><dd>${tasaOK(c)?fmtIndicador(v):"—"}${f?`<div style="font-weight:500;font-size:12px;color:var(--ink-3)">al ${fmtD(f)}</div>`:""}</dd>`}).join("")}</dl>
     <div style="display:flex;justify-content:space-between;gap:10px;margin-top:6px"><button class="linkbtn" data-indic>Elegir indicadores</button><button class="linkbtn" data-rates ${tasasEstado==="cargando"?"disabled":""}>${tasasEstado==="cargando"?"Actualizando…":"Actualizar ahora"}</button></div>
   </section>
-  ${cardPreferencias()}
+  ${cardAvisosAj()}
   ${cardFunciones()}
-  ${cardApariencia()}
   ${cardCuentas()}
   ${cardCategorias()}
-  ${avisosOn()?`<section class="card"><div class="card-head" style="margin-bottom:12px"><div>${t2("Avisos y calendario","avisos")}</div></div>
-    <div class="inline-field"><span>Avisar con anticipación de</span><select id="diasAviso">${[3,5,7,14].map(n=>`<option value="${n}" ${n===diasAviso()?"selected":""}>${n} días</option>`).join("")}</select></div>
-    <div class="backup-actions" style="margin-top:12px"><button class="btn-s" type="button" data-ics><span class="ic">${I('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>')}</span><span>Exportar cobros al calendario<small>Eventos que se repiten, con aviso el día anterior</small></span></button></div>
-  </section>`:""}
   <section class="card"><div class="card-head" style="margin:0"><div>${t2("Presupuestos","presupuestos")}<p class="sub one">${nPres?`${nPres} presupuesto${nPres===1?"":"s"} definido${nPres===1?"":"s"}`:"Aún no defines presupuestos"}</p></div><button class="btn-s" data-editpres style="padding:6px 12px;font-size:13px">${nPres?"Editar":"Definir"}</button></div></section>
   ${cardDropbox()}
-  ${excelOn()?`<section class="card"><div class="card-head" style="margin-bottom:12px"><div>${t2("Respaldo en Excel","respaldo")}<p class="sub one">${meta.ultimoRespaldo?`Último respaldo: ${meta.ultimoRespaldoTs?fechaGuardado(meta.ultimoRespaldoTs):dias===0?"hoy":dias===1?"ayer":fmtD(meta.ultimoRespaldo)}`:"Aún no has hecho un respaldo"}</p></div></div>
-    <div class="backup-actions">
-      <button class="btn-s" data-backup><span class="ic">${I('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>')}</span><span>Respaldar en Excel<small>Descarga una copia al teléfono</small></span></button>
-      <button class="btn-s" data-restore><span class="ic">${I('<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 7V4h16v3"/>')}</span><span>Cargar desde mi Excel<small>Reemplaza los gastos de Luka por los del archivo</small></span></button>
-      
-    </div></section>`:""}
-  <section class="card">${t2("Tus datos","datos")}
-    <dl class="kv" style="margin-top:8px"><dt>Gastos fijos</dt><dd>${state.gastos.length}</dd><dt>Gastos variables</dt><dd>${nVar}</dd><dt>Meses con variables</dt><dd>${Object.keys(state.vars).length}</dd><dt>Versión de la app</dt><dd>${APP_VERSION}</dd></dl>
-  </section></div>`;
+  ${cardApariencia()}
+  ${cardSeguridad()}</div>`;
 }
 function emptyAll(){return `<section class="card"><div class="empty"><b>${ui.loaded?"Aún no hay gastos":"Cargando tus gastos…"}</b>${ui.loaded?'Registra un gasto del día a día o agrega tus suscripciones y cuentas fijas.<div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn-p" data-newvar>Agregar gasto variable</button><button class="btn-s" data-new>Agregar gasto fijo</button></div>':""}</div></section>`}
 
@@ -2459,7 +2470,7 @@ function openForm(id,pre){
   const fpVal={Activa:fpAct,Cancelada:fpAct,Pausada:g.estado==="Pausada"?(g.proximoPago||""):""};let estAnt=fm.estado.value;
   const syncFP=()=>{const v=fm.fechaPago.value,e=fm.estado.value,inf=$("#fpInfo");const d=parseD(v);
     const nota=d&&d.getDate()>=29?" En meses más cortos, se considera el último día.":"";
-    if(e==="Pausada")inf.textContent=v?`Pausado: vuelve a cobrarse el ${fechaLarga(v).toLowerCase()}.`:"Pausado sin fecha de regreso. Si sabes cuándo vuelve a cobrarse, escríbela en Fecha de pago.";
+    if(e==="Pausada")inf.textContent=v?`Pausado: vuelve a cobrarse el ${fechaLarga(v).toLowerCase()}.`:"Pausado. Escribe en fecha de pago cuándo vuelve.";
     else if(e==="Cancelada")inf.textContent="Cancelado: ya no se cobra.";
     else{const f=v&&proxCobroDesde(v,perAct());inf.textContent=f?`Próximo cobro: ${fechaLarga(iso(f)).toLowerCase()}.${nota}`:"Elige una fecha en que se paga este gasto."}};
   const syncPer=()=>{const v=fm.per.value;$("#fPerN").style.display=v==="x"?"":"none";$(".fp-fila").classList.toggle("con-n",v==="x");syncFP()};syncPer();fm.per.addEventListener("change",syncPer);
