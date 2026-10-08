@@ -469,6 +469,14 @@ body.teclado nav.bottom,body.teclado .fab{display:none!important}
 .tchip{display:inline-flex;align-items:center;gap:4px;background:var(--primary-soft);color:var(--primary);font-weight:700;font-size:13.5px;border-radius:999px;padding:4px 4px 4px 10px}
 .tchip button{border:0;background:none;color:inherit;font-size:16px;line-height:1;padding:0 4px;cursor:pointer}
 .chiptxt{flex:1;min-width:0;border:0!important;background:none!important;padding:6px 4px!important;font-weight:600;font-size:15px}
+.cal-todos{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--ink-2);margin:0 0 4px}.cal-todos span{flex:1}
+.cal-sec{font-size:13px;font-weight:700;color:var(--ink-2);margin:14px 0 6px}
+.cal-list{border-radius:14px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.cal-row{display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:56px;border-top:1px solid var(--line);cursor:pointer}.cal-row:first-child{border-top:none}
+.cal-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.cal-t b{font-size:15px;font-weight:600;color:var(--ink)}.cal-t small{font-size:13px;color:var(--ink-2)}
+.cal-row input{width:22px;height:22px;flex:none;accent-color:var(--primary)}
+.cal-nuevo{background:var(--primary);color:#fff;vertical-align:2px;margin-left:4px}
+#calExp.off{opacity:.55}
 label.check{display:flex!important;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px!important;color:var(--ink)!important}
 label.check input{width:18px!important;height:18px;accent-color:var(--primary)}
 label.check .hint{flex-basis:100%;margin-left:26px}
@@ -692,7 +700,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="2.12";
+const APP_VERSION="2.2";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -1082,7 +1090,7 @@ function cardAvisos(){
     ${list.length>5?`<p class="sub" style="margin:6px 0 0">Y ${list.length-5} más.</p>`:""}</section>`;
 }
 /* exportar cobros fijos a un calendario (.ics) */
-function generarICS(){
+function generarICS(incluir){const va=k=>!incluir||incluir.has(k);
   const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Luka//ES","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Luka"];
   const icsEsc=t=>String(t).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");
   const f=d=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
@@ -1093,7 +1101,7 @@ function generarICS(){
     if(rrule)L.push("RRULE:"+rrule);
     L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsEsc(titulo),"TRIGGER:-PT15H","END:VALARM","END:VEVENT")};
   let n=0;
-  state.gastos.forEach(g=>{const dia=Math.min(Math.max(Number(g.dia)||1,1),31);const c=calc(g);if(c.pp<1)return;
+  state.gastos.forEach(g=>{if(!va("g-"+g.id))return;const dia=Math.min(Math.max(Number(g.dia)||1,1),31);const c=calc(g);if(c.pp<1)return;
     const dias=Array.from({length:dia-27},(_,i)=>28+i).join(",");
     const diaRule=dia>28?`BYMONTHDAY=${dias};BYSETPOS=-1`:`BYMONTHDAY=${dia}`;
     const desc=`${g.categoria}${g.medio?" · "+g.medio:""}${g.cuenta?" · "+g.cuenta:""}. Monto aproximado: puede variar con la UF o el tipo de cambio.`;
@@ -1102,19 +1110,51 @@ function generarICS(){
     else if(g.estado==="Activa"){const pm=proximoMesCobro(g,addM(today,0));const ini=new Date(pm.getFullYear(),pm.getMonth(),Math.min(dia,eom(pm).getDate()));const p=per(g);
       ev((p===12?"a-":"p-")+g.id,ini,`${p===12?"Pago anual":"Pago "+nombrePer(p).toLowerCase()}: ${g.nombre} (${monto(g)})`,desc,`FREQ=MONTHLY;INTERVAL=${p};${diaRule}`);n++}
     else if(g.estado==="Pausada"&&g.proximoPago){ev("r-"+g.id,parseD(g.proximoPago),`Se reactiva: ${g.nombre} (${monto(g)})`,desc,null);n++}});
-  cuentas().filter(c=>c.tipo==="credito"&&c.diaVenc).forEach(c=>{const dia=Math.min(Math.max(Number(c.diaVenc)||1,1),31);
+  cuentas().filter(c=>c.tipo==="credito"&&c.diaVenc&&va("t-"+c.id)).forEach(c=>{const dia=Math.min(Math.max(Number(c.diaVenc)||1,1),31);
     const dias=Array.from({length:Math.max(0,dia-27)},(_,i)=>28+i).join(",");const diaRule=dia>28?`BYMONTHDAY=${dias};BYSETPOS=-1`:`BYMONTHDAY=${dia}`;
     ev("t-"+c.id,new Date(today.getFullYear(),today.getMonth(),Math.min(dia,eom(today).getDate())),`Vence tarjeta: ${c.nombre}`,"Último día para pagar el estado de cuenta.",`FREQ=MONTHLY;${diaRule}`);n++});
   L.push("END:VCALENDAR");
   const plegar=l=>{const out=[];let x=l;while(new TextEncoder().encode(x).length>73){let i=Math.min(x.length,70);while(new TextEncoder().encode(x.slice(0,i)).length>73)i--;out.push(x.slice(0,i));x=" "+x.slice(i)}out.push(x);return out.join("\r\n")};
   return {texto:L.map(plegar).join("\r\n"),n};
 }
-async function exportarCalendario(){
-  const {texto,n}=generarICS();if(!n){toast("No hay cobros fijos para exportar");return}
+/* 2.2: elegir qué cobros van al calendario. Luka recuerda la elección; lo nuevo viene marcado según la regla y con etiqueta «Nuevo» */
+const calCfg=()=>(state.config||{}).calendario||{};
+const MEDIOS_SOLOS=["Crédito","Débito","PayPal"];
+function calCandidatos(){const out=[],m3=d=>d.getDate()+" "+MESES[d.getMonth()].slice(0,3).toLowerCase();
+  state.gastos.forEach(g=>{const c=calc(g);if(c.pp<1)return;const p=per(g),dia=Math.min(Math.max(Number(g.dia)||1,1),31);let det,def;
+    if(g.estado==="Activa"&&p===1){det=`Día ${dia}${g.medio?" · "+g.medio:""}`;def=!MEDIOS_SOLOS.includes(g.medio)}
+    else if(g.estado==="Activa"){const pm=proximoMesCobro(g,addM(today,0));const d=new Date(pm.getFullYear(),pm.getMonth(),Math.min(dia,eom(pm).getDate()));det=`${p===12?"Anual":nombrePer(p)} · próximo ${m3(d)}`;def=true}
+    else if(g.estado==="Pausada"&&g.proximoPago){const d=parseD(g.proximoPago);det=`Pausado · vuelve el ${d?m3(d):"—"}`;def=true}
+    else return;
+    out.push({k:"g-"+g.id,grupo:"g",nombre:g.nombre,det,def})});
+  cuentas().filter(c=>c.tipo==="credito"&&c.diaVenc).forEach(c=>out.push({k:"t-"+c.id,grupo:"t",nombre:c.nombre,det:`Vence el día ${Math.min(Math.max(Number(c.diaVenc)||1,1),31)}`,def:true}));
+  return out}
+function calMarcado(x){const s=calCfg().sel||{};return x.k in s?!!s[x.k]:x.def}
+function exportarCalendario(){const l=calCandidatos();if(!l.length){toast("No hay cobros fijos para exportar");return}
+  const cfg=calCfg(),vistos=cfg.vistos?new Set(cfg.vistos):null;
+  const fila=x=>`<label class="cal-row"><span class="cal-t"><b>${esc(x.nombre)}${vistos&&!vistos.has(x.k)?' <span class="pill cal-nuevo">Nuevo</span>':""}</b><small>${esc(x.det)}</small></span><input type="checkbox" data-calk="${esc(x.k)}" ${calMarcado(x)?"checked":""} aria-label="${esc(x.nombre)}"></label>`;
+  const grupo=(t,g)=>{const f=l.filter(x=>x.grupo===g);return f.length?`<p class="cal-sec">${t}</p><div class="cal-list">${f.map(fila).join("")}</div>`:""};
+  openSheet(`<div id="calSheet"><h3 id="calTit" tabindex="-1" style="margin:0 0 6px;font-size:20px;outline:none">Exportar al calendario</h3>
+    <p class="sub" style="margin:0 0 10px">Marca los cobros que quieres recordar. Se crean eventos que se repiten, con aviso el día anterior a las 9:00. Luka recuerda tu elección.</p>
+    <div class="cal-todos"><span id="calCuenta"></span><button type="button" class="linkbtn" data-caltodos="1">Todos</button><button type="button" class="linkbtn" data-caltodos="0">Ninguno</button></div>
+    ${grupo("Gastos fijos","g")}${grupo("Vencimiento de tarjetas","t")}
+    <p class="hint" style="margin:12px 2px 0;font-size:13px;color:var(--ink-2)">Si quitaste cobros que ya habías exportado, borra el calendario «Luka» e importa de nuevo.</p>
+    <div class="actions" style="margin-top:16px"><button class="btn-p grow" type="button" id="calExp"></button><button class="btn-s" type="button" data-close>Cancelar</button></div></div>`);
+  const sh=$("#calSheet"),cks=()=>[...sh.querySelectorAll("[data-calk]")];
+  const contar=()=>{const n=cks().filter(c=>c.checked).length;$("#calCuenta").textContent=`${n} de ${l.length} marcados`;const b=$("#calExp");b.textContent=n?`Exportar ${n} ${n===1?"cobro":"cobros"}`:"Marca al menos un cobro";b.classList.toggle("off",!n)};
+  sh.addEventListener("change",contar);
+  sh.querySelectorAll("[data-caltodos]").forEach(b=>b.addEventListener("click",()=>{cks().forEach(c=>c.checked=b.dataset.caltodos==="1");contar()}));
+  $("#calExp").addEventListener("click",async()=>{const sel={},inc=new Set();cks().forEach(c=>{sel[c.dataset.calk]=c.checked;if(c.checked)inc.add(c.dataset.calk)});
+    if(!inc.size){toast("Marca al menos un cobro");return}
+    state.config={...(state.config||{}),calendario:{sel:{...(calCfg().sel||{}),...sel},vistos:[...new Set([...(calCfg().vistos||[]),...l.map(x=>x.k)])]}};store.saveRegistro();
+    await descargarICS(inc)});
+  contar();setTimeout(()=>{const t=$("#calTit");if(t)t.focus({preventScroll:true})},60)}
+async function descargarICS(inc){
+  const {texto,n}=generarICS(inc);if(!n){toast("No hay cobros fijos para exportar");return}
   const file=new File([texto],"Luka - cobros.ics",{type:"text/calendar"});
-  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Cobros de Luka"});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Cobros de Luka"});closeSheet();return}}catch(e){if(e&&e.name==="AbortError")return}
   const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=file.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
-  toast(`${n} cobros exportados`);
+  closeSheet();toast(`${n} ${n===1?"cobro exportado":"cobros exportados"}`);
 }
 /* ---------- registro rápido ---------- */
 const PALABRAS=[
