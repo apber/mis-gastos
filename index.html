@@ -718,7 +718,12 @@ form.f input:not([type=checkbox]):not([type=radio]),form.f select,.search,.ag-fi
 :root[data-ts] .card-head>.monthnav{min-width:0;flex:1 1 auto}:root[data-ts] .card-head>.monthnav b{min-width:0;flex:1}:root[data-ts] .card-head>.monthnav+.btn-p{flex:none}
 .anio-tot .split2{flex-wrap:wrap;row-gap:2px}.anio-tot .split2 span{white-space:nowrap}
 .card-head>div:first-child{min-width:0}:root[data-ts] .card-head>div:first-child .sub{white-space:normal}
-.ts-med{display:block;margin-top:2px;font-size:calc(11.5px * var(--ts,1));color:var(--ink-3)}
+
+/* 2.32 */
+.tj-nom .av-tj .ttipo{display:none}.tj-nom .av-tj{margin-top:0}
+.cuo-der{justify-items:stretch;grid-template-columns:minmax(0,1fr);min-width:0}.cuo-tit{justify-content:space-between}
+.cuo-campos{width:100%}.cuo-campos input{flex:1 1 0;min-width:0;width:auto!important}.cuo-sin{justify-content:flex-start}
+:root[data-ts] .actions>button{flex:1 1 auto}
 </style>
 </head>
 <body>
@@ -738,7 +743,7 @@ form.f input:not([type=checkbox]):not([type=radio]),form.f select,.search,.ag-fi
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="2.31";
+const APP_VERSION="2.32";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -780,16 +785,6 @@ const colorApp=()=>PALETAS[(state.config||{}).color]?(state.config||{}).color:"a
 /* 2.3: tamaño del texto (por teléfono) y colores accesibles */
 const TS_NIVELES=[["n","Normal"],["g","Grande"],["mg","Muy grande"]];
 const tsGuardado=()=>{try{return localStorage.getItem("luka-ts")||""}catch(_){return ""}};
-/* 2.31: la letra del teléfono se mide de tres formas: ancho de la página, tamaño calculado y alto real de un texto de prueba */
-let tsMed=null;
-function medirTsTelefono(){try{const tactil=matchMedia("(pointer:coarse)").matches,a=tactil?screen.width/innerWidth:1;
-  const p=document.createElement("div");p.setAttribute("aria-hidden","true");p.style.cssText="position:fixed;left:0;top:0;width:100%;visibility:hidden;pointer-events:none;z-index:-1;font-size:20px;line-height:normal;-webkit-text-size-adjust:auto;text-size-adjust:auto";
-  const q=document.createElement("p");q.style.cssText="margin:0;font-size:20px;line-height:30px;font-family:inherit";q.textContent="Luka mide el tamaño de la letra del teléfono para ajustar los textos. ".repeat(12);
-  const u=document.createElement("span");u.style.cssText="display:inline-block;font-size:100px;line-height:1;height:auto";u.textContent="M";
-  p.appendChild(q);p.appendChild(u);document.body.appendChild(p);
-  const b=parseFloat(getComputedStyle(q).fontSize)/20,c=u.getBoundingClientRect().height/100;p.remove();
-  tsMed={a:+a.toFixed(2),b:+b.toFixed(2),c:+c.toFixed(2)}}catch(_){tsMed={a:1,b:1,c:1}}return tsMed}
-const tsTelefono=()=>{const m=tsMed||medirTsTelefono();const r=Math.max(m.a,m.b,m.c);return r>1.05?r:1};
 const tsActual=()=>tsGuardado()||"n";
 function aplicarTs(){const r=document.documentElement,t=tsActual();if(t==="n")delete r.dataset.ts;else r.dataset.ts=t}
 const cbOn=()=>!!(state.config||{}).coloresAcc;
@@ -2365,9 +2360,9 @@ function cardPreferencias(){
     <div class="pref"><div><b>Respaldo en Excel</b><span>Genera tu Excel al día en Dropbox</span></div>${sw("excel",excelOn(),"Activar respaldo en Excel")}</div>
     <div class="pref"><div><b>Deshacer al eliminar</b><span>Tiempo para recuperar un gasto borrado</span></div><select id="cfgDeshacer" data-compact="1">${[[0,"No"],[1,"1 s"],[3,"3 s"],[5,"5 s"],[10,"10 s"]].map(([v,l])=>`<option value="${v}" ${v===segDeshacer()?"selected":""}>${l}</option>`).join("")}</select></div>
   </section>`}
-function cardAccesibilidad(){const t=tsActual(),tel=tsTelefono()>1.05,m=tsMed||medirTsTelefono(),fx=n=>String(n).replace(".",",");
+function cardAccesibilidad(){const t=tsActual();
   return `<section class="card">${t2("Accesibilidad","accesibilidad")}
-    <div class="pref" style="display:block"><div><b>Tamaño del texto</b><span>${tel?(t==="n"?"Tu teléfono ya agranda el texto de Luka":"Tu teléfono también agranda el texto; si se ve demasiado grande, elige Normal"):"Agranda las letras de toda la app"}</span><span class="ts-med">Letra del teléfono medida: ${fx(m.a)} · ${fx(m.b)} · ${fx(m.c)}</span></div>
+    <div class="pref" style="display:block"><div><b>Tamaño del texto</b><span>Agranda las letras de toda la app</span></div>
       <div class="seg light seg-ts" role="group" aria-label="Tamaño del texto">${TS_NIVELES.map(([k,l])=>`<button type="button" data-ts="${k}" aria-pressed="${k===t}">${l}</button>`).join("")}</div></div>
     <div class="pref"><div><b>Colores accesibles</b><span>Azul y naranja en vez de verde y rojo</span></div>${sw("coloresAcc",cbOn(),"Activar colores accesibles")}</div>
     <div class="pref"><div><b>Deshacer al eliminar</b><span>Tiempo para recuperar algo borrado</span></div><select id="cfgDeshacer" data-compact="1">${[[0,"No"],[1,"1 s"],[3,"3 s"],[5,"5 s"],[10,"10 s"]].map(([v,l])=>`<option value="${v}" ${v===segDeshacer()?"selected":""}>${l}</option>`).join("")}</select></div>
@@ -2954,8 +2949,6 @@ const copia=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 /* 2.31: el ícono de cada tarjeta ocupa el ancho de su etiqueta (Crédito) para no tapar el nombre;
    la línea bajo el monto del Resumen usa la versión corta si la larga no cabe */
 function ajustarMedidas(){
-  document.querySelectorAll(".tj-nom .av-tj").forEach(a=>{const t=a.querySelector(".ttipo");a.style.marginLeft=a.style.marginRight="";if(!t)return;
-    const m=Math.max(0,Math.ceil((t.offsetWidth-a.offsetWidth)/2));if(m){a.style.marginLeft=m+"px";a.style.marginRight=Math.max(0,m-2)+"px"}});
   document.querySelectorAll(".split-var").forEach(e=>{e.classList.remove("corto");if(e.scrollWidth>e.clientWidth+1)e.classList.add("corto")})}
 let ajTimer=0;new MutationObserver(()=>{if(ajTimer)return;ajTimer=requestAnimationFrame(()=>{ajTimer=0;ajustarMedidas()})}).observe(document.body,{childList:true,subtree:true});
 addEventListener("resize",()=>requestAnimationFrame(ajustarMedidas));
