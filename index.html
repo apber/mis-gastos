@@ -680,7 +680,7 @@ label.check .hint{flex-basis:100%;margin-left:26px}
 .lista-prox .day b{line-height:calc(21.75px * var(--ts,1))}
 .lista-prox .day span{line-height:calc(18.125px * var(--ts,1))}
 .hc-prom{position:absolute;top:-2px;left:8px;font-size:calc(13px * var(--ts,1));font-weight:600;opacity:.85;pointer-events:none;z-index:1}
-.hc-prom i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:6px;vertical-align:1px;background:#7FD3FF}
+.hc-prom i{display:inline-block;width:22px;height:2px;margin-right:7px;vertical-align:calc(4px * var(--ts,1));background:repeating-linear-gradient(90deg,#7FD3FF 0 4px,transparent 4px 9px)}
 
 /* 2.3: accesibilidad */
 :root{--ts:1}:root[data-ts="g"]{--ts:1.15}:root[data-ts="mg"]{--ts:1.3}
@@ -700,6 +700,25 @@ form.f input:not([type=checkbox]):not([type=radio]),form.f select,.search,.ag-fi
 :root[data-cb]{--good:#1A5FB4;--warn:#7A5C00;--bad:#C2410C}
 @media (prefers-color-scheme:dark){:root[data-cb]:not([data-theme="light"]){--good:#6CB4FF;--warn:#E8C547;--bad:#FF9248}}
 :root[data-cb][data-theme="dark"]{--good:#6CB4FF;--warn:#E8C547;--bad:#FF9248}
+
+/* 2.31: arreglos de tamaño del texto */
+.proy-al{white-space:normal}:root[data-ts] .proy-sep{display:none}:root[data-ts] .proy-al{display:block}
+.donut .c b{font-size:calc(18px * min(var(--ts,1),1.2));line-height:1.1}
+.donut .c span{display:block;font-size:calc(11.5px * min(var(--ts,1),1.2));line-height:1.2;margin-top:1px}
+.fcat-det .donut .c b{font-size:calc(15px * min(var(--ts,1),1.2))}
+.fcat-det .donut .c span{font-size:calc(10.5px * min(var(--ts,1),1.2))}
+:root[data-ts] .chips.una:has(>.chip:nth-child(4):last-child){display:grid;grid-template-columns:1fr 1fr}
+.hl1{display:none}:root[data-ts] .hist.muchos .hl3{display:none}:root[data-ts] .hist.muchos .hl1{display:inline}
+.hcol.nada .hlbl{opacity:1;color:var(--ink-3)}
+.split-var{flex-wrap:nowrap;white-space:nowrap;margin-right:-10px}.split-var .sp-c{display:none}
+.split-var.corto .sp-l{display:none}.split-var.corto .sp-c{display:inline;white-space:normal}
+.picker .ttipo,.mopt .ttipo{width:auto;min-width:calc(60px * var(--ts,1));white-space:nowrap;line-height:1.35;padding:2px 6px}
+.picker span.con-etq{overflow:visible}
+.fila-comp,.fila-cuo{grid-template-columns:minmax(0,1fr) max(145px,calc(138px * var(--ts,1)))}
+:root[data-ts] .card-head>.monthnav{min-width:0;flex:1 1 auto}:root[data-ts] .card-head>.monthnav b{min-width:0;flex:1}:root[data-ts] .card-head>.monthnav+.btn-p{flex:none}
+.anio-tot .split2{flex-wrap:wrap;row-gap:2px}.anio-tot .split2 span{white-space:nowrap}
+.card-head>div:first-child{min-width:0}:root[data-ts] .card-head>div:first-child .sub{white-space:normal}
+.ts-med{display:block;margin-top:2px;font-size:calc(11.5px * var(--ts,1));color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -719,7 +738,7 @@ form.f input:not([type=checkbox]):not([type=radio]),form.f select,.search,.ag-fi
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="2.3";
+const APP_VERSION="2.31";
 const MESES=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const CATS_DEF=["Software","Almacenamiento","Finanzas","Streaming","Educación","Deporte","Seguro","Otro"];
 const CAT_COLOR_DEF={Software:"#6366F1",Almacenamiento:"#38BDF8",Finanzas:"#84CC16",Streaming:"#F43F5E",Educación:"#F59E0B",Deporte:"#A855F7",Seguro:"#14B8A6",Otro:"#94A3B8"};
@@ -761,7 +780,16 @@ const colorApp=()=>PALETAS[(state.config||{}).color]?(state.config||{}).color:"a
 /* 2.3: tamaño del texto (por teléfono) y colores accesibles */
 const TS_NIVELES=[["n","Normal"],["g","Grande"],["mg","Muy grande"]];
 const tsGuardado=()=>{try{return localStorage.getItem("luka-ts")||""}catch(_){return ""}};
-const tsTelefono=()=>{try{if(!matchMedia("(pointer:coarse)").matches)return 1;const r=screen.width/innerWidth;return r>1.05?r:1}catch(_){return 1}};
+/* 2.31: la letra del teléfono se mide de tres formas: ancho de la página, tamaño calculado y alto real de un texto de prueba */
+let tsMed=null;
+function medirTsTelefono(){try{const tactil=matchMedia("(pointer:coarse)").matches,a=tactil?screen.width/innerWidth:1;
+  const p=document.createElement("div");p.setAttribute("aria-hidden","true");p.style.cssText="position:fixed;left:0;top:0;width:100%;visibility:hidden;pointer-events:none;z-index:-1;font-size:20px;line-height:normal;-webkit-text-size-adjust:auto;text-size-adjust:auto";
+  const q=document.createElement("p");q.style.cssText="margin:0;font-size:20px;line-height:30px;font-family:inherit";q.textContent="Luka mide el tamaño de la letra del teléfono para ajustar los textos. ".repeat(12);
+  const u=document.createElement("span");u.style.cssText="display:inline-block;font-size:100px;line-height:1;height:auto";u.textContent="M";
+  p.appendChild(q);p.appendChild(u);document.body.appendChild(p);
+  const b=parseFloat(getComputedStyle(q).fontSize)/20,c=u.getBoundingClientRect().height/100;p.remove();
+  tsMed={a:+a.toFixed(2),b:+b.toFixed(2),c:+c.toFixed(2)}}catch(_){tsMed={a:1,b:1,c:1}}return tsMed}
+const tsTelefono=()=>{const m=tsMed||medirTsTelefono();const r=Math.max(m.a,m.b,m.c);return r>1.05?r:1};
 const tsActual=()=>tsGuardado()||"n";
 function aplicarTs(){const r=document.documentElement,t=tsActual();if(t==="n")delete r.dataset.ts;else r.dataset.ts=t}
 const cbOn=()=>!!(state.config||{}).coloresAcc;
@@ -1050,7 +1078,7 @@ function presFila(x){
   const p=Math.min(x.pct,1)*100,resto=x.m-x.g;
   return `<li${x.proy!=null?' class="con-proy"':""}><span>${esc(x.c)}</span><b style="color:${presColor(x.pct)}">${clp(x.g)} <span style="color:var(--ink-3);font-weight:600">de ${clp(x.m)}</span></b>
     <div class="bar"><i style="width:${p}%;background:${presColor(x.pct)}"></i></div>
-    <span class="hint" style="grid-column:1/-1">${resto>=0?`Te quedan ${clp(resto)}`:`Te pasaste por ${clp(-resto)}`}${x.proy!=null&&x.proy>x.m&&x.pct<1?` · <span class="proy-al">A este ritmo llegarás a ${clp(x.proy)}</span>`:""}</span>${x.proy!=null&&!(x.proy>x.m&&x.pct<1)&&x.pct<1?`<span class="hint proy-det" style="grid-column:1/-1" hidden>A este ritmo terminarás el mes en ${clp(x.proy)}</span>`:""}</li>`;
+    <span class="hint" style="grid-column:1/-1">${resto>=0?`Te quedan ${clp(resto)}`:`Te pasaste por ${clp(-resto)}`}${x.proy!=null&&x.proy>x.m&&x.pct<1?`<span class="proy-sep"> · </span><span class="proy-al">A este ritmo llegarás a ${clp(x.proy)}</span>`:""}</span>${x.proy!=null&&!(x.proy>x.m&&x.pct<1)&&x.pct<1?`<span class="hint proy-det" style="grid-column:1/-1" hidden>A este ritmo terminarás el mes en ${clp(x.proy)}</span>`:""}</li>`;
 }
 function cardPresupuestos(k,compacto){
   const {lista,tot}=estadoPres(k);const todas=(tot?[tot]:[]).concat(lista);
@@ -1289,10 +1317,10 @@ function viewHistorial(){
         <select id="histCat" data-compact="1" aria-label="Qué mostrar">${opciones.map(o=>`<option value="${esc(o)}" ${o===cat?"selected":""}>${o==="Todas"?"Todo":o==="Fijos"?"Solo fijos":o==="Variables"?"Solo variables":esc(o)}</option>`).join("")}</select>
         <div class="seg light" role="group" aria-label="Periodo"><button data-histn="6" aria-pressed="${n===6}">6 meses</button><button data-histn="12" aria-pressed="${n===12}">12 meses</button></div>
       </div></div>
-    <div class="hist" role="list">${meses.map((x,i)=>`<button class="hcol ${i===sel?"on":""}" data-histsel="${i}" data-tot="${x.t}" data-f="${x.f}" data-v="${x.v}" data-lbl="${MESES[x.d.getMonth()]} ${x.d.getFullYear()}" data-selt="${meses[sel].t}" data-sellbl="${MESES[meses[sel].d.getMonth()].toLowerCase()}" role="listitem" aria-label="${MESES[x.d.getMonth()]} ${x.d.getFullYear()}: ${clp(x.t)}">
+    <div class="hist${meses.length>=12?" muchos":""}" role="list">${meses.map((x,i)=>`<button class="hcol ${i===sel?"on":""}" data-histsel="${i}" data-tot="${x.t}" data-f="${x.f}" data-v="${x.v}" data-lbl="${MESES[x.d.getMonth()]} ${x.d.getFullYear()}" data-selt="${meses[sel].t}" data-sellbl="${MESES[meses[sel].d.getMonth()].toLowerCase()}" role="listitem" aria-label="${MESES[x.d.getMonth()]} ${x.d.getFullYear()}: ${clp(x.t)}">
       <span class="hval">${clpShort(x.t)}</span>
       <span class="hbar" style="height:${Math.max(x.t/max*130,x.t?4:2)}px">${x.v?`<i class="hv" style="height:${x.t?x.v/x.t*100:0}%"></i>`:""}${x.f?`<i class="hf" style="height:${x.t?x.f/x.t*100:0}%"></i>`:""}</span>
-      <span class="hlbl">${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span></button>`).join("")}</div>
+      <span class="hlbl"><span class="hl3">${MESES[x.d.getMonth()].slice(0,3).toLowerCase()}</span><span class="hl1">${MESES[x.d.getMonth()].slice(0,1)}</span></span></button>`).join("")}</div>
     <div class="split" style="color:var(--ink-2);opacity:1;margin-top:8px"><span><i style="background:var(--primary)"></i>Fijos</span><span><i style="background:var(--var-c)"></i>Variables</span></div>
     <div class="compare">
       <div><b>${MESES[m.d.getMonth()]} ${m.d.getFullYear()}${esActual?" (en curso)":""}</b><span>${clp(m.t)}</span></div>
@@ -1938,10 +1966,10 @@ function viewAnio(){
       <div class="hist-ctrl"><div class="monthnav"><button data-anio="-1" aria-label="Año anterior" ${y<=y0?"disabled":""}>‹</button><b>${y}</b><button data-anio="1" aria-label="Año siguiente" ${y>=yA?"disabled":""}>›</button></div></div></div>
     <div class="anio-tot"><span class="label">Gasto total ${y}${enCurso?" (en curso)":""}</span><b>${clp(tot)}</b>
       <div class="split2"><span><i style="background:var(--primary)"></i>Fijos ${clp(tf)}</span><span><i style="background:var(--var-c)"></i>Variables ${clp(tv)}</span></div></div>
-    <div class="hist" role="list">${meses.map((x,i)=>x.nada?`<div class="hcol nada" role="listitem" aria-label="${MESES[i]} ${y}: sin datos"><span class="hval"></span><span class="hbar" style="height:2px"></span><span class="hlbl">${MESES[i].slice(0,3).toLowerCase()}</span></div>`:`<button class="hcol ${i===sel?"on":""}" data-anisel="${i}" data-tot="${x.t}" data-lbl="${MESES[i]} ${y}" data-selt="${s?s.t:0}" data-sellbl="${s?MESES[sel].toLowerCase():""}" role="listitem" aria-label="${MESES[i]} ${y}: ${clp(x.t)}">
+    <div class="hist muchos" role="list">${meses.map((x,i)=>x.nada?`<div class="hcol nada" role="listitem" aria-label="${MESES[i]} ${y}: sin datos"><span class="hval"></span><span class="hbar" style="height:2px"></span><span class="hlbl"><span class="hl3">${MESES[i].slice(0,3).toLowerCase()}</span><span class="hl1">${MESES[i].slice(0,1)}</span></span></div>`:`<button class="hcol ${i===sel?"on":""}" data-anisel="${i}" data-tot="${x.t}" data-lbl="${MESES[i]} ${y}" data-selt="${s?s.t:0}" data-sellbl="${s?MESES[sel].toLowerCase():""}" role="listitem" aria-label="${MESES[i]} ${y}: ${clp(x.t)}">
       <span class="hval">${clpShort(x.t)}</span>
       <span class="hbar" style="height:${Math.max(x.t/max*130,x.t?4:2)}px">${x.v?`<i class="hv" style="height:${x.t?x.v/x.t*100:0}%"></i>`:""}${x.f?`<i class="hf" style="height:${x.t?x.f/x.t*100:0}%"></i>`:""}</span>
-      <span class="hlbl">${MESES[i].slice(0,3).toLowerCase()}</span></button>`).join("")}</div>
+      <span class="hlbl"><span class="hl3">${MESES[i].slice(0,3).toLowerCase()}</span><span class="hl1">${MESES[i].slice(0,1)}</span></span></button>`).join("")}</div>
     <div class="anio-sel">${s?`<b>${MESES[sel]}: ${clp(s.t)}</b><span>Fijos ${clp(s.f)} · Variables ${clp(s.v)}</span>`:""}</div>
     <div class="compare">${cmp}${ingH}</div>
   </section>
@@ -1957,7 +1985,7 @@ function viewInicio(){
   const heroVal=modo==="fijos"?t.fijos:modo==="variables"?t.vari:t.real;
   const heroLbl=modo==="fijos"?`Gastos fijos de ${mesTxt}`:modo==="variables"?`Gastos variables de ${mesTxt}`:`Gasto total de ${mesTxt}`;
   const sub=modo==="fijos"?`<div class="split"><span>${t.activas} gastos fijos activos</span></div>`
-    :modo==="variables"?`<div class="split"><span>${nVar} movimiento${nVar===1?"":"s"}${nVar?`, promedio ${clp(t.vari/today.getDate())} por día`:""}</span></div>`
+    :modo==="variables"?`<div class="split split-var"><span class="sp-l">${nVar} movimiento${nVar===1?"":"s"}${nVar?`, promedio ${clp(t.vari/today.getDate())} por día`:""}</span><span class="sp-c">${nVar} movimiento${nVar===1?"":"s"}${nVar?` · ${clp(t.vari/today.getDate())} diarios`:""}</span></div>`
     :`<div class="split"><span>Fijos ${clp(t.fijos)}</span><span>Variables ${clp(t.vari)}</span></div>`;
 
   const mesItems=state.gastos.filter(g=>cobraEsteMes(g)&&calc(g).pp>=1).map(g=>({g,v:calc(g).pp,dia:Number(g.dia)||1})).sort((a,b)=>a.dia-b.dia);
@@ -2337,9 +2365,9 @@ function cardPreferencias(){
     <div class="pref"><div><b>Respaldo en Excel</b><span>Genera tu Excel al día en Dropbox</span></div>${sw("excel",excelOn(),"Activar respaldo en Excel")}</div>
     <div class="pref"><div><b>Deshacer al eliminar</b><span>Tiempo para recuperar un gasto borrado</span></div><select id="cfgDeshacer" data-compact="1">${[[0,"No"],[1,"1 s"],[3,"3 s"],[5,"5 s"],[10,"10 s"]].map(([v,l])=>`<option value="${v}" ${v===segDeshacer()?"selected":""}>${l}</option>`).join("")}</select></div>
   </section>`}
-function cardAccesibilidad(){const t=tsActual(),tel=!tsGuardado()&&tsTelefono()>1.05;
+function cardAccesibilidad(){const t=tsActual(),tel=tsTelefono()>1.05,m=tsMed||medirTsTelefono(),fx=n=>String(n).replace(".",",");
   return `<section class="card">${t2("Accesibilidad","accesibilidad")}
-    <div class="pref" style="display:block"><div><b>Tamaño del texto</b><span>${tel?"Tu teléfono ya agranda el texto de Luka":"Agranda las letras de toda la app"}</span></div>
+    <div class="pref" style="display:block"><div><b>Tamaño del texto</b><span>${tel?(t==="n"?"Tu teléfono ya agranda el texto de Luka":"Tu teléfono también agranda el texto; si se ve demasiado grande, elige Normal"):"Agranda las letras de toda la app"}</span><span class="ts-med">Letra del teléfono medida: ${fx(m.a)} · ${fx(m.b)} · ${fx(m.c)}</span></div>
       <div class="seg light seg-ts" role="group" aria-label="Tamaño del texto">${TS_NIVELES.map(([k,l])=>`<button type="button" data-ts="${k}" aria-pressed="${k===t}">${l}</button>`).join("")}</div></div>
     <div class="pref"><div><b>Colores accesibles</b><span>Azul y naranja en vez de verde y rojo</span></div>${sw("coloresAcc",cbOn(),"Activar colores accesibles")}</div>
     <div class="pref"><div><b>Deshacer al eliminar</b><span>Tiempo para recuperar algo borrado</span></div><select id="cfgDeshacer" data-compact="1">${[[0,"No"],[1,"1 s"],[3,"3 s"],[5,"5 s"],[10,"10 s"]].map(([v,l])=>`<option value="${v}" ${v===segDeshacer()?"selected":""}>${l}</option>`).join("")}</select></div>
@@ -2920,9 +2948,17 @@ function vigilarMoneda(form){const inp=form.querySelector("[name=moneda]"),w=for
   inp.addEventListener("input",upd);inp.addEventListener("change",upd);upd()}
 const segDeshacer=()=>{const v=(state.config||{}).deshacer;return v===undefined?5:Number(v)};
 /* borra con «Deshacer» si está activo; si no, pide confirmar */
-function borrarConDeshacer(o){if(segDeshacer()){o.hacer();toastDeshacer(o.msg,o.deshacer);return}
-  dialogo({titulo:o.titulo,texto:o.texto||"Esta acción no se puede deshacer.",botones:[{t:"Eliminar",c:"btn-d",fn:()=>{o.hacer();toast(o.msg)}},{t:"Cancelar",c:"btn-s"}]})}
+function borrarConDeshacer(o){if(segDeshacer()&&!o.confirmar){o.hacer();toastDeshacer(o.msg,o.deshacer);return}
+  dialogo({titulo:o.titulo,texto:o.texto||"Esta acción no se puede deshacer.",botones:[{t:"Eliminar",c:"btn-d",fn:()=>{o.hacer();segDeshacer()?toastDeshacer(o.msg,o.deshacer):toast(o.msg)}},{t:"Cancelar",c:"btn-s"}]})}
 const copia=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
+/* 2.31: el ícono de cada tarjeta ocupa el ancho de su etiqueta (Crédito) para no tapar el nombre;
+   la línea bajo el monto del Resumen usa la versión corta si la larga no cabe */
+function ajustarMedidas(){
+  document.querySelectorAll(".tj-nom .av-tj").forEach(a=>{const t=a.querySelector(".ttipo");a.style.marginLeft=a.style.marginRight="";if(!t)return;
+    const m=Math.max(0,Math.ceil((t.offsetWidth-a.offsetWidth)/2));if(m){a.style.marginLeft=m+"px";a.style.marginRight=Math.max(0,m-2)+"px"}});
+  document.querySelectorAll(".split-var").forEach(e=>{e.classList.remove("corto");if(e.scrollWidth>e.clientWidth+1)e.classList.add("corto")})}
+let ajTimer=0;new MutationObserver(()=>{if(ajTimer)return;ajTimer=requestAnimationFrame(()=>{ajTimer=0;ajustarMedidas()})}).observe(document.body,{childList:true,subtree:true});
+addEventListener("resize",()=>requestAnimationFrame(ajustarMedidas));
 function toastDeshacer(msg,fnDeshacer){const n=segDeshacer();if(!n){toast(msg);return}
   document.querySelectorAll(".toast.undo").forEach(x=>x.remove());
   const t=document.createElement("div");t.className="toast undo";t.setAttribute("role","status");
@@ -3388,13 +3424,13 @@ document.addEventListener("click",e=>{
   if(d.grupoRen){openGrupoForm(d.grupoRen);return}
   if(d.grupoAdd){openAsignarGrupo(d.grupoAdd);return}
   if(d.grupoDel){const id=d.grupoDel;const gAntes=copia(grupos()),meses=Object.keys(state.vars).filter(k=>state.vars[k].some(v=>v.grupos&&v.grupos.includes(id))),vAntes={};meses.forEach(k=>vAntes[k]=copia(state.vars[k]));
-    borrarConDeshacer({titulo:"¿Eliminar este grupo?",texto:"Sus gastos se conservan; solo se quita la agrupación.",msg:"Grupo eliminado; sus gastos se conservan",
+    borrarConDeshacer({confirmar:1,titulo:"¿Eliminar este grupo?",texto:"Sus gastos se conservan; solo se quita la agrupación.",msg:"Grupo eliminado; sus gastos se conservan",
       hacer:()=>{state.grupos=grupos().filter(x=>x.id!==id);meses.forEach(k=>{state.vars[k]=state.vars[k].map(v=>v.grupos&&v.grupos.includes(id)?{...v,grupos:v.grupos.filter(x=>x!==id)}:v);store.saveMes(k)});store.saveRegistro();closeSheet();render()},
       deshacer:()=>{state.grupos=gAntes;meses.forEach(k=>{state.vars[k]=vAntes[k];store.saveMes(k)});store.saveRegistro();render()}});return}
   if(b.hasAttribute("data-cuenta-nueva")){openCuentaForm(null);return}
   if(d.cuenta){openCuentaDet(d.cuenta);return}
-  if(d.cuentaDel){const id=d.cuentaDel,antes=copia(cuentas());
-    borrarConDeshacer({titulo:"¿Eliminar esta cuenta?",texto:"Los gastos que la usan conservan su nombre.",msg:"Cuenta eliminada",
+  if(d.cuentaDel){const id=d.cuentaDel,antes=copia(cuentas()),cta=cuentas().find(x=>x.id===id)||{};
+    borrarConDeshacer({confirmar:1,titulo:`¿Eliminar «${esc(cta.nombre||"esta cuenta")}»?`,texto:"Los gastos que la usan conservan su nombre.",msg:"Cuenta eliminada",
       hacer:()=>{state.cuentas=cuentas().filter(x=>x.id!==id);store.saveRegistro();closeSheet();render()},
       deshacer:()=>{state.cuentas=antes;store.saveRegistro();render()}});return}
   if(b.hasAttribute("data-cats")){abrirCategorias();return}
