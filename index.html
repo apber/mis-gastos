@@ -799,6 +799,10 @@ nav.bottom button[aria-current="true"] .ico{background:var(--primary);color:var(
 .res{display:flex;flex-direction:column;gap:28px}
 .res>.card{background:none;border:0;border-radius:0;padding:0 4px}
 .res>.card h2{font-size:calc(17.5px * var(--ts,1));font-weight:600}
+/* 2.54, punto 12: título que lleva a su pestaña (todo el título es el toque; la › dice que se abre) */
+.h-ir{all:unset;box-sizing:border-box;position:relative;display:inline-flex;align-items:center;gap:6px;min-height:48px;margin:-12px 0;cursor:pointer;color:inherit;font:inherit;max-width:100%}
+.h-ir span{color:var(--ink-2);font-weight:500;font-size:1.15em;line-height:1}
+.h-ir:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px}
 .res>.card .sub{color:var(--ink-2);font-size:calc(14px * var(--ts,1));margin:2px 0 8px}
 .res>.card .card-head{margin-bottom:4px;align-items:center}
 .pill{min-height:48px;border-radius:999px;padding:4px 16px!important;font-size:calc(14px * var(--ts,1))!important}
@@ -836,13 +840,14 @@ nav.bottom button[aria-current="true"] .ico{background:var(--primary);color:var(
 .hbarras .hoy{color:var(--hero-ink);font-weight:700}
 .hbarras{position:relative;touch-action:pan-y;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .hbarras>div.sel i{box-shadow:0 0 0 2px var(--hero-ink)}
+.hbarras>div{cursor:pointer;border-radius:8px;position:relative}.hbarras>div::after{content:"";position:absolute;inset:0 -4px}.hbarras>div.sel{color:var(--hero-ink);font-weight:700}
 .hbarras .tip{top:-12px;transform:translate(-50%,-100%);background:var(--surface);color:var(--ink);z-index:5;text-align:center}
 .hbarras .tip span{color:var(--ink-2)}
 .hbarras .tip span:last-child{margin-top:2px}
 /* carruseles */
 .carril{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 8px;margin:4px -4px 0;scrollbar-width:none;overscroll-behavior-x:contain}
 .carril::-webkit-scrollbar{display:none}
-.carril>*{scroll-snap-align:start}
+.carril>*{scroll-snap-align:start;scroll-snap-stop:always}
 .cf{flex:0 0 min(calc(250px * var(--ts,1)),84%);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px}
 .cf-cuerpo,.pe-cuerpo{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;cursor:pointer;min-width:0}
 .cf-cuerpo:focus-visible,.pe-cuerpo:focus-visible{outline:3px solid var(--ok);outline-offset:2px;border-radius:8px}
@@ -958,7 +963,7 @@ header.top.con-tit .brand{display:none}
 :root[data-ts="mg"] .par{grid-template-columns:1fr}
 :root[data-ts="mg"] .pf+.pf{border-inline-start:0;border-top:1px solid var(--line);padding-inline-start:4px}
 .graf{margin:24px 0 0}
-.graf-cab{padding:0 4px}
+.graf-cab{padding:0 4px;display:flex;align-items:center}
 .graf-cab h2{margin:0;font-size:calc(17.5px * var(--ts,1));font-weight:600}
 .ayuda-g{font-size:calc(13.5px * var(--ts,1));color:var(--ink-2);margin:4px 4px 0}
 .franja{--cw:calc(44px + 8px * var(--ts,1));display:flex;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory;margin:12px -16px 0;
@@ -1140,10 +1145,10 @@ dd{overflow-wrap:anywhere;min-width:0}
 /* 2.52, punto 10: carrusel de secciones en Variables */
 .sec-var{margin:12px 0 0}
 .cs-var{align-items:flex-start;padding:2px 2px 4px;overflow-y:hidden}
-.cs-var > .cs{flex:0 0 calc(100% - 28px);min-width:0;scroll-snap-align:start;display:flex}
+.cs-var > .cs{flex:0 0 calc(100% - 28px);min-width:0;scroll-snap-align:start;scroll-snap-stop:always;display:flex}
 .cs-var > .cs > .card{margin:0;flex:1;min-width:0}
 .cs-var .fcat{margin:0}
-.cs-puntos{display:flex;justify-content:center;gap:0}
+.cs-puntos{display:flex;justify-content:center;gap:0;margin-bottom:-8px}
 .cs-puntos button{width:48px;height:48px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer}
 .cs-puntos i{display:block;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink-2)}
 .cs-puntos [aria-current="true"] i{width:22px;border-radius:5px;background:var(--ink);border-color:var(--ink)}
@@ -1174,9 +1179,11 @@ dd{overflow-wrap:anywhere;min-width:0}
 .plegable[aria-expanded="true"] svg{transform:rotate(180deg)}
 .plegable[aria-expanded="true"]{border-bottom:0}
 /* 2.53, punto 10: aviso de Indicadores */
-.plegable .ico-err{flex:none;display:grid;place-items:center;color:var(--bad)}
-.plegable small.err{color:var(--bad);font-weight:600}
-.indic-err{margin:8px 0 4px;padding:10px 12px;border-inline-start:3px solid var(--bad);background:var(--surface-2);border-radius:0 10px 10px 0;font-size:calc(14px * var(--ts,1));color:var(--ink)}
+/* 2.54, punto 8: color de aviso (naranjo; con colores accesibles, el amarillo oscuro de --warn, que no se confunde con rojo) */
+:root{--aviso:var(--bad)}:root[data-cb]{--aviso:var(--warn)}
+.plegable .ico-err{flex:none;display:grid;place-items:center;color:var(--aviso)}
+.plegable small.err{color:var(--aviso);font-weight:600}
+.indic-err{margin:8px 0 4px;padding:10px 12px;border-inline-start:3px solid var(--aviso);background:var(--surface-2);border-radius:0 10px 10px 0;font-size:calc(14px * var(--ts,1));color:var(--ink)}
 .indic-err p{margin:0 0 6px}.indic-err p:last-child{margin:6px 0 0;color:var(--ink-2)}
 .indic-err ul{margin:0;padding-inline-start:18px}.indic-err li span{color:var(--ink-2);font-size:calc(13px * var(--ts,1))}
 @media (prefers-reduced-motion:reduce){.plegable svg{transition:none}}
@@ -1192,6 +1199,23 @@ body.teclado .aviso-aj{display:none}
 /* 2.52, punto 19: Por confirmar sin pendientes (una línea) */
 .pend-nada{display:flex;align-items:center;gap:8px;margin:4px 0 0;font-size:calc(14.5px * var(--ts,1));color:var(--ink-2)}
 .pend-nada b{color:var(--ink);font-weight:600}
+.pend-act{margin:6px 0 10px;padding:8px 12px;border-inline-start:3px solid var(--aviso);background:var(--surface-2);border-radius:0 10px 10px 0;font-size:calc(14px * var(--ts,1))}
+.pend-act p{margin:0;color:var(--ink)}.pend-act .linkbtn{min-height:44px;font-size:calc(14.5px * var(--ts,1))}
+/* 2.54, punto 3 */
+.pend-cab{display:block}
+.pend-fila{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px}
+.pend-fila>.sub{flex:1;min-width:0}.pend-fila>.btn-s{flex:none}
+.pt-fila{display:flex;align-items:center;gap:8px;min-height:48px}.pt-fila>.ht{flex:1;min-width:0;margin:0}
+.pend-fila:not(:has(button)){min-height:0}
+.pend-vt{position:relative;flex:none;display:inline-flex;align-items:center;min-height:48px;padding:0 4px;margin-inline-end:-4px;border:0;background:none;color:var(--primary-txt);font:600 calc(15px * var(--ts,1))/1.2 var(--font);white-space:nowrap;cursor:pointer}
+.pend-fila>.pend-vt{margin-inline-start:auto}
+.pend-re{position:relative;flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;margin:6px 0;border-radius:50%;border:1.5px solid var(--primary-txt);background:none;color:var(--primary-txt);cursor:pointer}
+.pend-re::after{content:"";position:absolute;inset:-6px}
+.ht-aj .tl{white-space:nowrap;overflow:hidden;min-width:0}.ht-aj .tc{display:none;white-space:nowrap}
+.ht-aj.corto .tl{display:none}.ht-aj.corto .tc{display:inline}
+.aj{display:block;min-width:0;flex:1;white-space:nowrap;overflow:hidden}.aj .c{display:none}
+.aj.corto{white-space:normal;overflow:visible}.aj.corto .l{display:none}.aj.corto .c{display:inline}
+.pend-nada{min-height:24px}
 /* 2.53, punto 1: mientras revisa sin tarjetas, un spinner chico en la misma línea de «Nada por confirmar» (sin giro con «reducir movimiento») */
 .mini-spin{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--line);border-top-color:var(--primary-txt);flex:none;box-sizing:border-box;animation:giro .8s linear infinite}
 @keyframes giro{to{transform:rotate(360deg)}}
@@ -1205,7 +1229,10 @@ body.teclado .aviso-aj{display:none}
 .fcomp-fila > .fc-comp{grid-column:1/-1}.fcomp-fila > [hidden]{display:none}
 .fcomp .lbl-pers{white-space:normal}.fcomp .lbl-pers .stepper{width:100%;justify-content:space-between}
 .fcomp > .chipbox{margin-top:2px}
-@media (min-width:393px){:root:not([data-ts]) .fcomp-fila{grid-template-columns:minmax(0,1fr) 144px}:root:not([data-ts]) .fcomp-fila:has(> .fpag:not([hidden])){grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) 144px}:root:not([data-ts]) .fcomp-fila > .fc-comp{grid-column:auto}}
+/* 2.54, punto 1: títulos cortos (Comparten | Pagó | Pagan) y la fila única desde 360 px con texto Normal; Pagó angosto («Yo»), el −/+ de 128 px */
+@media (min-width:360px){:root:not([data-ts]) .fcomp-fila{grid-template-columns:minmax(0,1fr) 140px;gap:10px}:root:not([data-ts]) .fcomp-fila:has(> .fpag:not([hidden])){grid-template-columns:minmax(0,1fr) 72px 140px}:root:not([data-ts]) .fcomp-fila > .fc-comp{grid-column:auto}:root:not([data-ts]) .fcomp .fpag .picker{padding-inline:12px 8px}}
+.fcomp .fpag .picker{height:51px;min-height:51px;box-sizing:border-box}
+.fcomp .fpag .picker svg{display:none}.fcomp .lbl-pers .stepper{grid-template-columns:44px minmax(0,1fr) 44px}
 :root[data-ts="mg"] .fcomp-fila{grid-template-columns:minmax(0,1fr)}
 :root[data-ts="mg"] .avz{grid-template-columns:minmax(0,1fr)}
 @media (max-width:380px){:root[data-ts="g"] .avz{grid-template-columns:minmax(0,1fr)}}
@@ -1238,7 +1265,7 @@ body.teclado .aviso-aj{display:none}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="2.53";
+const APP_VERSION="2.54";
 /* ---------- 2.4: idiomas (el idioma y el diccionario se eligen en <head>) ---------- */
 const IDIOMAS=window.LUKA_IDIOMAS||{es:"Español"};
 const LANG=window.LUKA_LANG||"es";
@@ -1594,7 +1621,7 @@ const INFO={
   grupos:[tx("Grupos"),tx("Un grupo reúne gastos de distintas categorías, como un viaje o un evento, para ver cuánto costó en total. Un gasto puede estar en más de un grupo. Para agregar gastos, abre el grupo y toca «Agregar gastos», o elige el grupo al anotar o editar un gasto.")],
   funciones:[tx("Funciones"),tx("Activa solo las funciones que usas. Si desactivas una, sus datos no se borran: solo se ocultan, y vuelven a aparecer al activarla de nuevo.<br><br><b>Resumen anual:</b> agrega «Mes | Año» en el Historial para ver el total del año, mes a mes y por categoría, y compararlo con el mismo período del año anterior.<br><br><b>Alertas de alzas:</b> muestra en el Resumen los gastos fijos que este mes cuestan más que en su cobro anterior, sobre el porcentaje o monto que elijas.<br><br><b>Ingresos y ahorro:</b> anota lo que recibes para ver en el Resumen cuánto te queda cada mes y cuánto llevas de tu meta de ahorro.<br><br><b>Gastos compartidos:</b> al anotar un gasto puedes indicar con quién lo compartes y quién pagó; Luka cuenta solo tu parte y te muestra cuánto te debe cada persona.<br><br><b>Bloqueo:</b> pide el desbloqueo del teléfono o un PIN de Luka al abrir la app. Se configura en cada teléfono.<br><br><b>Pagos desde Gmail:</b> detecta en los avisos de tu banco las compras y transferencias, y te las muestra en el Resumen para que las confirmes. Requiere copiar una vez un pequeño script en tu cuenta de Google. Por ahora reconoce bancos de Chile.")],
   alzas:[tx("Subieron este mes"),tx("Son los gastos fijos que este mes cuestan más que en su cobro anterior, porque cambiaste el monto o por la conversión de moneda, como un arriendo en UF o una suscripción en dólares.<br><br>Solo aparecen las alzas que superan el límite que elegiste en Ajustes > Funciones. Toca un gasto para ver su detalle.")],
-  gmail:[tx("Movimientos por confirmar"),tx("Son las compras, transferencias y pagos que Luka encontró en los avisos de tu banco. «Agregar» guarda una compra cuando Luka ya sabe con qué tarjeta se pagó y en qué categoría va. «Decidir» te deja elegir qué es: un gasto, un traspaso entre tus cuentas, el cobro de un gasto fijo, el pago de una tarjeta o «No es un gasto».<br><br>Luka revisa tu Gmail con un permiso que diste en tu propia cuenta de Google, al abrirse y cuando deslizas hacia abajo. Ese permiso solo permite leer tu correo, no enviar ni borrar, y los avisos van directo de tu cuenta a este teléfono: nadie más los ve.<br><br>Por ahora Luka reconoce los avisos de Banco de Chile, Tenpo, Mercado Pago, Mach, Tapp, Copec Pay y Líder Bci, los pagos con Khipu y Fintoc, y las transferencias que recibes desde otros bancos de Chile.")],
+  gmail:[tx("Movimientos por confirmar"),tx("Son las compras, transferencias y pagos que Luka encontró en los avisos de tu banco. «Agregar» guarda una compra cuando Luka ya sabe con qué tarjeta se pagó y en qué categoría va. «Decidir» te deja elegir qué es: un gasto, un traspaso entre tus cuentas, el cobro de un gasto fijo, el pago de una tarjeta o «No es un gasto».<br><br>Luka revisa tu Gmail con un permiso que diste en tu propia cuenta de Google, al abrirse y cuando deslizas hacia abajo. Ese permiso solo permite leer tu correo, no enviar ni borrar, y los avisos van directo de tu cuenta a este teléfono: nadie más los ve.<br><br>Por ahora Luka reconoce los avisos de Banco de Chile, Tenpo, Mercado Pago, Mach, Tapp, Copec Pay y Líder Bci, los retiros de Fintual, los pagos con Khipu y Fintoc, y las transferencias que recibes desde otros bancos de Chile.")],
   compartidos:[tx("Cuentas con otros"),tx("Cuando compartes un gasto, Luka cuenta en tus totales solo tu parte, y lleva la cuenta con cada persona.<br><br>Si pagaste tú, cada persona te debe su parte. Si pagó otra persona, tú le debes la tuya. En los gastos fijos compartidos, cada cobro suma desde que activaste la función.<br><br>Cuando alguien te pague, o le pagues, toca su nombre y luego «Me pagó» o «Le pagué». Puedes registrar pagos parciales.")],
   bloqueo:[tx("Bloqueo"),tx("Luka pide desbloquear al abrirla y al volver a ella después del tiempo que elijas. Puedes usar el desbloqueo del teléfono (huella, rostro o el PIN del teléfono), un PIN propio de Luka, o ambos.<br><br>Es una protección de privacidad para quien tome tu teléfono; no cifra tus datos. Se configura en cada teléfono por separado.<br><br>Si olvidas el PIN de Luka y no tienes activado el desbloqueo del teléfono, tendrás que borrar los datos de Luka en el navegador y recuperarlos desde Dropbox.")],
   ingresos:[tx("Ingresos y ahorro"),tx("Los ingresos fijos, como el sueldo, una pensión o un arriendo que recibes, se anotan una vez y se cuentan todos los meses desde el mes que indiques. Los ocasionales, como un bono o una venta, se anotan uno por uno.<br><br>«Te queda» es lo que recibes en el mes menos lo que gastas: los gastos fijos del mes y los variables que registraste. Es lo que ahorras ese mes. Si defines una meta de ahorro, la barra muestra cuánto llevas.<br><br>Si un ingreso fijo cambia, el nuevo monto rige desde el mes actual, salvo que marques corregir los meses anteriores.")],
@@ -1863,7 +1890,7 @@ function viewEst(){
   const x=l[si],nom=d=>mesNombre(d),chev=`<span class="chev" aria-hidden="true">›</span>`;
   /* 2.51, punto 7: data-cnt y data-fmt permiten que los montos cuenten hasta el valor nuevo al cambiar de mes */
   const volver=modo==="anio"?(x.d.getFullYear()!==today.getFullYear()?btVolverHoy("anio"):""):(x.k!==hoyK?btVolverHoy("est"):"");
-  const fichas=(lbl,tot,f,v,estim,kMes)=>{const cn=(n,fm)=>`data-cnt="${n}" data-fmt="${fm}${estim?"e":""}"`;return `<section class="fsu"><div class="et">${lbl}${estim?ib("estimado"):""}${volver}</div><div class="monto n" ${cn(tot,"sup")}>${estim?montoSup(tot).replace("<sup>","<sup>≈ "):montoSup(tot)}</div>
+  const fichas=(lbl,tot,f,v,estim,kMes)=>{const cn=(n,fm)=>`data-cnt="${n}" data-fmt="${fm}${estim?"e":""}"`;return `<section class="fsu"><div class="et">${lbl}${estim?ib("estimado"):""}</div><div class="monto n" ${cn(tot,"sup")}>${estim?montoSup(tot).replace("<sup>","<sup>≈ "):montoSup(tot)}</div>
     <div class="par">${kMes?`<button class="pf" data-estfij="${kMes}"><span>${tx("Fijos")}${chev}</span><b class="n" ${cn(f,"clp")}>${estim?"≈ ":""}${clp(f)}</b></button>`:`<div class="pf"><span>${tx("Fijos")}</span><b class="n" ${cn(f,"clp")}>${estim?"≈ ":""}${clp(f)}</b></div>`}
     ${kMes&&!estim?`<button class="pf" data-estvar="${kMes}"><span>${tx("Variables")}${chev}</span><b class="n" ${cn(v,"clp")}>${clp(v)}</b></button>`:`<div class="pf"><span>${tx("Variables")}</span><b class="n" ${cn(v,"clp")}>${estim?"≈ ":""}${clp(v)}</b></div>`}</div></section>`};
   let h=anual?`<div class="seg2" role="group" aria-label="${tx("Ver por")}"><button data-hmodo="mes" aria-pressed="${modo==="mes"}">${tx("Mes")}</button><button data-hmodo="anio" aria-pressed="${modo==="anio"}">${tx("Año")}</button></div>`:"";
@@ -1879,8 +1906,8 @@ function viewEst(){
   const cols=l.map((z,i)=>`<button class="cm${z.est?" fut":""}${z.d.getMonth()===0&&i>0?" ene":""}" data-estsel="${z.k}" aria-pressed="${i===si}" aria-label="${esc(mesL(z.d.getMonth())+" "+z.d.getFullYear())}: ${z.est?tx("estimado")+" ":""}${clp(z.t)}">${z.d.getMonth()===0||i===0?`<span class="an">${z.d.getFullYear()}</span>`:""}<span class="l3">${mes3(z.d.getMonth())}</span></button>`).join("");
   const muestra=(c,w,dash,forma)=>`<svg width="30" height="14" viewBox="0 0 30 14" aria-hidden="true"><path d="M1 7H29" stroke="${c}" stroke-width="${w}"${dash?` stroke-dasharray="${dash}"`:""} stroke-linecap="round"/>${forma}</svg>`;
   const ley=`<div class="leyenda"><span>${muestra("var(--ink)",3.5,0,'<circle cx="15" cy="7" r="4" fill="var(--ink)"/>')}${tx("Total")}</span><span>${muestra("var(--fij)",2.5,0,'<rect x="11.5" y="3.5" width="7" height="7" fill="var(--fij)"/>')}${tx("Fijos")}</span><span>${muestra("var(--var)",2.5,0,'<path d="M15 2.5l4.5 8h-9z" fill="var(--var)"/>')}${tx("Variables")}</span><span>${muestra("var(--ink-2)",2,"1 5",'<circle cx="15" cy="7" r="3.5" fill="var(--bg)" stroke="var(--ink-2)" stroke-width="1.5"/>')}${tx("Estimado: punteado y figuras huecas")}</span></div>`;
-  if(modo==="anio")h+=grafAcum(x.d.getFullYear(),l);
-  else h+=`<section class="graf"><div class="graf-cab"><h2 class="ht">${tx("Gasto por mes")}${ib("estimacion")}</h2></div>
+  if(modo==="anio")h+=grafAcum(x.d.getFullYear(),l,volver);
+  else h+=`<section class="graf"><div class="graf-cab"><h2 class="ht">${tx("Gasto por mes")}${ib("estimacion")}</h2>${volver}</div>
     <p class="ayuda-g">${tx("Desliza o toca un mes para elegirlo.")}</p>
     <div class="franja" role="group" aria-label="${tx("Elegir mes")}"><div class="lienzo">${cols}<svg class="curv" aria-hidden="true"></svg></div></div>${ley}
     </section>`;
@@ -1915,10 +1942,10 @@ function acumAnio(y,l){const hoyK=mkey(today),pri=l.length?l[0].k:hoyK;
     const dp=new Date(y-1,m,1),kp=mkey(dp);if(kp>=pri)ap+=gastoMes(dp,true)+totalVar(kp);
     out.push({m,k,g:ag,i:ai,p:kp>=pri?ap:null,est:fut})}
   const modo=ing&&out.some(o=>o.i>0)?"ing":out.some(o=>o.p!=null)?"prev":"solo";return {out,modo}}
-function grafAcum(y,l){const {out,modo}=acumAnio(y,l);if(!out.length)return "";const u=[...out].reverse().find(o=>!o.est)||out[0],hayEst=out.some(o=>o.est);
+function grafAcum(y,l,volver){const {out,modo}=acumAnio(y,l);if(!out.length)return "";const u=[...out].reverse().find(o=>!o.est)||out[0],hayEst=out.some(o=>o.est);
   const cmp=modo==="ing"?tx("Ingresos"):modo==="prev"?String(y-1):"",lbl=modo==="ing"?tx("A {a}: gastaste {b} y recibiste {c}.",{a:mesM(u.m),b:clp(u.g),c:clp(u.i)}):modo==="prev"&&u.p!=null?tx("A {a}: gastaste {b}; en {c}, a la misma altura, {d}.",{a:mesM(u.m),b:clp(u.g),c:y-1,d:clp(u.p)}):tx("A {a}: gastaste {b}.",{a:mesM(u.m),b:clp(u.g)});
   const mu=(c,dash,forma)=>`<svg width="30" height="14" viewBox="0 0 30 14" aria-hidden="true"><path d="M1 7H29" stroke="${c}" stroke-width="3"${dash?` stroke-dasharray="${dash}"`:""} stroke-linecap="round"/>${forma}</svg>`;
-  return `<section class="graf acum"><div class="graf-cab"><h2 class="ht">${tx("Acumulado del año")}${ib("acumulado")}</h2></div>
+  return `<section class="graf acum"><div class="graf-cab"><h2 class="ht">${tx("Acumulado del año")}${ib("acumulado")}</h2>${volver||""}</div>
     <p class="ayuda-g">${modo==="ing"?tx("Lo que llevas gastado y lo que has recibido en {a}, mes a mes.",{a:y}):modo==="prev"?tx("Lo que llevas gastado en {a}, comparado con {b}.",{a:y,b:y-1}):tx("Lo que llevas gastado en {a}, mes a mes.",{a:y})}</p>
     <div class="acum-fig" role="img" aria-label="${esc(lbl)}" data-acum='${esc(JSON.stringify({out,modo}))}'><svg aria-hidden="true"></svg></div>
     <div class="leyenda"><span>${mu("var(--alto)",0,'<circle cx="15" cy="7" r="4" fill="var(--alto)"/>')}${tx("Gastos")}</span>${cmp?`<span>${mu(modo==="ing"?"var(--bueno)":"var(--ink-2)",modo==="prev"?"6 4":0,'<rect x="11.5" y="3.5" width="7" height="7" fill="'+(modo==="ing"?"var(--bueno)":"var(--ink-2)")+'"/>')}${esc(cmp)}</span>`:""}${modo==="ing"?`<span><i class="ley-area" aria-hidden="true"></i>${tx("Lo que te queda")}</span>`:""}${hayEst?`<span>${mu("var(--ink-2)","1 5",'<circle cx="15" cy="7" r="3.5" fill="var(--bg)" stroke="var(--ink-2)" stroke-width="1.5"/>')}${tx("Estimado")}</span>`:""}</div></section>`}
@@ -1975,6 +2002,7 @@ function estElegir(k){const v=$("#view .vista.est"),fr=$("#view .franja");if(!v|
   const viejos=[...v.children],graf=viejos.find(x=>x.classList.contains("graf")),nuevos=[...nv.children],ng=nuevos.findIndex(x=>x.classList.contains("graf"));
   if(!graf||ng<0){render();return}
   const antes={};const fsuV=v.querySelector(".fsu");if(fsuV)fsuV.querySelectorAll("[data-cnt]").forEach((e,i)=>antes[i]=Number(e.dataset.cnt));
+  {const vcab=graf.querySelector(".graf-cab"),ncab=nuevos[ng].querySelector(".graf-cab");if(vcab&&ncab){const vb=vcab.querySelector(".volver-hoy"),nb=ncab.querySelector(".volver-hoy");if(vb)vb.remove();if(nb)vcab.appendChild(nb)}}
   viejos.forEach(x=>{if(x!==graf)x.remove()});
   nuevos.forEach((x,i)=>{if(i===ng)return;if(i<ng)v.insertBefore(x,graf);else v.appendChild(x);if(anim&&!x.classList.contains("fsu")&&!x.classList.contains("seg2"))x.classList.add("aparece")});
   const sm=graf.querySelector(".sel-mes"),nsm=nuevos[ng].querySelector(".sel-mes");if(sm&&nsm)sm.replaceWith(nsm);
@@ -2301,6 +2329,16 @@ function parseCorreo0(c){
   if(de.endsWith("bancochile.cl")&&/giro (en|con) (cajero|tarjeta)/i.test(as+" "+t))return null;
   if(de.endsWith("bancochile.cl")&&/nuestro\(a\) cliente .{2,80}? ha efectuado una transferencia de fondos a tu cuenta/i.test(t))return null;
   if(de.endsWith("bancochile.cl")&&/configuraci[óo]n de cupo|configurado (exitosamente )?los l[ií]mites de cupo/i.test(as+" "+t))return null;
+  /* 2.54, punto 9: Fintual, solo «Pagamos tu retiro de X» (llega a una cuenta tuya; el banco no avisa esa plata recibida). Lo demás de Fintual no se lee.
+     El texto puede venir como tabla («| Monto | $100.000 |») o como líneas sueltas (HTML pasado a texto por el script). */
+  if(/(^|[.@])fintual\.(com|cl)$/.test(de)){const u=t.replace(/[|#*]/g," ");
+    const m=u.match(/pagamos tu retiro de\s*\$\s?([\d.,]+)/i);if(!m)return null;
+    const lim=x=>String(x||"").replace(/[^\p{L}\p{N}]+$/u,"").replace(/^[^\p{L}\p{N}]+/u,"").trim();
+    let fondo=lim((as.match(/pagamos tu retiro de\s+(?!\$)(.+)/i)||[])[1]);if(!fondo)fondo=lim((u.match(/retiro desde\s+(.+?)\.(?:\s|$)/i)||[])[1]);
+    const dest=u.match(/Destino\s*:?\s*Cuenta\s+(?:N[°º.]*\s*)?([\d-]{4,})\s+de(?:l)?\s+([^\n]+)/i),dig=dest?dest[1].replace(/\D/g,"").slice(-4):"",bco=dest?dest[2].trim():"";
+    const h=u.match(/a las\s+(\d{1,2}:\d{2})/i);
+    return {...base0,propio:"",tipo:"entrada",moneda:"CLP",monto:gmNum(m[1]),medio:"Transferencia",banco:"Fintual",bk:"",bancoProp:bco,digDest:dig,persona:"",
+      comercio:fondo?`Retiro de Fintual · ${fondo}`:"Retiro de Fintual",fintual:fondo||"Fintual",hora:h?h[1].padStart(5,"0"):""}}
   /* 2.53, punto 4: Copec Pay, «Recibiste una nueva transferencia» (el detalle llega del HTML, convertido a texto por el script) */
   if(de.endsWith("copecpay.cl")&&/recibiste una nueva transferencia/i.test(as+" "+t)){
     const monto=linea(t,/Monto\s*\$\s?([\d.,]+)/i),per=linea(t,/nueva transferencia de\s+([^\n]+)/i),dest=t.match(/Cuenta destino:?\s*\n\s*([^\n]+)\n\s*([^\n]*?)\*+\s*(\d{4})\s*\n\s*([^\n]+)/i),fh=t.match(/Fecha y hora:?\s*(\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}:\d{2}))?/i);
@@ -2462,7 +2500,7 @@ async function gmailRevisar(forzar){const g=gmCfg();if(!fOn("fGmail")||!g.url||!
   gmEstado="cargando";gmUlt=Date.now();pintarPend();
   try{const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),25000);
     const r=await fetch(`${g.url}${g.url.includes("?")?"&":"?"}k=${encodeURIComponent(g.key)}&d=30`,{signal:ctrl.signal,cache:"no-store",redirect:"follow"});clearTimeout(to);
-    const j=await r.json();if(!j||!j.ok)throw new Error(j&&j.error==="clave"?"clave":"respuesta");
+    const j=await r.json();if(!j||!j.ok)throw new Error(j&&j.error==="clave"?"clave":"respuesta");meta.gmScriptVer=Number(j.version)||1;
     const l=gmJuntar((j.correos||[]).map(c=>{try{return parseCorreo(c)}catch(e){return null}}).filter(x=>x&&x.monto>0));
     /* reglas recordadas: se aplican solas */
     let cambio=false;l.forEach(x=>{if(gmIds(x).some(i=>gmVistos()[i]))return;const sg=gmSugerencia(x);if(sg&&sg.k==="regla"&&sg.r.a==="no"){gmIds(x).forEach(i=>gmVistos()[i]={e:"d",t:Date.now(),l:"Descartado (recordado)"});cambio=true}
@@ -2501,6 +2539,13 @@ function tarjetaCompra(x){const pl=gmPlantilla(x),sg=gmSugerencia(x),c=gmCuenta(
 /* posición de la lista de Por confirmar (carrusel, hoja y página), para que no salte al decidir o descartar */
 function posPend(){const c=$(".carril[data-pendc]"),sh=$("#pendSheet")?$(".sheet"):null;return {c:c?c.scrollLeft:0,s:sh?sh.scrollTop:0,y:window.scrollY}}
 function volverPosPend(p){const c=$(".carril[data-pendc]");if(c)c.scrollLeft=p.c;const sh=$("#pendSheet")?$(".sheet"):null;if(sh)sh.scrollTop=p.s;window.scrollTo(0,p.y)}
+/* 2.54, punto 9: un ingreso detectado (retiro de Fintual) se guarda como ingreso ocasional; la cuenta que lo recibió va en la nota */
+function agregarIngresoGm(id){const x=gmPend.find(y=>y.id===id);if(!x)return;const cid=ctaDestino(x),c=cuentas().find(z=>z.id===cid);
+  const donde=c?c.nombre:[x.bancoProp,x.digDest?"····"+x.digDest:""].filter(Boolean).join(" ");
+  const obj={id:uid("e"),nombre:x.comercio||tx("Ingreso"),monto:x.monto,moneda:x.moneda||"CLP",fecha:x.fecha||iso(today),notas:donde?tx("Llegó a {a}",{a:donde}):""};
+  const I0=ingresos(),nk=obj.fecha.slice(0,7),ids=gmIds(x),pos=posPend();I0.extra[nk]=[...(I0.extra[nk]||[]),obj];
+  gmMarcar(id,"a",{l:"Ingreso ocasional",ref:{k:"ing",id:obj.id}});store.saveRegistro();if($("#pendCard"))closeSheet();render();volverPosPend(pos);
+  toastDeshacer(tx("Ingreso agregado: {a}",{a:clp(toBase(obj.monto,obj.moneda))}),()=>{const e=ingresos().extra;e[nk]=(e[nk]||[]).filter(v=>v.id!==obj.id);if(!e[nk].length)delete e[nk];ids.forEach(i=>delete gmVistos()[i]);gmGuardarPend();store.saveRegistro();render()})}
 function agregarCompra(id){const x=gmPend.find(y=>y.id===id);if(!x)return;const pl=gmPlantilla(x),sg=gmSugerencia(x),c0=(sg&&sg.k==="regla"&&sg.r.cat)||pl.categoria||"Otro",cat=VCATS.includes(c0)?c0:"Otro";
   const obj={id:uid("v"),fecha:pl.fecha||iso(today),descripcion:pl.descripcion||"",categoria:cat,moneda:pl.moneda||base(),monto:pl.monto,cuenta:pl.cuenta||"",cuentaId:pl.cuentaId||"",medio:pl.medio||"",notas:pl.notas||"",creado:Date.now()};
   if(pl.cuotas>1)obj.cuotas=Math.min(48,pl.cuotas);
@@ -2735,18 +2780,22 @@ function gmDeshacer(id){const x=gmPend.find(y=>y.id===id);if(!x)return;const v=g
   const txt=r&&{var:tx("el gasto variable"),ing:tx("el ingreso"),tc:tx("el pago de tarjeta"),tr:tx("el traspaso"),cp:tx("el pago registrado")}[r.k];
   if(r&&r.k==="reemb"){dialogo({titulo:tx("¿Volver a Por confirmar?"),texto:tx("La compra volverá a quedar como estaba antes de restar la devolución."),botones:[{t:tx("Volver a Por confirmar"),c:"btn-p",fn:()=>{fin();store.saveMes(r.mes)}},{t:tx("Cancelar"),c:"btn-s"}]});return}
   if(txt)dialogo({titulo:tx("¿Volver a Por confirmar?"),texto:tx("Se eliminará {a} que creaste desde este correo.",{a:txt}),botones:[{t:tx("Volver a Por confirmar"),c:"btn-p",fn:fin},{t:tx("Cancelar"),c:"btn-s"}]});else fin()}
+/* 2.54, punto 13: versión del script que trae esta Luka (el de la 2.53 y anteriores no la informaban: cuentan como 1).
+   Subirla cada vez que el script cambie, para que Luka avise que hay que volver a pegarlo. 2 = 2.54 (busca también «retiro»). */
+const GM_SCRIPT_VER=2;
 /* script para copiar en script.google.com */
 function gmScript(key){return `// Luka · pagos desde Gmail
 // Este script corre solo en tu cuenta de Google. Cuando Luka lo pide, entrega el texto
 // de los correos de tu banco (compras y transferencias) de los últimos días.
 // No envía nada a ningún otro lugar.
 const CLAVE = "${key}";
+const VERSION = ${GM_SCRIPT_VER};
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.k !== CLAVE) return salida({ error: "clave" });
   const dias = Math.min(Math.max(parseInt(p.d, 10) || 14, 1), 60);
-  const q = "newer_than:" + dias + "d subject:(compra OR cargo OR transferencia OR comprobante OR pago OR giro OR pasaje) -in:spam -in:trash";
+  const q = "newer_than:" + dias + "d subject:(compra OR cargo OR transferencia OR comprobante OR pago OR giro OR pasaje OR retiro) -in:spam -in:trash";
   const correos = [];
   GmailApp.search(q, 0, 100).forEach(function (hilo) {
     hilo.getMessages().forEach(function (m) {
@@ -2754,7 +2803,7 @@ function doGet(e) {
       correos.push({ id: m.getId(), de: m.getFrom(), asunto: m.getSubject(), fecha: m.getDate().toISOString(), texto: textoDe(m).slice(0, 3000) });
     });
   });
-  return salida({ ok: true, correos: correos });
+  return salida({ ok: true, version: VERSION, correos: correos });
 }
 
 // Algunos avisos traen casi nada en el texto simple (solo el título): ahí se usa el HTML pasado a texto.
@@ -2782,6 +2831,14 @@ const GM_MANIFIESTO=`{
   "webapp": { "executeAs": "USER_DEPLOYING", "access": "ANYONE_ANONYMOUS" }
 }`;
 async function copiarTexto(t,ok){try{await navigator.clipboard.writeText(t);toast(ok)}catch(e){const a=document.createElement("textarea");a.value=t;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();try{document.execCommand("copy");toast(ok)}catch(_){toast(tx("No se pudo copiar"))}a.remove()}}
+/* 2.54, punto 13: pasos para volver a pegar el script (se edita la implementación que ya existe, así la URL no cambia) */
+function openGmailActualizar(){openSheet(`<h3 style="margin:0 0 6px;font-size:calc(20px * var(--ts,1))">${tx("Actualizar el script de Gmail")}</h3>
+  <p class="sub" style="margin:0 0 12px">${tx("Toma un par de minutos. Es más cómodo desde un computador, con tu cuenta de Gmail. La dirección del script no cambia: no tienes que pegarla de nuevo en Luka.")}</p>
+  <ol class="gm-pasos">
+    <li>${tx("Copia el script nuevo:")} <button class="btn-s" type="button" data-gmcopia="script" style="padding:4px 10px;font-size:calc(13px * var(--ts,1))">${tx("Copiar script")}</button></li>
+    <li>${tx("Entra a <b>script.google.com</b> y abre el proyecto donde pegaste el script de Luka. Borra todo el código, pega el nuevo y toca <b>Guardar</b>.")}</li>
+    <li>${tx("Toca <b>Implementar › Gestionar implementaciones</b>, luego el lápiz (<b>Editar</b>). En <b>Versión</b> elige <b>Nueva versión</b> y toca <b>Implementar</b>.")}</li></ol>
+  <div class="actions" style="margin-top:12px"><button class="btn-p grow" type="button" data-gmlisto>${tx("Ya lo actualicé")}</button><button class="btn-s" type="button" data-close>${tx("Después")}</button></div>`)}
 let gmSetupNuevo=false;
 function openGmailSetup(nuevo){gmSetupNuevo=!!nuevo;const g=gmCfg();const key=g.key||b64(crypto.getRandomValues(new Uint8Array(18)));
   if(!g.key){state.config={...(state.config||{}),gmail:{...g,key}};store.saveRegistro()}
@@ -2793,7 +2850,7 @@ function openGmailSetup(nuevo){gmSetupNuevo=!!nuevo;const g=gmCfg();const key=g.
     <li>${tx("En <b>Configuración del proyecto</b> (⚙), marca <b>Mostrar el archivo de manifiesto «appsscript.json»</b>. Vuelve al editor, abre ese archivo, borra su contenido y pega este otro:")} <button class="btn-s" type="button" data-gmcopia="manif" style="padding:4px 10px;font-size:calc(13px * var(--ts,1))">${tx("Copiar permisos")}</button><br>${tx("Así el script solo puede <b>leer</b> tu correo.")}</li>
     <li>${tx("Toca <b>Implementar › Nueva implementación</b>, elige <b>Aplicación web</b> y toca <b>Implementar</b>. Google te pedirá permiso: si dice que la app no está verificada, toca <b>Configuración avanzada</b> y luego <b>Ir a…</b>. Es normal: el script es tuyo y corre solo en tu cuenta.")}</li>
     <li>${tx("Copia la <b>URL de la aplicación web</b> y pégala aquí:")}</li></ol>
-  <p class="hint" style="margin:0 0 12px;font-size:calc(13px * var(--ts,1));color:var(--ink-2)">${tx("Por ahora Luka reconoce los avisos de Banco de Chile, Tenpo, Mercado Pago, Mach, Tapp, Copec Pay y Líder Bci, los pagos con Khipu y Fintoc, y las transferencias que recibes desde otros bancos de Chile. Con otros bancos puede detectar poco o nada.")}</p>
+  <p class="hint" style="margin:0 0 12px;font-size:calc(13px * var(--ts,1));color:var(--ink-2)">${tx("Por ahora Luka reconoce los avisos de Banco de Chile, Tenpo, Mercado Pago, Mach, Tapp, Copec Pay y Líder Bci, los retiros de Fintual, los pagos con Khipu y Fintoc, y las transferencias que recibes desde otros bancos de Chile. Con otros bancos puede detectar poco o nada.")}</p>
   <form class="f" id="gmForm" onsubmit="return false"><label class="full">${tx("URL de la aplicación web")}<input name="url" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(g.url||"")}" placeholder="https://script.google.com/macros/s/…/exec"></label>
   <div class="full actions"><button class="btn-p grow" type="button" data-gmconectar>${tx("Conectar")}</button><button class="btn-s" type="button" data-close>${tx("Cancelar")}</button></div>
   ${g.url?`<div class="full"><button class="btn-d" type="button" data-gmquitar style="width:100%">${tx("Desconectar Gmail")}</button></div>`:""}</form>`)}
@@ -2931,10 +2988,10 @@ function viewInicio(){
     :partesHero(t.fijos,t.vari);
   /* 2.5: gráfico de barras de los últimos 6 meses (sin proyección; la proyección está en Estadísticas) */
   const meses6=[5,4,3,2,1,0].map(n=>{const d=addM(today,-n),h=histMes(d,"Todas");return {d,f:h.f,vv:h.v,v:modo==="fijos"?h.f:modo==="variables"?h.v:h.t}}),mx=Math.max(1,...meses6.map(x=>x.v))*1.08;
-  const barras=`<div class="hbarras" role="img" aria-label="${tx("Gasto de los últimos 6 meses")}">${meses6.map((x,i)=>`<div class="${i===5?"hoy":""}" data-v="${x.v}" data-f="${x.f}" data-vv="${x.vv}" data-lbl="${esc(mesNombre(x.d))}"><i style="height:${Math.max(2,Math.round(x.v/mx*100))}%"></i>${mes3(x.d.getMonth())}</div>`).join("")}</div>`;
+  const barras=`<div class="hbarras" role="group" aria-label="${tx("Gasto de los últimos 6 meses")}">${meses6.map((x,i)=>`<div class="${i===5?"hoy":""}" role="button" tabindex="0" aria-pressed="${(ui.hbSel??5)===i}" aria-label="${esc(tx("Ver {a}",{a:mesNombre(x.d)}))}" data-i="${i}" data-v="${x.v}" data-f="${x.f}" data-vv="${x.vv}" data-lbl="${esc(mesNombre(x.d))}"><i style="height:${Math.max(2,Math.round(x.v/mx*100))}%"></i>${mes3(x.d.getMonth())}</div>`).join("")}</div>`;
   const vcats=varPorCategoria(k),vlast=movsMes(k).filter(x=>!x.arrastre).sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,3);
   const prevVar=totalVar(mkey(addM(today,-1)));
-  setTimeout(iniciarCarriles);setTimeout(bindHbarras);setTimeout(ajustarPartes);
+  setTimeout(iniciarCarriles);setTimeout(bindHbarras);setTimeout(ajustarPartes);setTimeout(bindPilaTj);
   return `<div class="res">
   <section class="hero">
     <div class="label">${heroLbl}</div>
@@ -2949,10 +3006,9 @@ function viewInicio(){
     ${cardTarjetas()}
     ${cardPresupuestos(k,true)}
     <section class="card">
-      <div class="card-head"><div><h2>${tx("Variables de {a}",{a:mesTxt})}</h2><p class="sub">${nVar?(prevVar?`${tx("{a} que {b} ({c})",{a:t.vari>prevVar?tx("Más"):tx("Menos"),b:mesM(addM(today,-1).getMonth()),c:clp(prevVar)})}`:tx("Primer mes con registros")):tx("Aún no registras gastos variables este mes")}</p></div>
-      <button class="btn-s pill" data-newvar>${tx("Agregar")}</button></div>
+      <div class="card-head"><div><h2><button type="button" class="h-ir" data-irres="mov">${tx("Variables de {a}",{a:mesTxt})}<span aria-hidden="true">›</span></button></h2><p class="sub">${nVar?(prevVar?`${tx("{a} que {b} ({c})",{a:t.vari>prevVar?tx("Más"):tx("Menos"),b:mesM(addM(today,-1).getMonth()),c:clp(prevVar)})}`:tx("Primer mes con registros")):tx("Aún no registras gastos variables este mes")}</p></div></div>
       ${vcats.length?hbars(vcats.slice(0,4)):""}
-      ${vlast.length?`<ul class="list" style="margin-top:10px">${vlast.map(rowMov).join("")}</ul><button class="linkbtn" data-tab="mov">${tx("Ver todos los movimientos")}</button>`:""}
+      ${vlast.length?`<ul class="list" style="margin-top:10px">${vlast.map(rowMov).join("")}</ul>`:""}
     </section>
     ${carrilCobros()}
   </div>`;
@@ -2961,22 +3017,29 @@ function viewInicio(){
 function montoSup(v){const t=clp(v),m=/^([^\d\-−]*?)\s?([\-−]?[\d].*)$/.exec(t);return m&&m[1]?`<sup>${esc(m[1].trim())}</sup>${esc(m[2])}`:esc(t)}
 /* 2.5: Por confirmar como carrusel (una tarjeta por movimiento); tocarla abre la decisión */
 /* 2.52, punto 19: «revisado hace 5 minutos» */
-function revisadoTxt(){const t=meta.gmailOk;if(!t)return "";const m=Math.floor((Date.now()-t)/60000);if(m<1)return tx("revisado recién");if(m<60)return txn(m,"revisado hace 1 minuto","revisado hace {n} minutos");
+function revisadoTxt(corto){const t=meta.gmailOk;if(!t)return "";const m=Math.floor((Date.now()-t)/60000);if(m<1)return tx("revisado recién");if(m<60)return corto?txn(m,"hace 1 min","hace {n} min"):txn(m,"revisado hace 1 minuto","revisado hace {n} minutos");
   const d=new Date(t),h=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");return mkey(d)===mkey(today)&&d.getDate()===today.getDate()?tx("revisado a las {a}",{a:h}):tx("revisado el {a}",{a:d.getDate()+" "+mes3(d.getMonth())})}
 /* repinta solo la sección (al empezar y al terminar de revisar), sin mover el resto del Resumen */
 function pintarPend(){const e=document.getElementById("secPend");if(!e||ui.tab!=="inicio")return;
   if(gmEstado==="cargando"&&e.querySelector(".carril[data-pendc]")){const sb=e.querySelector(".card-head .sub");if(sb){sb.textContent=tx("Actualizando…");sb.setAttribute("aria-busy","true")}return}
   const t=document.createElement("div");t.innerHTML=carrilPend();const n=t.firstElementChild;if(n)e.replaceWith(n)}
-function carrilPend(){if(!fOn("fGmail"))return "";const gc=gmCfg();if((!gc.url||!gc.key)&&!gmPendientes().length)return "";const l=gmPendientes(),carga=gmEstado==="cargando";
-  const cab=(sub,extra)=>`<div class="card-head"><div>${t2(tx("Movimientos por confirmar"),"gmail")}<p class="sub" role="status"${carga?' aria-busy="true"':""}>${sub}</p></div>${extra||""}</div>`;
+/* 2.54, punto 3: título de Por confirmar en una línea («Por confirmar» si no cabe) y textos con forma corta (.aj, los ajusta ajustarMedidas) */
+const ICO_REINT=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>`;
+const tPend=()=>`<h2 class="ht ht-aj"><span class="tl">${tx("Movimientos por confirmar")}</span><span class="tc">${tx("Por confirmar")}</span>${ib("gmail")}</h2>`;
+const aj=(l,c)=>`<span class="aj"><span class="l">${l}</span><span class="c">${c}</span></span>`;
+function carrilPend(){const h=carrilPend0();if(!h||!(meta.gmScriptVer&&meta.gmScriptVer<GM_SCRIPT_VER))return h;
+  const av=`<div class="pend-act" role="note"><p>${tx("Hay una versión nueva del script de Gmail: con ella Luka reconoce más avisos.")}</p><button type="button" class="linkbtn" data-gmactualizar>${tx("Actualizar el script")} ›</button></div>`;
+  return h.includes('<div class="carril" data-pendc>')?h.replace('<div class="carril" data-pendc>',av+'<div class="carril" data-pendc>'):h.replace(/<\/section>$/,av+"</section>")}
+function carrilPend0(){if(!fOn("fGmail"))return "";const gc=gmCfg();if((!gc.url||!gc.key)&&!gmPendientes().length)return "";const l=gmPendientes(),carga=gmEstado==="cargando";
+  const cab=(sub,extra,err)=>`<div class="card-head pend-cab"><div class="pt-fila">${tPend()}${extra||""}</div><div class="pend-fila${err?" err":""}"><p class="sub" role="status"${carga?' aria-busy="true"':""}>${sub}</p></div></div>`;
   if(!l.length){
-    if(carga)return `<section class="card sec-abierta pend-vacio" id="secPend"><div class="card-head"><div>${t2(tx("Movimientos por confirmar"),"gmail")}<p class="pend-nada" role="status" aria-busy="true"><span class="mini-spin" aria-hidden="true"></span><span><b>${tx("Revisando tu correo…")}</b></span></p></div></div></section>`;
-    if(meta.gmailError)return `<section class="card sec-abierta" id="secPend">${cab(esc(meta.gmailError),`<button class="btn-s pill" data-pendrevisar>${tx("Reintentar")}</button>`)}</section>`;
-    return `<section class="card sec-abierta pend-vacio" id="secPend"><div class="card-head"><div>${t2(tx("Movimientos por confirmar"),"gmail")}<p class="pend-nada" role="status"><span class="mini-ok" aria-hidden="true">${ICO_OK}</span><span><b>${tx("Nada por confirmar")}</b>${meta.gmailOk?` · ${esc(revisadoTxt())}`:""}</span></p></div></div></section>`}
+    if(carga)return `<section class="card sec-abierta pend-vacio" id="secPend"><div class="card-head pend-cab">${tPend()}<p class="pend-nada" role="status" aria-busy="true"><span class="mini-spin" aria-hidden="true"></span><span class="aj"><b>${tx("Revisando tu correo…")}</b></span></p></div></section>`;
+    if(meta.gmailError)return `<section class="card sec-abierta" id="secPend">${cab(esc(meta.gmailError).replace(/\. (?=\S)/g,".<br>"),`<button class="pend-re" data-pendrevisar aria-label="${tx("Reintentar")}">${ICO_REINT}</button>`,1)}</section>`;
+    return `<section class="card sec-abierta pend-vacio" id="secPend"><div class="card-head pend-cab">${tPend()}<p class="pend-nada" role="status"><span class="mini-ok" aria-hidden="true">${ICO_OK}</span>${meta.gmailOk?aj(`<b>${tx("Nada por confirmar")}</b> · ${esc(revisadoTxt())}`,`<b>${tx("Nada por confirmar")}</b> · ${esc(revisadoTxt(1))}`):`<span class="aj"><b>${tx("Nada por confirmar")}</b></span>`}</p></div></section>`}
   const tarjeta=x=>{const sg=gmSugerencia(x),f=parseD(x.fecha),q=[x.tipo==="compra"?tx("Compra"):x.tipo==="entrada"?tx("Recibida"):x.tipo==="salida"?tx("Transferencia"):x.tipo==="reembolso"?tx("Devolución"):x.tipo==="pagotc"?tx("Pago de tarjeta"):"",f.getDate()+" "+mes3(f.getMonth()),x.medio?dt(x.medio):""].filter(Boolean).join(" · ");
     return `<div class="cf"><button class="cf-cuerpo" data-pend="${esc(x.id)}"><span class="q">${ICO_MAIL}${esc(q)}</span><span class="t">${esc(gmTitulo(x))}</span><span class="n ${x.tipo==="entrada"||x.tipo==="reembolso"?"saldo-pos":""}">${gmMonto(x)}</span>${sg?`<span class="pend-sug ${sg.k==="regla"||sg.k==="comp"?"ok":""}">${esc(sg.t)}</span>`:""}</button>
-      <div class="bt">${compraSimple(x)?`<button class="si" data-pendok="${esc(x.id)}">${tx("Agregar")}</button>`:`<button class="si" data-pend="${esc(x.id)}">${tx("Decidir")}</button>`}</div></div>`};
-  return `<section class="card sec-abierta" id="secPend">${cab(carga?tx("Actualizando…"):txn(l.length,"1 movimiento detectado en tu correo","{n} movimientos detectados en tu correo"),l.length>1?`<button class="btn-s pill" data-pendtodos>${tx("Ver todos")}</button>`:"")}
+      <div class="bt">${x.fintual&&x.tipo==="entrada"?`<button class="si" data-pendingr="${esc(x.id)}">${tx("Agregar")}</button>`:compraSimple(x)?`<button class="si" data-pendok="${esc(x.id)}">${tx("Agregar")}</button>`:`<button class="si" data-pend="${esc(x.id)}">${tx("Decidir")}</button>`}</div></div>`};
+  return `<section class="card sec-abierta" id="secPend">${cab(carga?tx("Actualizando…"):aj(txn(l.length,"1 movimiento detectado en tu correo","{n} movimientos detectados en tu correo"),txn(l.length,"1 detectado en tu correo","{n} detectados en tu correo")),l.length>1?`<button class="pend-vt" data-pendtodos data-baja>${tx("Ver todos")}</button>`:"")}
     <div class="carril" data-pendc>${l.slice(0,12).map(tarjeta).join("")}</div></section>`}
 /* 2.5: Cuentas con otros como carrusel (una tarjeta por persona) */
 function carrilComp(){if(!fOn("fCompartidos"))return "";const l=saldosComp();if(!l.length)return "";
@@ -2991,7 +3054,7 @@ function carrilCobros(){const mesTxt=mesM(today.getMonth()),hoy=today.getDate();
   const cob=l.filter(x=>x.dia<=hoy).reduce((a,b)=>a+b.v,0),tot=l.reduce((a,b)=>a+b.v,0),ok=`<span class="mini-ok" aria-hidden="true">${ICO_OK}</span>`;
   const ficha=x=>{const d=x.dia-hoy,k=d<0?"pas":d===0?"hoy":"",c=d<0?tx("Cobrado el {a}",{a:x.dia}):d===0?tx("Cobrado hoy"):d===1?tx("Mañana"):tx("En {a} días",{a:d});
     return `<button class="pc ${k}" data-open="${x.g.id}"><span class="cu">${d<=0?ok:""}${esc(c)}</span><span class="nm">${esc(x.g.nombre)}</span><span class="n">${clp(x.v)}</span></button>`};
-  return `<section class="card sec-abierta"><h2>${tx("Cobros fijos de {a}",{a:mesTxt})}</h2>
+  return `<section class="card sec-abierta"><h2><button type="button" class="h-ir" data-irres="gastos">${tx("Cobros fijos de {a}",{a:mesTxt})}<span aria-hidden="true">›</span></button></h2>
     <div class="resumen-carril"><span><b>${tx("Cobrado {a}",{a:clp(cob)})}</b></span><span>${cob>=tot-0.5?tx("Ya se cobró todo este mes"):tx("Faltan {a}",{a:clp(tot-cob)})}</span></div>
     <div class="carril" data-ini>${l.map(ficha).join("")}</div></section>`}
 /* el carrusel de cobros parte mostrando el último cobrado antes de hoy */
@@ -3025,7 +3088,8 @@ function factTarjeta(c,p){const ec=(state.config||{}).estadosTc||{},anc=q=>{cons
   if(!ini||iso(ini.cierre)>fin){const ca=car(p),a=anc(p);return {fact:a??ca,luka:ca,cargos:ca,pagos:0,ant:0,cadena:false}}
   let q=perAnt(c,ini),saldo=anc(q)??car(q);q=ini;
   /* 2.53, punto 6 (A): sin arrastrar un saldo a favor sin confirmar: facturado = compras del período + lo que quedó sin pagar del estado anterior (lo pagado de más no se descuenta) */
-  for(let i=0;i<60;i++){const ca=car(q),pa=pag(q),ant=saldo,resto=Math.max(0,ant-pa),luka=resto+ca,a=anc(q);saldo=a??luka;
+  /* 2.54, punto 5: «¿Quedaron $X sin pagar?» → «No, lo pagué» deja en 0 lo que quedó del estado anterior en ese período */
+  for(let i=0;i<60;i++){const ca=car(q),pa=pag(q),ant=saldo,rk=ec[c.id+"|"+iso(q.cierre)+"|resto"],resto=rk&&rk.no?0:Math.max(0,ant-pa),luka=resto+ca,a=anc(q);saldo=a??luka;
     if(iso(q.cierre)>=fin)return {fact:saldo,luka,cargos:ca,pagos:pa,ant,resto,cadena:true};q=perSig(c,q)}
   return {fact:saldo,luka:saldo,cargos:car(p),pagos:0,ant:0,cadena:false}}
 /* estado de cuenta ya cerrado que falta pagar: {total, vence} o null */
@@ -3046,12 +3110,15 @@ function estadoTarjeta(c){if(!c.diaFact||!c.diaVenc)return null;const p=periodoT
   const key=c.id+"|"+iso(cierre),ec=((state.config||{}).estadosTc||{})[key]||null,conf=ec&&ec.m>0?ec.m:null,ft=factTarjeta(c,r.p),luka=Math.max(0,ft.luka);
   /* 2.52: solo se pregunta si pagaste más de lo que Luka calculó (faltan compras); si pagaste menos, es un pago parcial */
   const ult=pl.map(x=>x.fecha).sort().pop()||"",preguntar=!ec&&pagado>0&&pagado-luka>=1;
-  return {total:conf??luka,luka,conf,key,preguntar,vence,dias:Math.round((vence-hoy0)/864e5),pagado,ult,cierre,inicio:r.p.inicio,ft}}
+  /* 2.54, punto 5: se pregunta siempre que quede un saldo del estado anterior (antes que la otra pregunta) */
+  const rKey=key+"|resto",rRes=((state.config||{}).estadosTc||{})[rKey],preguntarResto=conf==null&&!rRes&&ft.cadena&&ft.resto>=1;
+  return {total:conf??luka,luka,conf,key,preguntar:preguntar&&!preguntarResto,preguntarResto,rKey,vence,dias:Math.round((vence-hoy0)/864e5),pagado,ult,cierre,inicio:r.p.inicio,ft}}
 /* recuadros «Por pagar» (último estado de cuenta) y «Período actual»; cada uno abre su período */
 function tjCols(c){const r=cargosTarjeta(c);const fm=d=>d.getDate()+" "+mes3(d.getMonth());
     const e=estadoTarjeta(c);let cls="",pagar;
     if(!c.diaVenc)pagar=`<b class="tj-nada">${tx("Sin vencimiento")}</b><small>${tx("agrégalo en Ajustes")}</small>`;
     else if(!e)pagar=`<b class="tj-nada">${tx("Nada por pagar")}</b><small>&nbsp;</small>`;
+    else if(e.preguntarResto)pagar=`<b>${clp(e.total-e.pagado)}</b><small class="tj-preg">${tx("¿Quedó saldo?")}</small>`;
     else if(e.preguntar)pagar=`<b>${clp(e.pagado)}</b><small class="tj-preg">${tx("¿Quedó pagada?")}</small>`;
     else if(e.total<1||(e.dias<0&&e.dias<-20)){cls="pp-ok";pagar=e.pagado>0&&e.total<1?`<b>${clp(e.pagado)}</b><small class="tj-pag">${tx("Pagaste ✓")}</small>`:`<b class="tj-nada">${tx("Nada por pagar ✓")}</b><small>&nbsp;</small>`}
     else if(e.pagado>=e.total-1){cls="pp-ok";pagar=`<b>${clp(e.total)}</b><small class="tj-pag">${tx("Pagada ✓")}</small>`}
@@ -3089,12 +3156,35 @@ function tjFrente(c){const r=cargosTarjeta(c),pp=tjPorPagar(c),fm=d=>d.getDate()
     <button type="button" class="tj-pp btn" data-tcper="${c.id}|ant"><span class="lbl">${tx("Por pagar")}</span><span class="fl">${pp.m!=null?`<b class="n grande">${clp(pp.m)}</b>`:`<b class="nada">${esc(pp.t)}</b>`}${pp.s?`<span class="tj-est${pp.k?" "+pp.k:""}">${esc(pp.s)}</span>`:""}</span></button>
     <button type="button" class="tj-pie btn" data-tcper="${c.id}|act"><span>${tx("Período actual")} <b class="n">${clp(r.total)}</b></span><span>${tx("cierra el {a}",{a:fm(r.p.cierre)})}</span></button></div>`}
 function cardTarjetas(){const l=cuentas().filter(c=>c.tipo==="credito"&&c.diaFact);if(!l.length)return "";
-  const fr=l.find(c=>c.id===ui.tjFrente)||l[0],atras=l.filter(c=>c!==fr);
+  /* 2.54, punto 10: la pila sigue un orden circular (ui.tjOrden); la del frente es la primera y la franja más cercana a ella, la siguiente */
+  const ord=ordenTj(l),fr=ord[0],atras=ord.slice(1).reverse();
   return `<section class="card">${t2(tx("Tarjetas de crédito"),"tarjetas")}<p class="sub">${tx("Lo que debes pagar y lo que llevas en el período")}</p>
     <div class="pila-tj">${atras.map(c=>`<button type="button" class="tj-atras tjc" style="${tjEstilo(c)}" data-tjfrente="${c.id}"><span class="nm"><b>${esc(c.nombre)}</b>${c.dig?`<span class="dig">•••• ${esc(c.dig)}</span>`:""}</span><span class="pp">${porPagarCorto(c)}</span></button>`).join("")}
     ${tjFrente(fr)}</div></section>`}
+function ordenTj(l){const ids=l.map(c=>c.id);let o=(ui.tjOrden||[]).filter(i=>ids.includes(i));ids.forEach(i=>{if(!o.includes(i))o.push(i)});
+  if(ui.tjFrente&&o.includes(ui.tjFrente)&&o[0]!==ui.tjFrente){const k=o.indexOf(ui.tjFrente);o=[...o.slice(k),...o.slice(0,k)]}ui.tjOrden=o;ui.tjFrente=o[0];return o.map(i=>l.find(c=>c.id===i))}
+/* tocar una franja la trae al frente sin cambiar el orden circular */
+function girarTj(id){const o=ui.tjOrden||[],k=o.indexOf(id);if(k>0)ui.tjOrden=[...o.slice(k),...o.slice(0,k)];ui.tjFrente=id}
+/* deslizar la tarjeta del frente: a la derecha se va al final; a la izquierda vuelve la del final */
+function bindPilaTj(){const p=$("#view .pila-tj");if(!p||p._gest)return;const fr=p.querySelector(".tj-frente");if(!fr||!p.querySelector(".tj-atras"))return;p._gest=1;
+  fr.style.touchAction="pan-y";let x0=0,y0=0,t0=0,dx=0,id=null,modo=0,sinClick=0;const ancho=()=>fr.offsetWidth||300;
+  const pinta=x=>{fr.style.transform=x?`translateX(${x}px) rotate(${x/ancho()*8}deg)`:""};
+  fr.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button)return;id=e.pointerId;x0=e.clientX;y0=e.clientY;t0=e.timeStamp;dx=0;modo=0;fr.style.transition="none"});
+  fr.addEventListener("pointermove",e=>{if(e.pointerId!==id)return;const ax=e.clientX-x0,ay=e.clientY-y0;
+    if(!modo){if(Math.abs(ay)>10&&Math.abs(ay)>Math.abs(ax)){id=null;return}if(Math.abs(ax)>10&&Math.abs(ax)>Math.abs(ay)){modo=1;try{fr.setPointerCapture(id)}catch(_){}}}
+    if(modo){dx=ax;pinta(dx)}});
+  const suelta=e=>{if(e.pointerId!==id)return;id=null;if(!modo){fr.style.transition="";return}sinClick=Date.now();
+    const v=dx/Math.max(1,e.timeStamp-t0),va=Math.abs(dx)>ancho()*.3||(Math.abs(dx)>40&&Math.abs(v)>.5);fr.style.transition=sinMov()?"none":"transform .22s ease-out,opacity .22s ease-out";
+    if(!va){pinta(0);return}
+    const o=ui.tjOrden.slice(),sig=dx>0?[...o.slice(1),o[0]]:[o[o.length-1],...o.slice(0,-1)];
+    const fin=()=>{ui.tjOrden=sig;ui.tjFrente=sig[0];render();const n=$("#view .pila-tj .tj-frente");if(n&&!sinMov()){
+      n.style.transition="none";n.style.transform=dx>0?"translateY(-14px) scale(.97)":`translateX(${-ancho()*1.1}px) rotate(-8deg)`;n.style.opacity=dx>0?".6":"1";
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{n.style.transition="transform .24s ease-out,opacity .24s ease-out";n.style.transform="";n.style.opacity=""}))}};
+    if(dx>0&&!sinMov()){pinta(ancho()*1.15);fr.style.opacity="0";setTimeout(fin,200)}else fin()};
+  fr.addEventListener("pointerup",suelta);fr.addEventListener("pointercancel",e=>{if(e.pointerId!==id)return;id=null;fr.style.transition="";pinta(0)});
+  fr.addEventListener("click",e=>{if(Date.now()-sinClick<400){e.stopPropagation();e.preventDefault()}},true)}
 /* lo que se ve de una tarjeta de atrás en la pila */
-function porPagarCorto(c){const e=c.diaVenc?estadoTarjeta(c):null;if(!e||e.total<1||e.dias<-20)return esc(tx("Nada por pagar"));if(e.preguntar)return esc(tx("¿Quedó pagada?"));if(e.pagado>=e.total-1)return "✓ "+esc(tx("Pagada"));
+function porPagarCorto(c){const e=c.diaVenc?estadoTarjeta(c):null;if(!e||e.total<1||e.dias<-20)return esc(tx("Nada por pagar"));if(e.preguntarResto)return esc(tx("¿Quedó saldo?"));if(e.preguntar)return esc(tx("¿Quedó pagada?"));if(e.pagado>=e.total-1)return "✓ "+esc(tx("Pagada"));
   return `${e.dias<0?"⚠ ":""}${esc(tx("Por pagar"))} <b class="n">${clp(e.total-e.pagado)}</b>`}
 function openTarjeta(...a){openTarjeta_(...a);hojaFn=()=>openTarjeta(...a)}
 /* 2.41, punto 21: cuadro del estado de cuenta en la hoja de la tarjeta (maqueta «Bocetos Luka · punto 21», opción A) */
@@ -3103,7 +3193,9 @@ function cajaEstadoTc(c,e){const fila=(k,v,tot)=>`<div class="tc-fila${tot?" tot
   if(e.conf!=null){f.push(fila(tx("Estado de cuenta"),e.conf,true));f.push(fila(tx("Registrado en Luka"),e.luka))}else{f.push(fila(tx("Facturado según Luka"),e.luka,true));if(det)f.push(det)}
   if(e.pagado>0)f.push(fila(e.ult?tx("Pagaste el {a}",{a:fmtD(e.ult)}):tx("Pagaste"),e.pagado));
   const fm=fmtD(iso(e.vence));let est;
-  if(e.preguntar)est=`<div class="tc-preg" role="group" aria-labelledby="tcPregT"><b id="tcPregT">${tx("¿El estado de cuenta fue {a}?",{a:clp(e.pagado)})}</b><p>${tx("Luka sumó {a} con lo registrado. La diferencia puede ser una compra sin anotar, intereses o una devolución.",{a:clp(e.luka)})}</p>
+  if(e.preguntarResto)est=`<div class="tc-preg" role="group" aria-labelledby="tcPregT"><b id="tcPregT">${tx("¿Quedaron {a} sin pagar del estado anterior?",{a:clp(ft.resto)})}</b><p>${tx("Luka no encontró pagos que cubran todo el estado anterior, así que lo suma a este. Si lo pagaste de otra forma, dile que no.")}</p>
+      <div class="tc-preg-btn"><button type="button" class="btn-p" data-tcresto="${esc(e.rKey)}|si">${tx("Sí, quedaron")}</button><button type="button" class="btn-s" data-tcresto="${esc(e.rKey)}|no">${tx("No, lo pagué")}</button></div></div>`;
+  else if(e.preguntar)est=`<div class="tc-preg" role="group" aria-labelledby="tcPregT"><b id="tcPregT">${tx("¿El estado de cuenta fue {a}?",{a:clp(e.pagado)})}</b><p>${tx("Luka sumó {a} con lo registrado. La diferencia puede ser una compra sin anotar, intereses o una devolución.",{a:clp(e.luka)})}</p>
       <div class="tc-preg-btn"><button type="button" class="btn-p" data-tcconf="${esc(e.key)}|${e.pagado}">${tx("Sí, fue {a}",{a:clp(e.pagado)})}</button><button type="button" class="btn-s" data-tcconf="${esc(e.key)}|no">${tx("No")}</button></div></div>`;
   else if(e.total>=1&&e.pagado>=e.total-1)est=`<div class="tc-est ok">✓ ${tx("Pagada")}</div>`;
   else if(e.total<1)est=`<div class="tc-est ok">✓ ${tx("Nada por pagar")}</div>`;
@@ -3241,7 +3333,9 @@ function carrilSecVar(cats,k){const bc=barraCat(cats,k,"vcat",!!ui.vcat,"data-vc
     <div class="cs-puntos" role="group" aria-label="${tx("Secciones")}">${sl.map((x,i)=>`<button type="button" data-csir="${i}" aria-label="${esc(x[0])}" aria-current="${i===i0}"><i aria-hidden="true"></i></button>`).join("")}</div></div>`}
 /* 2.53, punto 8: el carrusel toma el alto de la sección que se ve (al deslizar, pasa de un alto al otro); con Por categoría plegado, la lista sube */
 function altoSecVar(c){const l=[...c.children];if(!l.length)return;const st=l.length>1?l[1].offsetLeft-l[0].offsetLeft:1,pos=Math.max(0,Math.min(l.length-1,c.scrollLeft/st)),a=Math.floor(pos),b=Math.min(l.length-1,a+1),f=pos-a;
-  const h=x=>(x.firstElementChild||x).offsetHeight,cs=getComputedStyle(c),pad=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);c.style.height=Math.round(h(l[a])*(1-f)+h(l[b])*f+pad)+"px"}
+  const h=x=>(x.firstElementChild||x).offsetHeight,cs=getComputedStyle(c),pad=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom),H=Math.round(h(l[a])*(1-f)+h(l[b])*f+pad);c.style.height=H+"px";
+  /* 2.54, punto 6: lo que no cabe de una tarjeta más alta se difumina en los últimos 30 px en vez de verse cortado */
+  const vis=H-parseFloat(cs.paddingTop);l.forEach(x=>{const m=h(x)>vis+1?`linear-gradient(to bottom,#000 ${Math.max(0,vis-30)}px,transparent ${vis}px)`:"";if(x.style.maskImage!==m){x.style.maskImage=m;x.style.webkitMaskImage=m}})}
 function iniciarSecVar(i0){const c=$("#view .cs-var");if(!c||c._ini)return;c._ini=1;const s=c.children[i0];if(s)c.scrollLeft=s.offsetLeft-c.firstElementChild.offsetLeft;
   altoSecVar(c);c.addEventListener("scroll",()=>altoSecVar(c),{passive:true});if(window.ResizeObserver){const ro=new ResizeObserver(()=>{if(c.isConnected)altoSecVar(c);else ro.disconnect()});[...c.children].forEach(x=>ro.observe(x.firstElementChild||x))}
   alDetenerse(c,()=>{const cr=c.getBoundingClientRect();let best=0,bd=1e9;[...c.children].forEach((x,i)=>{const d=Math.abs(x.getBoundingClientRect().left-cr.left);if(d<bd){bd=d;best=i}});
@@ -3270,7 +3364,9 @@ function alDetenerse(c,fn){let t=null;const listo=()=>{if(c._dedo||c._anim)retur
 /* 2.53, punto 11 (B): menos inercia en las ruedas y en el gráfico de Estadísticas. Con el dedo, la franja lo sigue 1:1; al soltar avanza
    solo un trecho corto (velocidad × INERCIA_MS, sin tope) y se ajusta al elemento más cercano al centro. Mouse, rueda y teclado, como antes.
    Si en la rueda no convence, la alternativa decidida es un mes por gesto. */
-const INERCIA_MS=150;
+/* 2.54, punto 2: 100 ms (la desaceleración «rápida» de iOS); la velocidad sale de los últimos 100 ms del gesto
+   y es 0 si el dedo quedó quieto 40 ms antes de soltar, como hacen Android y Chrome */
+const INERCIA_MS=100,QUIETO_MS=40,VENTANA_MS=100;
 function menosInercia(c,sel){if(c._inercia)return;c._inercia=1;c.style.touchAction="pan-y";
   let x0=0,s0=0,id=null,mov=false,hist=[],raf=0,sinClick=0;
   const fin=()=>{c._anim=0;c.style.scrollSnapType="";c.dispatchEvent(new Event(conScrollend?"scrollend":"scroll"))};
@@ -3281,9 +3377,10 @@ function menosInercia(c,sel){if(c._inercia)return;c._inercia=1;c.style.touchActi
     const dur=Math.min(520,180+Math.abs(dist)*.45),t0=performance.now();
     const paso=now=>{const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3);c.scrollLeft=desde+dist*e;if(k<1)raf=requestAnimationFrame(paso);else{raf=0;fin()}};raf=requestAnimationFrame(paso)};
   c.addEventListener("pointerdown",e=>{if(e.pointerType!=="touch")return;if(raf){cancelAnimationFrame(raf);raf=0}id=e.pointerId;x0=e.clientX;s0=c.scrollLeft;mov=false;hist=[{x:e.clientX,t:e.timeStamp}];c._anim=1;c.style.scrollSnapType="none"});
-  c.addEventListener("pointermove",e=>{if(e.pointerId!==id)return;const dx=e.clientX-x0;if(!mov&&Math.abs(dx)>6)mov=true;if(mov)c.scrollLeft=s0-dx;hist.push({x:e.clientX,t:e.timeStamp});if(hist.length>6)hist.shift()});
+  c.addEventListener("pointermove",e=>{if(e.pointerId!==id)return;const dx=e.clientX-x0;if(!mov&&Math.abs(dx)>6)mov=true;if(mov)c.scrollLeft=s0-dx;
+    const u=hist[hist.length-1];if(u&&u.x===e.clientX)return;hist.push({x:e.clientX,t:e.timeStamp});while(hist.length>2&&e.timeStamp-hist[0].t>VENTANA_MS)hist.shift()});
   const suelta=e=>{if(e.pointerId!==id)return;id=null;if(!mov){c._anim=0;c.style.scrollSnapType="";return}
-    sinClick=Date.now();const a=hist[0],b=hist[hist.length-1],v=b.t>a.t&&e.timeStamp-b.t<90?(b.x-a.x)/(b.t-a.t):0;ir(c.scrollLeft-v*INERCIA_MS)};
+    sinClick=Date.now();const a=hist[0],b=hist[hist.length-1],v=b.t>a.t&&e.timeStamp-b.t<QUIETO_MS?(b.x-a.x)/(b.t-a.t):0;ir(c.scrollLeft-v*INERCIA_MS)};
   c.addEventListener("pointerup",suelta);c.addEventListener("pointercancel",suelta);
   c.addEventListener("click",e=>{if(Date.now()-sinClick<400){e.stopPropagation();e.preventDefault()}},true)}
 function bindRueda(c){if(c._rueda)return;c._rueda=1;menosInercia(c,"button");
@@ -3396,19 +3493,27 @@ function bindHist(){const el=$(".hist");if(!el)return;let hold=null,scrub=false,
 /* 2.53, punto 7: Fijos y Variables en una línea; si no caben (montos de 7 cifras, texto grande), en dos columnas con la etiqueta arriba */
 function partesHero(F,V){return `<div class="partes"><span class="pt"><i></i><span class="k">${tx("Fijos")}</span><b class="n">${clp(F)}</b></span><span class="pt"><i></i><span class="k">${tx("Variables")}</span><b class="n">${clp(V)}</b></span></div>`}
 function ajustarPartes(){const p=$("#view .hero .partes");if(!p)return;p.classList.remove("dos");if(p.scrollWidth>p.clientWidth+1||[...p.children].some(x=>x.offsetTop>p.firstElementChild.offsetTop+2))p.classList.add("dos")}
-function bindHbarras(){const el=$("#view .hbarras");if(!el||el._b)return;el._b=1;let hold=null,scrub=false,orig=null;
+/* 2.54, punto 4: tocar una barra cambia el recuadro a ese mes y queda así; la del mes en curso (o cambiar de pestaña o dejar la app) vuelve.
+   Mantener presionado y deslizar recorre los meses; al soltar queda el último. */
+function bindHbarras(){const el=$("#view .hbarras");if(!el||el._b)return;el._b=1;let hold=null,scrub=false,x0=0,y0=0,act=null;
   const hero=el.closest(".hero"),lab=hero&&hero.querySelector(".label"),big=hero&&hero.querySelector(".big"),par=hero&&hero.querySelector(".partes");
-  const tip=b=>{if(!lab||!big)return;if(!orig)orig={l:lab.innerHTML,b:big.innerHTML,p:par?par.innerHTML:""};const l=b.dataset.lbl,m="total";
-    lab.textContent=m==="fijos"?tx("Gastos fijos de {a}",{a:l}):m==="variables"?tx("Gastos variables de {a}",{a:l}):tx("Gasto total de {a}",{a:l});
-    big.innerHTML=montoSup(Number(b.dataset.v));
-    if(par){par.innerHTML=partesHero(Number(b.dataset.f),Number(b.dataset.vv)).replace(/^<div class="partes">|<\/div>$/g,"");ajustarPartes()}
-    hero.classList.add("viendo");el.querySelectorAll(":scope>div").forEach(x=>x.classList.toggle("sel",x===b))};
-  const bajo=x=>[...el.querySelectorAll(":scope>div")].find(b=>{const r=b.getBoundingClientRect();return x>=r.left-4&&x<=r.right+4});
-  const fin=()=>{clearTimeout(hold);if(orig){lab.innerHTML=orig.l;big.innerHTML=orig.b;if(par){par.innerHTML=orig.p;ajustarPartes()}orig=null}if(hero)hero.classList.remove("viendo");el.querySelectorAll(".sel").forEach(x=>x.classList.remove("sel"));scrub=false};
-  el.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse")return;const b=bajo(e.clientX);if(b)hold=setTimeout(()=>{scrub=true;tip(b)},300)});
-  el.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"){const b=bajo(e.clientX);if(b)tip(b);return}if(scrub){const b=bajo(e.clientX);if(b)tip(b)}else clearTimeout(hold)});
+  const orig={l:lab?lab.innerHTML:"",b:big?big.innerHTML:"",p:par?par.innerHTML:""},barras=[...el.querySelectorAll(":scope>div")];
+  const muestra=b=>{if(!lab||!big)return;const hoy=!b||b.classList.contains("hoy");
+    if(hoy){lab.innerHTML=orig.l;big.innerHTML=orig.b;if(par)par.innerHTML=orig.p}
+    else{lab.textContent=tx("Gasto total de {a}",{a:b.dataset.lbl});big.innerHTML=montoSup(Number(b.dataset.v));
+      if(par)par.innerHTML=partesHero(Number(b.dataset.f),Number(b.dataset.vv)).replace(/^<div class="partes">|<\/div>$/g,"")}
+    if(par)ajustarPartes();hero.classList.toggle("viendo",!hoy);barras.forEach(x=>{const on=x===(b||barras[5]);x.classList.toggle("sel",on&&!hoy);x.setAttribute("aria-pressed",String(on))})};
+  const elige=b=>{if(!b)return;ui.hbSel=b.classList.contains("hoy")?null:Number(b.dataset.i);muestra(b)};
+  const bajo=x=>barras.find(b=>{const r=b.getBoundingClientRect();return x>=r.left-4&&x<=r.right+4});
+  if(ui.hbSel!=null&&barras[ui.hbSel])muestra(barras[ui.hbSel]);
+  el.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button)return;act=e.pointerId;x0=e.clientX;y0=e.clientY;scrub=false;
+    if(e.pointerType!=="mouse")hold=setTimeout(()=>{scrub=true;muestra(bajo(x0))},300)});
+  el.addEventListener("pointermove",e=>{if(e.pointerId!==act)return;if(scrub){const b=bajo(e.clientX);if(b)muestra(b);return}
+    if(Math.abs(e.clientX-x0)>10||Math.abs(e.clientY-y0)>10){clearTimeout(hold);act=null}});
   el.addEventListener("touchmove",e=>{if(scrub)e.preventDefault()},{passive:false});
-  ["pointerup","pointercancel"].forEach(ev=>el.addEventListener(ev,fin));el.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse")fin()});
+  el.addEventListener("pointerup",e=>{if(e.pointerId!==act)return;clearTimeout(hold);act=null;elige(bajo(e.clientX));scrub=false});
+  el.addEventListener("pointercancel",()=>{clearTimeout(hold);act=null;if(scrub){scrub=false;muestra(ui.hbSel!=null?barras[ui.hbSel]:null)}});
+  el.addEventListener("keydown",e=>{const b=e.target.closest(".hbarras>div");if(b&&(e.key==="Enter"||e.key===" ")){e.preventDefault();elige(b)}});
   el.addEventListener("contextmenu",e=>e.preventDefault())}
 function bindPbars(){const el=$(".pbars");if(!el)return;let hold=null,scrub=false,sup=false;
   const tip=d=>{const b=d;const r=b.getBoundingClientRect(),cr=el.getBoundingClientRect();const f=Number(b.dataset.f),c=Number(b.dataset.c);
@@ -3719,7 +3824,7 @@ function openForm(id,pre){
     <label id="fPerN"><span>${tx("Cada cuántos meses")}</span>${stepper("perN",pSel==="x"?p:5,2,24)}</label>
     <label for="fEstado"><span>${tx("Estado{a}",{a:ib("estadofijo")})}</span><select name="estado" id="fEstado">${opt(ESTADOS,g.estado)}</select></label>
     ${campoKP(`<span>${tx("Descuento (%){a}",{a:ib("descuento")})}</span>`,"descuento",Math.round((g.descuento||0)*1000)/10,"pct",'id="fDesc"').replace("<label>",'<label for="fDesc">')}
-    ${filaComp(campoChips(g.comparten||[]),stepper("personas",g.personas||1,1,20),fOn("fCompartidos")?campoPagador(g.comparten||[],g.pagador).replace(">Lo pagó<",">Lo paga<"):"")}
+    ${filaComp(campoChips(g.comparten||[]),stepper("personas",g.personas||1,1,20),fOn("fCompartidos")?campoPagador(g.comparten||[],g.pagador).replace(">Pagó<",">Paga<"):"")}
     <div class="full fila-cuo">${campoDesde(id?(g.desde||""):mkey(today))}<div class="cuo-der"><div class="cuo-tit">${tx("Pago en cuotas")}<label class="switch"><input type="checkbox" name="enCuotas" ${(Number(g.cuotasTotal)||1)>1?"checked":""} aria-label="${tx("Pago en cuotas")}"><span></span></label></div>
       <div class="cuo-campos" ${(Number(g.cuotasTotal)||1)>1?"":"hidden"}><input name="cuotasPagadas" data-kp="ent" data-raw="${g.cuotasPagadas??1}" inputmode="none" autocomplete="off" value="${g.cuotasPagadas??1}" aria-label="${tx("Cuotas pagadas")}"><span>${tx("de")}</span><input name="cuotasTotal" data-kp="ent" data-raw="${g.cuotasTotal>1?g.cuotasTotal:12}" inputmode="none" autocomplete="off" value="${g.cuotasTotal>1?g.cuotasTotal:12}" aria-label="${tx("Total de cuotas")}"></div>
       <div class="cuo-sin" ${(Number(g.cuotasTotal)||1)>1?"hidden":""}>${tx("Sin cuotas")}</div></div></div>
@@ -3773,7 +3878,7 @@ function openForm(id,pre){
 
 /* gastos compartidos: quién pagó */
 function campoPagador(comp,pag){const l=["",...comp];if(pag&&!l.includes(pag))l.push(pag);
-  return `<label class="full fpag" ${comp.length?"":"hidden"}>${tx("Lo pagó")}<select name="pagador">${l.map(n=>`<option value="${esc(n)}" ${n===(pag||"")?"selected":""}>${n?esc(n):tx("Yo")}</option>`).join("")}</select></label>`}
+  return `<label class="full fpag" ${comp.length?"":"hidden"}>${tx("Pagó")}<select name="pagador">${l.map(n=>`<option value="${esc(n)}" ${n===(pag||"")?"selected":""}>${n?esc(n):tx("Yo")}</option>`).join("")}</select></label>`}
 function vigilarPagador(form){const hid=form.querySelector("[name=comparten]"),sel=form.querySelector("[name=pagador]");if(!hid||!sel)return;
   let ult=hid.value;const sync=()=>{if(hid.value===ult)return;ult=hid.value;const comp=hid.value?hid.value.split("|"):[];const cur=sel.value;
     refrescarSelect(sel,["",...comp].map(n=>`<option value="${esc(n)}" ${n===cur?"selected":""}>${n?esc(n):tx("Yo")}</option>`).join(""));
@@ -3996,9 +4101,13 @@ function opcionesDesde(sel){const l=[`<option value="" ${!sel?"selected":""}>${t
 function nombresUsados(){const s=new Set();[...state.gastos,...archivados(),...Object.values(state.vars||{}).flat()].forEach(g=>(g.comparten||[]).forEach(n=>s.add(n)));return [...s]}
 /* 2.53, punto 5: Comparten contigo, Lo pagó y Personas que pagan en una fila (desde 393 px con texto Normal; si no, Comparten contigo arriba y los otros dos debajo);
    los nombres van debajo, a todo el ancho (prepararChips mueve .chipbox al final de .fcomp) */
-function filaComp(chips,pers,pag){return `<div class="full fcomp"><div class="fcomp-fila"><label class="fc-comp">${tx("Comparten contigo{a}",{a:chips})}</label>${(pag||"").replace('class="full fpag"','class="fpag"')}<label class="lbl-pers">${tx("Personas que pagan{a}",{a:pers})}</label></div></div>`}
-function campoChips(l){return `<div class="chipin"><input type="hidden" name="comparten" value="${esc(l.join("|"))}"><div class="chiprow"><input class="chiptxt" autocomplete="off" placeholder="${tx("Ej.: Camila")}" enterkeyhint="done" aria-label="${tx("Agregar persona")}"><button type="button" class="chipadd" aria-label="${tx("Agregar persona")}">+</button></div><span class="chipbox">${l.map(n=>`<span class="tchip">${esc(n)}<button type="button" data-quita="${esc(n)}" aria-label="Quitar ${esc(n)}">×</button></span>`).join("")}</span></div>`}
+function filaComp(chips,pers,pag){return `<div class="full fcomp"><div class="fcomp-fila"><label class="fc-comp">${tx("Comparten{a}",{a:chips})}</label>${(pag||"").replace('class="full fpag"','class="fpag"')}<label class="lbl-pers">${tx("Pagan{a}",{a:pers})}</label></div></div>`}
+/* 2.54, punto 1: si «Ej.: Emma» no cabe en el campo, queda «Emma» */
+function ajustarEjemplo(root){(root||document).querySelectorAll("input.chiptxt[data-corto]").forEach(i=>{if(!i.dataset.largo)i.dataset.largo=i.placeholder;const cs=getComputedStyle(i),c=ajustarEjemplo.c||(ajustarEjemplo.c=document.createElement("canvas").getContext("2d"));c.font=cs.font;
+  const libre=i.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);if(libre<=0)return;i.placeholder=c.measureText(i.dataset.largo).width>libre?i.dataset.corto:i.dataset.largo})}
+function campoChips(l){return `<div class="chipin"><input type="hidden" name="comparten" value="${esc(l.join("|"))}"><div class="chiprow"><input class="chiptxt" autocomplete="off" placeholder="${tx("Ej.: Emma")}" data-corto="${tx("Emma")}" enterkeyhint="done" aria-label="${tx("Agregar persona")}"><button type="button" class="chipadd" aria-label="${tx("Agregar persona")}">+</button></div><span class="chipbox">${l.map(n=>`<span class="tchip">${esc(n)}<button type="button" data-quita="${esc(n)}" aria-label="Quitar ${esc(n)}">×</button></span>`).join("")}</span></div>`}
 function prepararChips(form){const w=form.querySelector(".chipin");if(!w)return;const hid=w.querySelector("[name=comparten]"),txt=w.querySelector(".chiptxt"),box=w.querySelector(".chipbox"),per=form.querySelector("[name=personas]");{const fc=w.closest(".fcomp");if(fc)fc.appendChild(box)}
+  if(window.ResizeObserver){const ro=new ResizeObserver(()=>ajustarEjemplo(w));ro.observe(txt)}
   sugerir(txt,()=>nombresUsados().filter(n=>!(hid.value||"").split("|").includes(n)).map(n=>({v:n})),x=>{txt.value=x.v;const ad=w.querySelector(".chipadd");if(ad)ad.click()});
   const lista=()=>hid.value?hid.value.split("|"):[];
   const pintar=l=>{hid.value=l.join("|");box.querySelectorAll(".tchip").forEach(x=>x.remove());l.forEach(n=>{const c=document.createElement("span");c.className="tchip";c.innerHTML=`${esc(n)}<button type="button" data-quita="${esc(n)}" aria-label="Quitar ${esc(n)}">×</button>`;box.appendChild(c)});if(per){per.value=Math.max(1,l.length+1);per.dispatchEvent(new Event("input",{bubbles:true}))}marcarSucio(form)};
@@ -4202,6 +4311,9 @@ const copia=x=>x===undefined?undefined:JSON.parse(JSON.stringify(x));
 /* 2.31: el ícono de cada tarjeta ocupa el ancho de su etiqueta (Crédito) para no tapar el nombre;
    la línea bajo el monto del Resumen usa la versión corta si la larga no cabe */
 function ajustarMedidas(){
+  document.querySelectorAll(".pt-fila").forEach(f=>{const b=f.parentNode.querySelector("[data-baja]"),fila=f.parentNode.querySelector(".pend-fila"),h=f.querySelector(".ht-aj");if(!b||!fila||!h)return;
+    if(b.parentNode!==f)f.appendChild(b);h.classList.remove("corto");const tl=h.querySelector(".tl");if(tl.scrollWidth>tl.clientWidth+1)fila.appendChild(b)});
+  document.querySelectorAll(".ht-aj,.aj").forEach(e=>{if(!e.querySelector(".c,.tc"))return;e.classList.remove("corto");const m=e.classList.contains("ht-aj")?e.querySelector(".tl"):e;if(m.scrollWidth>m.clientWidth+1)e.classList.add("corto")});
   document.querySelectorAll(".split-var").forEach(e=>{e.classList.remove("corto");if(e.scrollWidth>e.clientWidth+1)e.classList.add("corto")})}
 let ajTimer=0;new MutationObserver(()=>{if(ajTimer)return;ajTimer=requestAnimationFrame(()=>{ajTimer=0;ajustarMedidas()})}).observe(document.body,{childList:true,subtree:true});
 addEventListener("resize",()=>requestAnimationFrame(ajustarMedidas));
@@ -4628,7 +4740,7 @@ function pintarOjo(){const b=$("#eyeBtn");if(!b)return;
   b.setAttribute("aria-label",ui.oculto?tx("Mostrar montos"):tx("Ocultar montos"));b.setAttribute("aria-pressed",String(ui.oculto));
   b.innerHTML=ui.oculto?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.3 4M6.6 6.6A17 17 0 0 0 2 12s4 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>':'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'}
 let posAjustes=null;
-function irPestana(t){const i=TABS.findIndex(x=>x.id===ui.tab),j=TABS.findIndex(x=>x.id===t);if(ui.tab==="ajustes"&&t!=="ajustes")posAjustes={y:window.scrollY,t:Date.now()};ui.tab=t;render();
+function irPestana(t){if(t!==ui.tab)ui.hbSel=null;const i=TABS.findIndex(x=>x.id===ui.tab),j=TABS.findIndex(x=>x.id===t);if(ui.tab==="ajustes"&&t!=="ajustes")posAjustes={y:window.scrollY,t:Date.now()};ui.tab=t;render();
   if(t==="ajustes"&&posAjustes&&Date.now()-posAjustes.t<=30000)window.scrollTo({top:posAjustes.y});else window.scrollTo({top:0});
   if(t==="inicio")quitarBase();else ponerBase();
   if(i<0||j<0||i===j)return;const v=$("#view");v.classList.remove("slide-l","slide-r");void v.offsetWidth;v.classList.add(j>i?"slide-l":"slide-r")}
@@ -4683,6 +4795,9 @@ document.addEventListener("click",e=>{
   if(d.info){const x=typeof INFO[d.info]==="function"?INFO[d.info]():INFO[d.info];if(x&&sheetAbierta()){dialogo({titulo:x[0],html:x[1],botones:[{t:tx("Entendido"),c:"btn-p"}]});return}if(x)openSheet(`<h3 style="margin:0 0 10px;font-size:calc(19px * var(--ts,1))">${x[0]}</h3><p style="margin:0 0 16px;color:var(--ink-2);line-height:1.55">${x[1]}</p><div class="actions"><button class="btn-p grow" data-close>${tx("Entendido")}</button></div>`);return}
   if(d.stat){openStat(d.stat);return}
   if(d.tcper){const [i,p]=d.tcper.split("|");openTarjeta(i,p);return}
+  if(d.tcresto){const p=d.tcresto.split("|"),v=p.pop(),k=p.join("|"),cid=p[0],cfg=state.config||{},antes=(cfg.estadosTc||{})[k];
+    const pon=x=>{const c2=state.config||{},m={...(c2.estadosTc||{})};if(x)m[k]=x;else delete m[k];state.config={...c2,estadosTc:m};store.saveRegistro();render();swapDir="sw-q";openTarjeta(cid,"ant")};
+    pon(v==="no"?{no:1}:{si:1});toastDeshacer(v==="no"?tx("Listo: ese saldo ya no se suma"):tx("Listo: el saldo se mantiene"),()=>pon(antes));return}
   if(d.tcconf){const [cid,cierre,v]=d.tcconf.split("|"),k=cid+"|"+cierre,cfg=state.config||{};state.config={...cfg,estadosTc:{...(cfg.estadosTc||{}),[k]:v==="no"?{no:1}:{m:Number(v)}}};
     store.saveRegistro();render();swapDir="sw-q";openTarjeta(cid,"ant");toast(v==="no"?tx("Listo: Luka no volverá a preguntar por este estado de cuenta"):tx("Estado de cuenta corregido"));return}
   if(d.tcfalta){const c=cuentas().find(x=>x.id===d.tcfalta),e=c&&estadoTarjeta(c);if(!e||e.conf==null)return;
@@ -4723,6 +4838,8 @@ document.addEventListener("click",e=>{
   if(b.hasAttribute("data-ics")){exportarCalendario();return}
   if(d.quick!==undefined){const x=frecuentes()[Number(d.quick)];if(x)openVarForm(null,null,{...x,fecha:iso(today)});setTimeout(()=>{const m=$("#vForm [name=monto]");if(m){m.focus();m.select()}},50);return}
   if(d.estanio){const y=Number(d.estanio);ui.estSel=y===today.getFullYear()?mkey(today):y+"-12";render();return}if(d.estsel){const fr=$("#view .franja");estElegir(d.estsel);if(fr&&fr.isConnected){const dx=distCentro(fr,b);if(Math.abs(dx)>1)fr.scrollTo({left:fr.scrollLeft+dx,behavior:sinMov()?"auto":"smooth"})}return}
+  /* 2.54, punto 12: título del Resumen que lleva a su pestaña en el mes en curso */
+  if(d.irres){if(d.irres==="mov")ui.vmes=mkey(today);else{ui.fmes=mkey(today);ui.ftodos=false}irPestana(d.irres);return}
   if(d.estfij){ui.fmes=d.estfij;ui.ftodos=false;irPestana("gastos");return}
   if(d.estvar){ui.vmes=d.estvar;irPestana("mov");return}
   if(d.histn){ui.histN=Number(d.histn);ui.histSel=null;render();return}
@@ -4743,13 +4860,16 @@ document.addEventListener("click",e=>{
       deshacer:()=>{state.compPagos=antes;store.saveRegistro();render();if(x&&sheetAbierta())openComp(x.persona)}});return}
   if(b.hasAttribute("data-dbxabrir")){openDbxForm();return}
   if(b.hasAttribute("data-gmsetup")){openGmailSetup();return}
+  if(b.hasAttribute("data-gmactualizar")){openGmailActualizar();return}
+  if(b.hasAttribute("data-gmlisto")){closeSheet();gmUlt=0;gmailRevisar(true).then(()=>{render();toast(meta.gmailError?meta.gmailError:meta.gmScriptVer>=GM_SCRIPT_VER?tx("Script al día"):tx("Luka todavía recibe el script anterior. Revisa que elegiste «Nueva versión»."))});return}
   if(d.gmcopia){copiarTexto(d.gmcopia==="script"?gmScript(gmCfg().key):GM_MANIFIESTO,d.gmcopia==="script"?tx("Script copiado"):tx("Permisos copiados"));return}
   if(b.hasAttribute("data-gmconectar")){gmConectar();return}
   if(b.hasAttribute("data-gmquitar")){dialogo({titulo:tx("¿Desconectar Gmail?"),texto:tx("Luka dejará de revisar tu correo. Para borrar el script, elimínalo en script.google.com."),botones:[{t:tx("Desconectar"),c:"btn-d",fn:()=>{const c={...(state.config||{})};delete c.gmail;state.config=c;gmPend=[];gmGuardarPend();store.saveRegistro();closeSheet();render();toast(tx("Gmail desconectado"))}},{t:tx("Cancelar"),c:"btn-s"}]});return}
   if(d.pend){if(b.closest(".sheet")){abrirPend(d.pend);return}closeSheet();setTimeout(()=>abrirPend(d.pend),sheetAbierta()?250:0);return}
   if(d.pendok){agregarCompra(d.pendok);return}
+  if(d.pendingr){agregarIngresoGm(d.pendingr);return}
   if(d.pagotc){openPagoTc(d.pagotc);return}
-  if(d.tjfrente){ui.tjFrente=d.tjfrente;render();return}
+  if(d.tjfrente){girarTj(d.tjfrente);render();return}
   if(b.hasAttribute("data-catmodo")){ui.catMonto=!catMonto();try{localStorage.setItem("luka-catmonto",ui.catMonto?"1":"")}catch(_){}render();return}
   if(d.pendx){const id=d.pendx,ids=gmIds(gmPend.find(x=>x.id===id)||{id}),pos=posPend();gmMarcar(id,"d",{l:"Descartado"});store.saveRegistro();if($("#pendSheet")){const n=gmPendientes().length;if(n){const li=b.closest("li");if(li)li.remove();const sb=$("#pendSheet .sub");if(sb)sb.textContent=txn(n,"1 movimiento detectado en tu correo","{n} movimientos detectados en tu correo")}else closeSheet()}render();volverPosPend(pos);toastDeshacer(tx("Descartado"),()=>{ids.forEach(i=>delete gmVistos()[i]);gmGuardarPend();gmailRevisar(true);store.saveRegistro();render()});return}
   if(d.csir!=null){const c=$("#view .cs-var"),s=c&&c.children[Number(d.csir)];if(s){ui.csVar=Number(d.csir);c.scrollTo({left:s.offsetLeft-c.firstElementChild.offsetLeft,behavior:sinMov()?"auto":"smooth"});document.querySelectorAll("#view .cs-puntos [data-csir]").forEach(x=>x.setAttribute("aria-current",String(x===b)))}return}if(b.hasAttribute("data-indicab")){ui.indicAb=!ui.indicAb;b.setAttribute("aria-expanded",String(ui.indicAb));const c=$("#indicCont");if(c)c.hidden=!ui.indicAb;return}if(b.hasAttribute("data-pendrevisar")){gmailRevisar(true);return}if(b.hasAttribute("data-pendtodos")){openPendTodos();return}
@@ -4837,10 +4957,12 @@ document.addEventListener("change",e=>{if(e.target.id==="histCat"){ui.histCat=e.
 /* 2.51, puntos 3 y 4: lo que se desliza de lado (ruedas, carruseles, pila de tarjetas, gráficos) no cambia de pestaña
    ni recarga si el dedo empezó ahí; recargar pide un gesto claramente vertical */
 const DESLIZABLES=".chart,.hist,.pbars,.hbarras,.meses,.carril,.franja,.pila-tj,.frec-f";
-(()=>{let y0=null,x0=0,dy=0,act=false;const ind=document.createElement("div");ind.id="ptr";ind.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4h-4"/></svg>';document.body.appendChild(ind);
-  window.addEventListener("touchstart",e=>{const tg=e.target;if(e.touches.length!==1||sheetAbierta()||window.scrollY>0||(tg&&tg.closest&&tg.closest(DESLIZABLES+",.dialogo")))return y0=null;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;act=false},{passive:true});
+/* 2.54, punto 11: lo más cercano al dedo que se desplaza por dentro (una lista con su propia barra); si todavía puede subir, no se recarga */
+const desplazable=el=>{for(let e=el;e&&e!==document.body&&e!==document.documentElement;e=e.parentElement){if(e.scrollHeight>e.clientHeight+1){const o=getComputedStyle(e).overflowY;if(o==="auto"||o==="scroll")return e}}return null};
+(()=>{let y0=null,x0=0,dy=0,act=false,sc=null;const ind=document.createElement("div");ind.id="ptr";ind.innerHTML='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4h-4"/></svg>';document.body.appendChild(ind);
+  window.addEventListener("touchstart",e=>{const tg=e.target;if(e.touches.length!==1||sheetAbierta()||window.scrollY>0||(tg&&tg.closest&&tg.closest(DESLIZABLES+",.dialogo")))return y0=null;sc=desplazable(tg);if(sc&&sc.scrollTop>0)return y0=null;y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;act=false},{passive:true});
   window.addEventListener("touchmove",e=>{if(y0===null)return;dy=e.touches[0].clientY-y0;const dx=Math.abs(e.touches[0].clientX-x0);
-    if(!act&&dx>10&&dx>=dy){y0=null;ind.style.transform="";ind.style.opacity=0;return}
+    if((!act&&dx>10&&dx>=dy)||(sc&&sc.scrollTop>0)){y0=null;ind.style.transform="";ind.style.opacity=0;act=false;return}
     if(dy>12&&dy>dx*2&&window.scrollY<=0){act=true;const p=Math.min(dy,120);ind.style.transform=`translate(-50%,${p*.6}px) rotate(${p*3}deg)`;ind.style.opacity=Math.min(1,p/70);ind.classList.toggle("listo",p>=80)}},{passive:true});
   window.addEventListener("touchend",async()=>{if(y0===null)return;y0=null;if(!act){return}
     if(dy>=80&&!ind.classList.contains("girando")){ind.classList.add("girando");ind.style.transform="translate(-50%,48px)";
@@ -4860,7 +4982,7 @@ try{const m=JSON.parse(localStorage.getItem(LSMETA)||"{}");if(m.lock)meta.lock=m
 bloquear();pintarOjo();render();
 initStore();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){if(!lockSuspend)ocultoDesde=Date.now()}else if(ocultoDesde&&lockOn()&&!lockSuspend&&Date.now()-ocultoDesde>=(lockCfg().t??1)*60000)bloquear();if(document.visibilityState==="visible")ocultoDesde=0;
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&ui.hbSel!=null){ui.hbSel=null;if(ui.tab==="inicio")try{render()}catch(_){}}if(document.visibilityState==="hidden"){if(!lockSuspend)ocultoDesde=Date.now()}else if(ocultoDesde&&lockOn()&&!lockSuspend&&Date.now()-ocultoDesde>=(lockCfg().t??1)*60000)bloquear();if(document.visibilityState==="visible")ocultoDesde=0;
   if(document.visibilityState==="visible"){actualizarTasas(false);gmailRevisar(false);dbxBajar(false)}else if(meta.pendiente&&meta.dbxRefresh){clearTimeout(syncTimer);dbxSubir()}});
 window.addEventListener("online",()=>{if(meta.pendiente)scheduleSync()});
 })();
