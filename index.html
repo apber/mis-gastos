@@ -299,7 +299,7 @@ button.stat:hover{background:var(--surface-2)}
 .agr>span{font-size:calc(12.5px * var(--ts,1));color:var(--ink-3);font-weight:600}
 .seg-agr button{padding:5px 10px;font-size:calc(12.5px * var(--ts,1))}
 .ap-fila{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px}
-.ap-fila>span,.ap-col>span{font-weight:700;font-size:calc(14px * var(--ts,1))}
+.ap-fila>span,.ap-col>span{font-weight:700;font-size:calc(14.5px * var(--ts,1))}
 .ap-col{display:grid;gap:10px;margin-top:16px}
 .seg-tema button{padding:6px 10px}
 .ap-swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -903,6 +903,10 @@ header.top.con-tit .brand{display:none}
 .vista{display:flex;flex-direction:column}
 .vista>.card{background:none;border:0;border-radius:0;padding:0 4px;margin-top:28px}
 .vista>.card h2{font-size:calc(17.5px * var(--ts,1));font-weight:600}
+/* 2.55, punto 8: nivel 2 (título de una sección o tarjeta) igual en todas las pestañas */
+#view .card h2{font-size:calc(17.5px * var(--ts,1));font-weight:600;letter-spacing:-.01em}
+.fcat-top>span{font-size:calc(17.5px * var(--ts,1));font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+.fcat-top em{font-size:calc(15px * var(--ts,1));font-weight:600}
 .rd{display:flex;align-items:center;gap:4px;margin:0 -16px;padding-inline-end:12px}
 .rd>.meses:only-child{margin-inline-end:-12px}
 .meses{flex:1;min-width:0;display:flex;overflow-x:auto;scrollbar-width:none;padding:4px 0 8px;align-items:center;scroll-snap-type:x mandatory;
@@ -964,7 +968,7 @@ header.top.con-tit .brand{display:none}
 :root[data-ts="mg"] .pf+.pf{border-inline-start:0;border-top:1px solid var(--line);padding-inline-start:4px}
 .graf{margin:24px 0 0}
 .graf-cab{padding:0 4px;display:flex;align-items:center}
-.graf-cab h2{margin:0;font-size:calc(17.5px * var(--ts,1));font-weight:600}
+.graf-cab h2{margin:0;font-size:calc(17.5px * var(--ts,1));font-weight:600;letter-spacing:-.01em}
 .ayuda-g{font-size:calc(13.5px * var(--ts,1));color:var(--ink-2);margin:4px 4px 0}
 .franja{--cw:calc(44px + 8px * var(--ts,1));display:flex;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory;margin:12px -16px 0;
   -webkit-mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 28px,#000 calc(100% - 28px),transparent 100%)}
@@ -1035,6 +1039,14 @@ header.top.con-tit .brand{display:none}
 .fecha-w.con input:not(:focus){color:transparent!important}
 .fecha-w .fecha-txt{position:absolute;inset-inline-start:14px;inset-inline-end:44px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:calc(15px * var(--ts,1));font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden}
 .fecha-w input:focus+.fecha-txt,.fecha-w:not(.con) .fecha-txt{visibility:hidden}
+form.f .lbl-cat .picker span,form.f .lbl-cat .picker .mnom{white-space:normal;overflow-wrap:normal;word-break:normal;text-overflow:clip}
+form.f.cat-full .lbl-cat,form.f.cat-full .lbl-cat+label{grid-column:1/-1}
+/* 2.55, punto 6: en los formularios de gasto, ingreso y fijo las listas van sin flecha (se abren tocando el campo) */
+form.f#vForm .picker>svg,form.f#gForm .picker>svg,form.f#iForm .picker>svg{display:none}
+/* 2.55, punto 5: ícono de calendario propio (el del teléfono queda invisible, pero se puede tocar donde estaba) */
+.fecha-w input::-webkit-calendar-picker-indicator{opacity:0;cursor:pointer}
+.fecha-w .fecha-ico{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none;color:var(--ink-3)}
+.fecha-w .fecha-txt{inset-inline-end:42px}
 .fp-info{font-weight:500}
 #fab{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .fab-menu{position:fixed;right:18px;bottom:calc(152px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:40}
@@ -1113,11 +1125,17 @@ header.top.con-tit .brand{display:none}
 .tj-col.pp-ok{box-shadow:none}
 .tj-col small.tj-pag{color:var(--ok)}
 /* ---- «Por categoría» (punto 26) ---- */
-.fcat-cuerpo{display:grid;grid-template-columns:calc(112px * var(--ts,1)) minmax(0,1fr);gap:16px;align-items:start;margin-top:10px}
+/* 2.55, punto 10: el anillo mide entre 84 y 112 px (×tamaño del texto) y la lista toma al menos el ancho de su palabra más larga; usa también 6 px del borde a cada lado */
+.fcat-cuerpo{display:grid;grid-template-columns:minmax(min-content,calc(112px * var(--ts,1))) minmax(min-content,1fr);gap:14px;align-items:start;margin:10px -6px 0}
+.fcat-izq{min-width:calc(84px * var(--ts,1))}
+.fcat-cuerpo.apilada{grid-template-columns:minmax(0,1fr)}
+.fcat-cuerpo.apilada .fcat-izq .donut{margin-inline:auto}
+/* 2.55, punto 9: el anillo empieza arriba y va en sentido contrario al reloj (así queda la barra al enrollarse hacia arriba) */
+.fcat-izq .donut svg{transform:rotate(-90deg) scaleY(-1)}
 :root[data-ts="mg"] .fcat-cuerpo{grid-template-columns:minmax(0,1fr)}
 .ver-mp{display:block;margin:0 0 12px;line-height:1.25;min-height:48px;min-width:48px;border:0;background:transparent;padding:0;color:var(--ok);font-weight:600;font-size:calc(15px * var(--ts,1));text-align:start;cursor:pointer;text-decoration:none}
 .fcat-izq .donut-wrap{display:block}
-.fcat-izq .donut{width:calc(112px * var(--ts,1));height:calc(112px * var(--ts,1));margin:0}
+.fcat-izq .donut{width:100%;max-width:calc(112px * var(--ts,1));height:auto;aspect-ratio:1;margin:0}
 :root[data-ts="mg"] .fcat-izq .donut{margin-inline:auto}
 .fcat-izq .donut .c b{font-size:calc(15px * min(var(--ts,1),1.2))}
 .fcat-izq .donut .c span{font-size:calc(11px * min(var(--ts,1),1.2))}
@@ -1125,7 +1143,8 @@ header.top.con-tit .brand{display:none}
 .fcat-ley button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;min-height:48px;cursor:pointer;border-radius:10px;font-size:calc(15px * var(--ts,1));color:var(--ink)}
 .fcat-ley button:focus-visible{outline:3px solid var(--ok);outline-offset:1px}
 .fcat-ley .pt{width:12px;height:12px;flex:none}
-.fcat-ley .nm{flex:1;min-width:0;overflow-wrap:break-word}
+.fcat-ley .nm{flex:1 1 auto;min-width:min-content;overflow-wrap:normal;word-break:normal;hyphens:manual}
+.fcat-ley .v{white-space:nowrap}
 .fcat-ley .v{flex:none;text-align:end}
 .fcat-ley .v.pct{font-family:var(--font);font-weight:600}
 .fcat-ley .ch{color:var(--ink-2);font-weight:600}
@@ -1173,20 +1192,22 @@ dd{overflow-wrap:anywhere;min-width:0}
 /* 2.52, punto 17: fila que se despliega (Indicadores en Ajustes) */
 .plegable{display:flex;align-items:center;gap:8px;width:100%;min-height:56px;margin-top:12px;border:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:transparent;padding:6px 2px;text-align:start;color:var(--ink);cursor:pointer}
 .plegable .tx{flex:1;min-width:0;display:flex;flex-direction:column}
-.plegable b{font-weight:600;font-size:calc(16px * var(--ts,1))}
+.plegable b{font-weight:700;font-size:calc(14.5px * var(--ts,1))}
 .plegable small{font-size:calc(13.5px * var(--ts,1));color:var(--ink-2)}
-.plegable svg{flex:none;color:var(--ink-2);transition:transform .2s}
-.plegable[aria-expanded="true"] svg{transform:rotate(180deg)}
+/* 2.55, punto 1: solo la flecha (hija directa) es gris y gira; el ⚠ toma el color de aviso */
+.plegable>svg{flex:none;color:var(--ink-2);transition:transform .2s}
+.plegable[aria-expanded="true"]>svg{transform:rotate(180deg)}
 .plegable[aria-expanded="true"]{border-bottom:0}
 /* 2.53, punto 10: aviso de Indicadores */
 /* 2.54, punto 8: color de aviso (naranjo; con colores accesibles, el amarillo oscuro de --warn, que no se confunde con rojo) */
 :root{--aviso:var(--bad)}:root[data-cb]{--aviso:var(--warn)}
 .plegable .ico-err{flex:none;display:grid;place-items:center;color:var(--aviso)}
+.plegable .ico-err svg{color:var(--aviso)}
 .plegable small.err{color:var(--aviso);font-weight:600}
 .indic-err{margin:8px 0 4px;padding:10px 12px;border-inline-start:3px solid var(--aviso);background:var(--surface-2);border-radius:0 10px 10px 0;font-size:calc(14px * var(--ts,1));color:var(--ink)}
 .indic-err p{margin:0 0 6px}.indic-err p:last-child{margin:6px 0 0;color:var(--ink-2)}
 .indic-err ul{margin:0;padding-inline-start:18px}.indic-err li span{color:var(--ink-2);font-size:calc(13px * var(--ts,1))}
-@media (prefers-reduced-motion:reduce){.plegable svg{transition:none}}
+@media (prefers-reduced-motion:reduce){.plegable>svg{transition:none}}
 /* 2.52, punto 18: botón de Ajustes arriba (marcado cuando se está en Ajustes) y aviso de que se movió */
 #ajBtn[aria-pressed="true"]{background:var(--primary);color:var(--acc-ink)}
 .aviso-aj{position:fixed;left:12px;right:12px;bottom:calc(152px + env(safe-area-inset-bottom,0px));z-index:25;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;justify-content:space-between;background:var(--ink);color:var(--bg);border-radius:16px;padding:10px 12px 10px 16px;font-size:calc(15px * var(--ts,1));box-shadow:0 8px 24px rgba(0,0,0,.25)}
@@ -1265,7 +1286,7 @@ body.teclado .aviso-aj{display:none}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="2.54";
+const APP_VERSION="2.55";
 /* ---------- 2.4: idiomas (el idioma y el diccionario se eligen en <head>) ---------- */
 const IDIOMAS=window.LUKA_IDIOMAS||{es:"Español"};
 const LANG=window.LUKA_LANG||"es";
@@ -1794,7 +1815,7 @@ async function descargarICS(inc){
 const PALABRAS=[
   [/jumbo|l[ií]der|unimarc|tottus|santa isabel|acuenta|mayorista|supermercado|feria|verduler/,"Supermercado"],
   [/almuerzo|desayuno|once|cena|caf[eé]|restaurant|sushi|pizza|burger|rappi|pedidos ?ya|uber eats|comida|starbucks|completo|empanada/,"Comida y restaurantes"],
-  [/uber|didi|cabify|metro|bip|micro|bus|taxi|bencina|copec|shell|petrobras|aramco|peaje|tag|estacionamiento|autopista|pasaje/,"Transporte"],
+  [/uber|didi|cabify|\bmetro\b|\bbip|movilidad|\befe\b|micro|bus|taxi|bencina|copec|shell|petrobras|aramco|peaje|tag|estacionamiento|autopista|pasaje/,"Transporte"],
   [/sodimac|easy|ferreter|luz|enel|agua|aguas andinas|gas|metrogas|abastible|lipigas|internet|arriendo|gasto com[uú]n|aseo|lavander/,"Hogar"],
   [/farmacia|cruz verde|salcobrand|ahumada|m[eé]dico|doctor|cl[ií]nica|consulta|dentista|examen|isapre|fonasa|remedio/,"Salud"],
   [/cine|concierto|teatro|bar|juego|entrada|evento|m[uú]sica|libro|pub|disco/,"Entretención"],
@@ -2292,7 +2313,7 @@ function sinPos(r){if(!r.comercio||!POS_RE.test(r.comercio))return;
   r.pos=true;r.comercio=normN(s).some(w=>w.length>=3&&!POS_RELLENO.has(w))?s:""}
 /* 2.53, punto 2A: nombres de comercio más limpios: comercios conocidos con su nombre, sin prefijos de pasarela (PAYU, WPAY, DLOCAL…),
    sin «CIUDAD CHL» al final (país de 2–3 letras y la ciudad, si es conocida) y sin palabras repetidas («PRIME VIDEO PRIME VIDEO») */
-const COM_CONOCIDOS=[[/uber\s*\*?\s*eats|ubereats/,"Uber Eats"],[/\buber\b/,"Uber"],[/prime\s*video|primevideo|(amazon|amzn)\s*prime/,"Prime Video"],[/\bamzn\b|amazon/,"Amazon"],
+const COM_CONOCIDOS=[[/red\s*movilidad/,"Red Movilidad"],[/\bmetro\b(?!\s*gas)/,"Metro"],[/\bbip\b/,"bip!"],[/\befe\b|biotren|tren central|\bmerval\b/,"EFE"],[/pasaje\s*qr/,"Pasaje QR"],[/uber\s*\*?\s*eats|ubereats/,"Uber Eats"],[/\buber\b/,"Uber"],[/prime\s*video|primevideo|(amazon|amzn)\s*prime/,"Prime Video"],[/\bamzn\b|amazon/,"Amazon"],
   [/hbo\s*max|hbomax|\bmax\.com\b/,"HBO Max"],[/netflix/,"Netflix"],[/spotify/,"Spotify"],[/disney\s*(\+|plus)|disneyplus/,"Disney+"],[/youtube/,"YouTube"],[/google\s*\*?\s*one\b/,"Google One"],
   [/apple\.com|itunes/,"Apple"],[/paramount/,"Paramount+"],[/crunchyroll/,"Crunchyroll"],[/playstation|\bpsn\b/,"PlayStation"],[/xbox/,"Xbox"],[/steampowered|steamgames|\bsteam\b/,"Steam"],
   [/microsoft|\bmsft\b/,"Microsoft"],[/openai|chatgpt/,"ChatGPT"],[/anthropic|claude\.ai/,"Claude"],[/rappi/,"Rappi"],[/pedidos\s*ya/,"PedidosYa"],[/\bdidi\b/,"DiDi"],[/cabify/,"Cabify"],
@@ -2356,7 +2377,7 @@ function parseCorreo0(c){
     if(monto)return {...base0,tipo:"pagotc",linea:true,moneda:"CLP",monto:gmNum(monto),medio:"",banco:"Banco de Chile",bk:"chile",dig:"",origen:(linea(t,/Tipo de Cuenta\s*([^\n]+)/i)||"Cuenta")+" Banco de Chile",comercio:"Pago de línea de crédito",fecha:gmFechaLarga(t)||fEmail,hora:gmHora(linea(t,/Fecha y Hora:?\s*([^\n]*\d{1,2}:\d{2}[^\n]*)/i))}}
   if(de.endsWith("bancochile.cl")&&/el pago a .+? a trav[ée]s de la app/i.test(t)){
     const emp=linea(t,/\n\s*Empresa\s+([^\n]+)/i)||linea(t,/el pago a (.+?) a trav[ée]s/i),monto=linea(t,/\n\s*Monto\s*\$\s?([\d.,]+)/i),con=linea(t,/Pagado con\s+([^\n]+)/i);
-    if(monto)return {...base0,tipo:"compra",moneda:"CLP",monto:gmNum(monto),medio:/cr[ée]dito/i.test(con)?"Crédito":"Débito",banco:"Banco de Chile",bk:"chile",dig:(con.match(/\*+\s*(\d{4})/)||[])[1]||"",comercio:emp,fecha:gmFechaLarga(t)||fEmail,hora:gmHora(linea(t,/Fecha y Hora:?\s*([^\n]*\d{1,2}:\d{2}[^\n]*)/i))}}
+    if(monto)return {...base0,tipo:"compra",moneda:"CLP",monto:gmNum(monto),medio:/cr[ée]dito/i.test(con)?"Crédito":"Débito",banco:"Banco de Chile",bk:"chile",dig:(con.match(/\*+\s*(\d{4})/)||[])[1]||"",pagoCta:/cuenta|corriente|vista/i.test(con)&&!/cr[ée]dito|tarjeta/i.test(con),comercio:emp,fecha:gmFechaLarga(t)||fEmail,hora:gmHora(linea(t,/Fecha y Hora:?\s*([^\n]*\d{1,2}:\d{2}[^\n]*)/i))}}
   if(de.endsWith("bancochile.cl")&&/compra por/i.test(t)){
     /* 2.53, punto 3: el comercio puede venir seguido de muchos espacios y un salto de línea antes de «el 17/11/2026» (pasó con MERPAGO*LAHORMIGUITA) */
     const m=t.match(/compra por\s+(US\$|\$)\s?([\d.,]+)\s+con\s+(?:Tarjeta\s+de\s+(Cr[ée]dito|D[ée]bito)|cargo\s+a\s+Cuenta)\s*\*+\s*(\d{3,4})?\s+en\s+([\s\S]+?)\s+(?:del\s+)?el\s+(\d{2}\/\d{2}\/\d{4})/i);
@@ -2474,12 +2495,16 @@ function gmCompraOriginal(x){const d=parseD(x.fecha);if(!d)return null;const ini
     const vc=ctaDe(v);if(cta&&vc&&vc.id!==cta.id)continue;if(x.dig&&vc&&vc.dig&&vc.dig!==x.dig)continue;
     const p=(Math.abs(vBase(v)-x.monto)<1?0:vBase(v)>x.monto?1:2)*1000+Math.abs(parseD(v.fecha)-d)/864e5;if(!mejor||p<mejor.p)mejor={v,k,p}}
   return mejor}
+/* 2.55, punto 12: gastos variables que se guardaron desde un correo (quedan anotados en gmailVistos con ref {k:"var",id}) */
+function gmVarsDeCorreo(){const o=new Set();for(const v of Object.values(gmVistos()))if(v&&v.ref&&v.ref.k==="var"&&v.ref.id)o.add(v.ref.id);return o}
 function gmSugerencia(x){if(x.tipo==="pagotc")return x.linea?{t:tx("Pago de una deuda: no es un gasto"),k:"pagotc"}:{t:tx("Pago de tarjeta: no es un gasto"),k:"pagotc"};
   if(x.tipo==="reembolso"){const o=gmCompraOriginal(x);return o?{t:tx("Devolución de tu compra del {a}",{a:fmtD(o.v.fecha)}),k:"reemb",o}:{t:tx("Luka no encontró la compra"),k:"reemb"}}
   if(x.parTraspaso)return {t:tx("Traspaso entre tus cuentas"),k:"propia"};const r=((state.config||{}).gmailReglas||{})[normN(x.persona).join(" ")];
   if(x.tipo==="compra"){const fj=gmFijoDeCompra(x);if(fj)return fj.pausado?{t:tx("¿Es el cobro de {a}? Está pausado",{a:fj.g.nombre}),k:"fijop",g:fj.g}:fj.nombre?{t:tx("Cobro de {a}, ya está en tus fijos",{a:fj.g.nombre}),k:"fijo",g:fj.g,auto:true}:{t:tx("¿Es el cobro de {a}?",{a:fj.g.nombre}),k:"fijoq",g:fj.g}}
   if(x.tipo==="compra"){const d=parseD(x.fecha),mb=toBaseEn(x.monto,x.moneda,x.fecha);
-    const dup=Object.values(state.vars).flat().some(v=>Math.abs(vBase(v)-mb)<1&&Math.abs(parseD(v.fecha)-d)<=864e5*1.5);
+    /* 2.55, punto 12: los gastos que vinieron de un correo no cuentan (cada correo es un cobro distinto) */
+    const deCorreo=gmVarsDeCorreo();
+    const dup=Object.values(state.vars).flat().some(v=>!deCorreo.has(v.id)&&Math.abs(vBase(v)-mb)<1&&Math.abs(parseD(v.fecha)-d)<=864e5*1.5);
     return dup?{t:tx("Posible duplicado: ya anotaste un gasto igual"),k:"dup"}:null}
   {const yo=x.propio||(state.config||{}).gmNombre;if(x.persona&&yo&&mismoNombre(x.persona,yo))return {t:tx("Traspaso entre tus cuentas"),k:"propia"}}
   if(r&&r.a==="ingfijo"){const f=ingresos().fijos.find(y=>y.id===r.f);if(f)return {t:tx("Recordado: {a}",{a:f.nombre}),k:"regla",r}}
@@ -2498,9 +2523,9 @@ function gmailMarcar(id,e,info){gmMarcar(id,e,info);store.saveRegistro()}
 function gmPendientes(){return gmPend.filter(x=>!gmIds(x).some(i=>gmVistos()[i])&&(x.tipo!=="entrada"||fOn("fIngresos")))}
 async function gmailRevisar(forzar){const g=gmCfg();if(!fOn("fGmail")||!g.url||!g.key||gmEstado==="cargando")return;if(!forzar&&Date.now()-gmUlt<180000)return;
   gmEstado="cargando";gmUlt=Date.now();pintarPend();
-  try{const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),25000);
+  try{const ctrl=new AbortController(),to=setTimeout(()=>ctrl.abort(),40000);
     const r=await fetch(`${g.url}${g.url.includes("?")?"&":"?"}k=${encodeURIComponent(g.key)}&d=30`,{signal:ctrl.signal,cache:"no-store",redirect:"follow"});clearTimeout(to);
-    const j=await r.json();if(!j||!j.ok)throw new Error(j&&j.error==="clave"?"clave":"respuesta");meta.gmScriptVer=Number(j.version)||1;
+    let j;try{j=await r.json()}catch(e){throw new Error("formato")}if(!j||!j.ok)throw new Error(j&&j.error==="clave"?"clave":"respuesta");meta.gmScriptVer=Number(j.version)||1;
     const l=gmJuntar((j.correos||[]).map(c=>{try{return parseCorreo(c)}catch(e){return null}}).filter(x=>x&&x.monto>0));
     /* reglas recordadas: se aplican solas */
     let cambio=false;l.forEach(x=>{if(gmIds(x).some(i=>gmVistos()[i]))return;const sg=gmSugerencia(x);if(sg&&sg.k==="regla"&&sg.r.a==="no"){gmIds(x).forEach(i=>gmVistos()[i]={e:"d",t:Date.now(),l:"Descartado (recordado)"});cambio=true}
@@ -2510,8 +2535,12 @@ async function gmailRevisar(forzar){const g=gmCfg();if(!fOn("fGmail")||!g.url||!
     const siguen=gmPend.filter(x=>!gmIds(x).some(i=>nuevosIds.has(i))&&!gmIds(x).some(i=>gmVistos()[i]));
     gmPend=[...l,...siguen].sort((a,b)=>b.fecha.localeCompare(a.fecha));gmEstado="";gmGuardarPend();
     if(gmPendientes().map(x=>gmIds(x).join("+")).join(",")!==antes)pendRender=true;
-    {const nuevos=l.filter(x=>!gmIds(x).some(i=>gmVistos()[i]));meta.gmailDiag={n:(j.correos||[]).length,rec:l.length,vistos:l.length-nuevos.length,ocultos:nuevos.filter(x=>x.tipo==="entrada"&&!fOn("fIngresos")).length,t:Date.now()}}meta.gmailOk=Date.now();meta.gmailError="";saveMeta();if(cambio)store.saveRegistro();
-  }catch(e){gmEstado="";meta.gmailError=e.message==="clave"?tx("El script no aceptó la clave. Vuelve a configurarlo."):tx("No se pudo revisar tu correo. Revisa tu conexión o la configuración.");saveMeta()}
+    {const nuevos=l.filter(x=>!gmIds(x).some(i=>gmVistos()[i]));meta.gmailDiag={n:(j.correos||[]).length,rec:l.length,vistos:l.length-nuevos.length,ocultos:nuevos.filter(x=>x.tipo==="entrada"&&!fOn("fIngresos")).length,t:Date.now()}}meta.gmailOk=Date.now();meta.gmailError="";meta.gmailErrTipo="";saveMeta();if(cambio)store.saveRegistro();
+  }catch(e){gmEstado="";
+    /* 2.55, punto 2: el tipo de error queda guardado y el texto dice qué pasó */
+    const tipo=e.message==="clave"?"clave":e.name==="AbortError"?"tiempo":e.message==="formato"||e.message==="respuesta"?"formato":navigator.onLine===false||e instanceof TypeError?"red":"formato";
+    meta.gmailErrTipo=tipo;
+    meta.gmailError=tipo==="clave"?tx("El script no aceptó la clave. Vuelve a configurarlo."):tipo==="tiempo"?tx("Tu correo tardó demasiado en responder. Toca Reintentar."):tipo==="red"?tx("No se pudo revisar tu correo. Revisa tu conexión."):tx("No se pudo revisar tu correo. El script de Gmail respondió algo que Luka no entiende.");saveMeta()}
   if(ui.tab==="ajustes")pendRender=true;if(pendRender&&!sheetAbierta()){pendRender=false;render()}else pintarPend()}
 const MEDIO_TXT=x=>[dt(x.medio),x.banco].filter(Boolean).join(" · ");
 const gmLbl=l=>{if(LANG==="es"||!l)return l;let m;if(m=/^Ingreso fijo: (.+)$/.exec(l))return tx("Ingreso fijo: {a}",{a:m[1]});if(m=/^Le pagaste a (.+)$/.exec(l))return tx("Le pagaste a {a}",{a:m[1]});if(m=/^(.+) te pagó$/.exec(l))return tx("{a} te pagó",{a:m[1]});if(m=/^Cobro suelto de (.+)$/.exec(l))return tx("Cobro suelto de {a}",{a:m[1]});if(m=/^(.+) reactivado$/.exec(l))return tx("{a} reactivado",{a:m[1]});return tx(l)};
@@ -2531,7 +2560,7 @@ function gmPlantilla(x){const c=gmCuenta(x),cat=categoriaSugerida(x.comercio);
 const compraSimple=x=>{if(!x||x.tipo!=="compra"||x.generico)return false;const sg=gmSugerencia(x);if(sg&&(sg.k==="fijo"||sg.k==="fijoq"||sg.k==="fijop"))return false;
   if(!gmCuenta(x))return false;return !!((sg&&sg.k==="regla"&&sg.r.cat)||categoriaSugerida(x.comercio))};
 function tarjetaCompra(x){const pl=gmPlantilla(x),sg=gmSugerencia(x),c=gmCuenta(x),cat=(sg&&sg.k==="regla"&&sg.r.cat)||pl.categoria;
-  const filas=[[tx("Comercio"),comTxt(x.comercio)||tx("Sin nombre en el correo")],[tx("Categoría sugerida"),cat?ct(cat):tx("Sin sugerencia")],[tx("Tarjeta"),c?c.nombre+(x.dig?" ····"+x.dig:""):x.dig?tx("Terminada en {a}",{a:x.dig}):tx("No se pudo saber")],[tx("Fecha"),fechaLarga(x.fecha,x.hora)],x.cuotas>1?[tx("Cuotas"),String(x.cuotas)]:null].filter(Boolean);
+  const filas=[[tx("Comercio"),comTxt(x.comercio)||tx("Sin nombre en el correo")],[tx("Categoría sugerida"),cat?ct(cat):tx("Sin sugerencia")],[x.pagoCta?tx("Cuenta"):tx("Tarjeta"),c?c.nombre+(x.dig?" ····"+x.dig:""):x.dig?tx("Terminada en {a}",{a:x.dig}):tx("No se pudo saber")],[tx("Fecha"),fechaLarga(x.fecha,x.hora)],x.cuotas>1?[tx("Cuotas"),String(x.cuotas)]:null].filter(Boolean);
   openSheet(`<div id="pendCard"><h3 class="tit-f">${tx("Compra detectada")}</h3><p class="tit-sub">${tx("Luka la encontró en tu correo. Revisa lo que dedujo.")}</p>
     <div class="pc-card"><b class="n pc-monto">${gmMonto(x)}</b><dl class="kv">${filas.map(f=>`<dt>${f[0]}</dt><dd>${esc(f[1])}</dd>`).join("")}</dl>${sg&&sg.t?`<span class="pend-sug ${sg.k==="regla"?"ok":""}">${esc(sg.t)}</span>`:""}</div>
     <div class="pc-acc"><button class="btn-p" data-pendok="${esc(x.id)}">${tx("Agregar")}</button><button class="btn-s" data-pendacc="gasto" data-id="${esc(x.id)}">${tx("Editar antes de agregar")}</button><button class="btn-s" data-pendacc="fijode" data-id="${esc(x.id)}">${ICO_REP}${tx("Es un gasto fijo")}</button><button class="btn-s" data-pendacc="no" data-id="${esc(x.id)}">${tx("No es un gasto")}</button></div>
@@ -2862,10 +2891,42 @@ async function gmConectar(){const u=($("#gmForm [name=url]")||{}).value?.trim()|
 function itemsCatFijos(d){const o=fijosCatMes(d,{});return Object.entries(o).filter(([,v])=>v>=1).map(([cat,v])=>({cat,v,color:CAT_COLOR[cat]||CAT_COLOR.Otro})).sort((a,b)=>b.v-a.v)}
 function barraCatFijos(d){return barraCat(itemsCatFijos(d),mkey(d),"fcat",!!ui.fcat,"data-fcatver")}
 const catMonto=()=>{if(ui.catMonto===undefined){try{ui.catMonto=localStorage.getItem("luka-catmonto")==="1"}catch(e){ui.catMonto=false}}return ui.catMonto};
+/* 2.55, punto 9: la barra se enrolla en el anillo (y se desenrolla al cerrar). CAT_IT guarda lo dibujado para la animación */
+const CAT_IT={},CAT_MS=450;
+function toggleCat(attr){const b0=$(`#view [data-${attr}]`),f0=b0&&b0.closest(".fcat"),antes=f0&&!sinMov()?geomCat(f0):null;
+  ui[attr]=!ui[attr];try{localStorage.setItem("luka-"+attr,ui[attr]?"1":"0")}catch(_){}render();
+  const b1=$(`#view [data-${attr}]`),f1=b1&&b1.closest(".fcat");if(antes&&f1)animarCat(f1,antes,ui[attr],CAT_IT[attr]||[])}
+function geomCat(f){const r=f.getBoundingClientRect(),rel=e=>{if(!e)return null;const q=e.getBoundingClientRect();return {x:q.left-r.left,y:q.top-r.top,w:q.width,h:q.height}},cu=f.querySelector(".fcat-cuerpo");
+  return {H:r.height,bar:rel(f.querySelector(".fcat-bar")),ring:rel(f.querySelector(".fcat-izq .donut svg")),ley:cu?{node:cu.cloneNode(true),r:rel(cu)}:null}}
+function animarCat(f,a,abrir,it){const b=geomCat(f),bar=abrir?a.bar:b.bar,ring=abrir?b.ring:a.ring;if(!bar||!ring||!it.length)return;
+  const NS="http://www.w3.org/2000/svg",sv=document.createElementNS(NS,"svg"),W=f.clientWidth,HH=Math.max(a.H,b.H);
+  sv.setAttribute("aria-hidden","true");sv.style.cssText=`position:absolute;left:0;top:0;width:${W}px;height:${HH}px;overflow:visible;pointer-events:none;z-index:1`;
+  f.style.position="relative";f.style.height=a.H+"px";f.appendChild(sv);
+  const dn=f.querySelector(".fcat-izq .donut svg"),lab=f.querySelector(".fcat-izq .donut .c"),ul=f.querySelector(".fcat-ley"),vm=f.querySelector(".ver-mp"),br=f.querySelector(".fcat-bar");
+  if(dn)dn.style.visibility="hidden";if(br)br.style.visibility="hidden";
+  let fan=null;if(!abrir&&a.ley){fan=a.ley.node;fan.setAttribute("aria-hidden","true");fan.inert=true;fan.querySelectorAll(".donut").forEach(x=>x.style.visibility="hidden");fan.style.cssText+=`;position:absolute;left:${a.ley.r.x}px;top:${a.ley.r.y}px;width:${a.ley.r.w}px;margin:0;pointer-events:none`;f.appendChild(fan)}
+  const tot=it.reduce((x,y)=>x+y.v,0),R=ring.w*15.9155/42,SW1=ring.w*5.2/42,W0=bar.w,SW0=bar.h,ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const RC=[ring.x+ring.w/2,ring.y+ring.h/2];
+  const paths=it.map(x=>{const p=document.createElementNS(NS,"path");p.setAttribute("fill","none");p.setAttribute("stroke",x.color);sv.appendChild(p);return p});
+  /* como en el boceto: el dibujo no sube sobre el título; su borde de arriba va de la línea de la barra a la del anillo y su borde izquierdo, del centrado al del anillo */
+  const pinta=e=>{const t=ease(e),L=W0+(2*Math.PI*R-W0)*t,k=t/R,sw=SW0+(SW1-SW0)*t,g=(2+(0.008*2*Math.PI*R-2)*t)/L;
+    const pt=s=>{const u=(s-.5)*L;return k<1e-6?[u,-k*u*u/2]:[Math.sin(k*u)/k,-(1-Math.cos(k*u))/k]};
+    let acc=0,x0=1e9,x1=-1e9,y0=1e9;const segs=it.map(x=>{const sa=acc/tot,sb=(acc+x.v)/tot;acc+=x.v;const s0=sa+(sa>0?g/2:0),s1=sb-(sb<1?g/2:0);if(s1<=s0)return null;
+      const n=Math.max(2,Math.ceil((s1-s0)*90)),q=[];for(let j=0;j<=n;j++){const c=pt(s0+(s1-s0)*j/n);q.push(c);x0=Math.min(x0,c[0]);x1=Math.max(x1,c[0]);y0=Math.min(y0,c[1])}return q});
+    const bw=x1-x0,lx=(bar.x+(W0-bw)/2)*(1-t)+(RC[0]-R)*t,ty=(bar.y+bar.h/2)*(1-t)+(RC[1]-R)*t,ox=lx-x0,oy=ty-y0;
+    segs.forEach((q,i)=>{const p=paths[i];if(!q){p.setAttribute("d","");return}p.setAttribute("d","M"+q.map(c=>(c[0]+ox).toFixed(2)+","+(c[1]+oy).toFixed(2)).join("L"));p.setAttribute("stroke-width",sw.toFixed(2));p.setAttribute("stroke-linecap",t<.02?"round":"butt")});
+    f.style.height=(a.H+(b.H-a.H)*(abrir?e:1-e))+"px";
+    const op=Math.max(0,Math.min(1,(e-.6)/.4));if(abrir){if(ul)ul.style.opacity=op;if(vm)vm.style.opacity=op}if(fan)fan.style.opacity=op;if(lab)lab.style.opacity=Math.max(0,Math.min(1,(e-.8)/.2))};
+  const t0=performance.now(),paso=()=>{if(!f.isConnected)return;const now=performance.now(),p=Math.min(1,(now-t0)/CAT_MS);pinta(abrir?p:1-p);if(p<1)requestAnimationFrame(paso);else{
+    sv.remove();if(fan)fan.remove();f.style.height="";f.style.position="";if(dn)dn.style.visibility="";if(br)br.style.visibility="";if(ul)ul.style.opacity="";if(vm)vm.style.opacity="";if(lab)lab.style.opacity=""}};
+  pinta(abrir?0:1);requestAnimationFrame(paso)}
+/* 2.55, punto 10: si la lista no cabe ni con el anillo en su mínimo, el anillo pasa arriba */
+function ajustarCat(){document.querySelectorAll("#view .fcat-cuerpo").forEach(c=>{c.classList.remove("apilada");if(c.scrollWidth>c.clientWidth+1||[...c.querySelectorAll(".fcat-ley button")].some(x=>x.scrollWidth>x.clientWidth+1))c.classList.add("apilada")})}
 function barraCat(it,k,attr,abierta,verAttr){if(!it.length)return "";const d=keyToDate(k),tot=it.reduce((a,x)=>a+x.v,0),mon=catMonto();
   const pt=c=>`<svg class="pt" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5.5" fill="${c}"/></svg>`;
-  return `<div class="fcat"><button class="fcat-btn" type="button" data-${attr} aria-expanded="${abierta}"><div class="fcat-top"><span>${tx("Por categoría")}</span><em>${abierta?tx("Ocultar ▴"):tx("Ver ▾")}</em></div>
-    <div class="fcat-bar" aria-hidden="true">${it.map(x=>`<i style="flex:${x.v};background:${x.color}"></i>`).join("")}</div></button>
+  CAT_IT[attr]=it;setTimeout(ajustarCat);
+  return `<div class="fcat${abierta?" abierta":""}"><button class="fcat-btn" type="button" data-${attr} aria-expanded="${abierta}"><div class="fcat-top"><span>${tx("Por categoría")}</span><em>${abierta?tx("Ocultar ▴"):tx("Ver ▾")}</em></div>
+    ${abierta?"":`<div class="fcat-bar" aria-hidden="true">${it.map(x=>`<i style="flex:${x.v};background:${x.color}"></i>`).join("")}</div>`}</button>
     ${abierta?`<div class="fcat-cuerpo"><div class="fcat-izq"><button type="button" class="ver-mp" data-catmodo>${mon?tx("Ver<br>porcentajes"):tx("Ver<br>montos")}</button>${donut(it,k===mkey(today)?tx("este mes"):mesM(d.getMonth())).replace(/<ul class="legend">[\s\S]*<\/ul>/,"")}</div>
       <ul class="fcat-ley">${it.map(x=>`<li><button type="button" ${verAttr}="${esc(x.cat)}" data-mes="${k}">${pt(x.color)}<span class="nm">${esc(ct(x.cat))}</span><span class="v n${mon?"":" pct"}">${mon?clp(x.v):ui.oculto?"":x.v/tot<.01?"<1 %":Math.round(x.v/tot*100)+" %"}</span><span class="ch" aria-hidden="true">›</span></button></li>`).join("")}</ul></div>`:""}</div>`}
 function openCatVars(...a){openCatVars_(...a);hojaFn=()=>openCatVars(...a)}
@@ -3027,8 +3088,10 @@ function pintarPend(){const e=document.getElementById("secPend");if(!e||ui.tab!=
 const ICO_REINT=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>`;
 const tPend=()=>`<h2 class="ht ht-aj"><span class="tl">${tx("Movimientos por confirmar")}</span><span class="tc">${tx("Por confirmar")}</span>${ib("gmail")}</h2>`;
 const aj=(l,c)=>`<span class="aj"><span class="l">${l}</span><span class="c">${c}</span></span>`;
-function carrilPend(){const h=carrilPend0();if(!h||!(meta.gmScriptVer&&meta.gmScriptVer<GM_SCRIPT_VER))return h;
-  const av=`<div class="pend-act" role="note"><p>${tx("Hay una versión nueva del script de Gmail: con ella Luka reconoce más avisos.")}</p><button type="button" class="linkbtn" data-gmactualizar>${tx("Actualizar el script")} ›</button></div>`;
+/* 2.55, punto 2: si la revisión falló y Luka no sabe si el script está al día (nunca dijo su versión o es antigua), también se ofrece actualizarlo */
+const gmScriptDudoso=()=>!!meta.gmailError&&meta.gmailErrTipo!=="clave"&&meta.gmailErrTipo!=="red"&&!(meta.gmScriptVer>=GM_SCRIPT_VER);
+function carrilPend(){const h=carrilPend0(),viejo=meta.gmScriptVer&&meta.gmScriptVer<GM_SCRIPT_VER,dud=gmScriptDudoso()&&gmEstado!=="cargando";if(!h||!(viejo||dud))return h;
+  const av=`<div class="pend-act" role="note"><p>${dud?tx("Puede que el script de Gmail esté desactualizado."):tx("Hay una versión nueva del script de Gmail: con ella Luka reconoce más avisos.")}</p><button type="button" class="linkbtn" data-gmactualizar>${tx("Actualizar el script")} ›</button></div>`;
   return h.includes('<div class="carril" data-pendc>')?h.replace('<div class="carril" data-pendc>',av+'<div class="carril" data-pendc>'):h.replace(/<\/section>$/,av+"</section>")}
 function carrilPend0(){if(!fOn("fGmail"))return "";const gc=gmCfg();if((!gc.url||!gc.key)&&!gmPendientes().length)return "";const l=gmPendientes(),carga=gmEstado==="cargando";
   const cab=(sub,extra,err)=>`<div class="card-head pend-cab"><div class="pt-fila">${tPend()}${extra||""}</div><div class="pend-fila${err?" err":""}"><p class="sub" role="status"${carga?' aria-busy="true"':""}>${sub}</p></div></div>`;
@@ -3150,7 +3213,7 @@ function tjPorPagar(c){const fm=d=>d.getDate()+" "+mes3(d.getMonth());
   if(e.dias<0)return {m:e.total-e.pagado,s:"⚠ "+tx("Venció el {a}",{a:fm(e.vence)}),k:"vencida"};
   return {m:e.total-e.pagado,s:tx("{a}vence el {b}",{a:e.pagado>0?`${tx("pagado {a} ·",{a:clp(e.pagado)})} `:"",b:fm(e.vence)}),k:e.dias<=5?"aviso":""}}
 function tjFrente(c){const r=cargosTarjeta(c),pp=tjPorPagar(c),fm=d=>d.getDate()+" "+mes3(d.getMonth());
-  return `<div class="tj tj-frente tjc" style="${tjEstilo(c)}">
+  return `<div class="tj tj-frente tjc" data-tj="${c.id}" style="${tjEstilo(c)}">
     <button type="button" class="tj-nom btn" data-tarjeta="${c.id}"><b>${esc(c.nombre)}</b>${c.dig?`<span class="dig">•••• ${esc(c.dig)}</span>`:""}<span class="tj-ch" aria-hidden="true">›</span></button>
     <span class="tj-chip" aria-hidden="true"></span>
     <button type="button" class="tj-pp btn" data-tcper="${c.id}|ant"><span class="lbl">${tx("Por pagar")}</span><span class="fl">${pp.m!=null?`<b class="n grande">${clp(pp.m)}</b>`:`<b class="nada">${esc(pp.t)}</b>`}${pp.s?`<span class="tj-est${pp.k?" "+pp.k:""}">${esc(pp.s)}</span>`:""}</span></button>
@@ -3159,30 +3222,52 @@ function cardTarjetas(){const l=cuentas().filter(c=>c.tipo==="credito"&&c.diaFac
   /* 2.54, punto 10: la pila sigue un orden circular (ui.tjOrden); la del frente es la primera y la franja más cercana a ella, la siguiente */
   const ord=ordenTj(l),fr=ord[0],atras=ord.slice(1).reverse();
   return `<section class="card">${t2(tx("Tarjetas de crédito"),"tarjetas")}<p class="sub">${tx("Lo que debes pagar y lo que llevas en el período")}</p>
-    <div class="pila-tj">${atras.map(c=>`<button type="button" class="tj-atras tjc" style="${tjEstilo(c)}" data-tjfrente="${c.id}"><span class="nm"><b>${esc(c.nombre)}</b>${c.dig?`<span class="dig">•••• ${esc(c.dig)}</span>`:""}</span><span class="pp">${porPagarCorto(c)}</span></button>`).join("")}
+    <div class="pila-tj">${atras.map(c=>`<button type="button" class="tj-atras tjc" style="${tjEstilo(c)}" data-tj="${c.id}" data-tjfrente="${c.id}"><span class="nm"><b>${esc(c.nombre)}</b>${c.dig?`<span class="dig">•••• ${esc(c.dig)}</span>`:""}</span><span class="pp">${porPagarCorto(c)}</span></button>`).join("")}
     ${tjFrente(fr)}</div></section>`}
 function ordenTj(l){const ids=l.map(c=>c.id);let o=(ui.tjOrden||[]).filter(i=>ids.includes(i));ids.forEach(i=>{if(!o.includes(i))o.push(i)});
   if(ui.tjFrente&&o.includes(ui.tjFrente)&&o[0]!==ui.tjFrente){const k=o.indexOf(ui.tjFrente);o=[...o.slice(k),...o.slice(0,k)]}ui.tjOrden=o;ui.tjFrente=o[0];return o.map(i=>l.find(c=>c.id===i))}
 /* tocar una franja la trae al frente sin cambiar el orden circular */
 function girarTj(id){const o=ui.tjOrden||[],k=o.indexOf(id);if(k>0)ui.tjOrden=[...o.slice(k),...o.slice(0,k)];ui.tjFrente=id}
 /* deslizar la tarjeta del frente: a la derecha se va al final; a la izquierda vuelve la del final */
+/* 2.55, punto 4: la tarjeta sigue al dedo sin girar (a la izquierda, con freno); al soltar pasado 60 px (o con impulso), intercambio en profundidad */
 function bindPilaTj(){const p=$("#view .pila-tj");if(!p||p._gest)return;const fr=p.querySelector(".tj-frente");if(!fr||!p.querySelector(".tj-atras"))return;p._gest=1;
-  fr.style.touchAction="pan-y";let x0=0,y0=0,t0=0,dx=0,id=null,modo=0,sinClick=0;const ancho=()=>fr.offsetWidth||300;
-  const pinta=x=>{fr.style.transform=x?`translateX(${x}px) rotate(${x/ancho()*8}deg)`:""};
-  fr.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button)return;id=e.pointerId;x0=e.clientX;y0=e.clientY;t0=e.timeStamp;dx=0;modo=0;fr.style.transition="none"});
+  fr.style.touchAction="pan-y";let x0=0,y0=0,t0=0,dx=0,id=null,modo=0,sinClick=0;
+  const pinta=x=>{fr.style.transform=x?`translateX(${x>0?x:x*.35}px)`:""};
+  fr.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button)return;if(p._anim)return;id=e.pointerId;x0=e.clientX;y0=e.clientY;t0=e.timeStamp;dx=0;modo=0;fr.style.transition="none"});
   fr.addEventListener("pointermove",e=>{if(e.pointerId!==id)return;const ax=e.clientX-x0,ay=e.clientY-y0;
-    if(!modo){if(Math.abs(ay)>10&&Math.abs(ay)>Math.abs(ax)){id=null;return}if(Math.abs(ax)>10&&Math.abs(ax)>Math.abs(ay)){modo=1;try{fr.setPointerCapture(id)}catch(_){}}}
+    if(!modo){if(Math.abs(ay)>10&&Math.abs(ay)>Math.abs(ax)){id=null;return}if(Math.abs(ax)>8&&Math.abs(ax)>Math.abs(ay)){modo=1;try{fr.setPointerCapture(id)}catch(_){}}}
     if(modo){dx=ax;pinta(dx)}});
   const suelta=e=>{if(e.pointerId!==id)return;id=null;if(!modo){fr.style.transition="";return}sinClick=Date.now();
-    const v=dx/Math.max(1,e.timeStamp-t0),va=Math.abs(dx)>ancho()*.3||(Math.abs(dx)>40&&Math.abs(v)>.5);fr.style.transition=sinMov()?"none":"transform .22s ease-out,opacity .22s ease-out";
-    if(!va){pinta(0);return}
-    const o=ui.tjOrden.slice(),sig=dx>0?[...o.slice(1),o[0]]:[o[o.length-1],...o.slice(0,-1)];
-    const fin=()=>{ui.tjOrden=sig;ui.tjFrente=sig[0];render();const n=$("#view .pila-tj .tj-frente");if(n&&!sinMov()){
-      n.style.transition="none";n.style.transform=dx>0?"translateY(-14px) scale(.97)":`translateX(${-ancho()*1.1}px) rotate(-8deg)`;n.style.opacity=dx>0?".6":"1";
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{n.style.transition="transform .24s ease-out,opacity .24s ease-out";n.style.transform="";n.style.opacity=""}))}};
-    if(dx>0&&!sinMov()){pinta(ancho()*1.15);fr.style.opacity="0";setTimeout(fin,200)}else fin()};
+    const v=dx/Math.max(1,e.timeStamp-t0),va=Math.abs(dx)>60||Math.abs(v)>.5;
+    if(!va){fr.style.transition=sinMov()?"none":"transform .18s ease-out";pinta(0);return}
+    const o=ui.tjOrden.slice(),der=dx>0,sig=der?[...o.slice(1),o[0]]:[o[o.length-1],...o.slice(0,-1)];
+    const a=pilaAntes(der?dx:dx*.35);ui.tjOrden=sig;ui.tjFrente=sig[0];render();animarPila(a,der?1:-1,der?o[0]:o[o.length-1])};
   fr.addEventListener("pointerup",suelta);fr.addEventListener("pointercancel",e=>{if(e.pointerId!==id)return;id=null;fr.style.transition="";pinta(0)});
   fr.addEventListener("click",e=>{if(Date.now()-sinClick<400){e.stopPropagation();e.preventDefault()}},true)}
+/* dónde estaba cada tarjeta antes de cambiar el orden (la del frente se copia para el «fantasma» que viaja a su franja) */
+function pilaAntes(dx){const p=$("#view .pila-tj"),m=new Map();if(!p)return m;const pr=p.getBoundingClientRect();
+  p.querySelectorAll("[data-tj]").forEach(el=>{const r=el.getBoundingClientRect(),f=el.classList.contains("tj-frente");
+    m.set(el.dataset.tj,{top:r.top-pr.top,h:r.height,front:f,dx:f?(dx||0):0,node:f?el.cloneNode(true):null})});return m}
+const PILA_MS=380,PILA_EASE="cubic-bezier(.3,0,.3,1)";
+function animarPila(antes,dir,viajero){const p=$("#view .pila-tj");if(!p||!antes||!antes.size||sinMov())return;
+  const pr=p.getBoundingClientRect(),W=p.offsetWidth,D=PILA_MS,cl=b=>`inset(0 0 ${Math.max(0,b)}px 0 round 18px)`,fin=[];
+  p.style.position="relative";p._anim=1;
+  const fr=p.querySelector(".tj-frente");p.querySelectorAll(".tj-atras").forEach(x=>{x.style.position="relative";x.style.zIndex="1"});if(fr)fr.style.zIndex="2";
+  p.querySelectorAll("[data-tj]").forEach(el=>{const id=el.dataset.tj,a=antes.get(id);if(!a)return;const r=el.getBoundingClientRect(),top=r.top-pr.top,h=r.height,f=el.classList.contains("tj-frente"),dy=a.top-top;
+    if(f){/* la que llega al frente crece desde su franja (si es la que viaja, pasa por el lado) */
+      const kf=id===viajero&&!a.front?[{transform:`translate(0px,${dy}px)`,clipPath:cl(h-a.h)},{transform:`translate(${W*.62*dir}px,${dy/2}px) scale(.94)`,clipPath:cl((h-a.h)/2),offset:.45},{transform:"none",clipPath:cl(0)}]
+        :[{transform:`translate(${a.dx}px,${dy}px)`,clipPath:cl(a.front?0:h-a.h)},{transform:"none",clipPath:cl(0)}];
+      fin.push(el.animate(kf,{duration:D,easing:PILA_EASE}))}
+    else if(a.front&&a.node){/* la que deja el frente: un fantasma se achica hasta su franja y la franja real aparece al final */
+      const g=a.node;g.removeAttribute("data-tj");g.setAttribute("aria-hidden","true");g.inert=true;
+      g.style.cssText+=`;position:absolute;left:0;right:0;top:${a.top}px;margin:0;z-index:3;pointer-events:none;transition:none;transform:none`;p.appendChild(g);el.style.opacity="0";
+      const fy=top-a.top,fc=cl(a.h-(h-14));
+      const kf=id===viajero?[{transform:`translate(${a.dx}px,0px)`,clipPath:cl(0)},{transform:`translate(${W*.62*dir}px,${fy/2}px) scale(.94)`,clipPath:cl((a.h-h)/2),offset:.45},{transform:`translate(0px,${fy}px)`,clipPath:fc}]
+        :[{transform:`translate(${a.dx}px,0px)`,clipPath:cl(0)},{transform:`translate(0px,${fy}px)`,clipPath:fc}];
+      const an=g.animate(kf,{duration:D,easing:PILA_EASE,fill:"forwards"});fin.push(an);
+      setTimeout(()=>{g.style.zIndex="0"},D*.45);an.finished.catch(()=>{}).then(()=>{g.remove();el.style.opacity=""})}
+    else if(dy)fin.push(el.animate([{transform:`translateY(${dy}px)`},{transform:"none"}],{duration:D,easing:PILA_EASE}))});
+  Promise.all(fin.map(x=>x.finished.catch(()=>{}))).then(()=>{p._anim=0;p.style.position="";if(fr)fr.style.zIndex="";p.querySelectorAll(".tj-atras").forEach(x=>{x.style.position="";x.style.zIndex=""})})}
 /* lo que se ve de una tarjeta de atrás en la pila */
 function porPagarCorto(c){const e=c.diaVenc?estadoTarjeta(c):null;if(!e||e.total<1||e.dias<-20)return esc(tx("Nada por pagar"));if(e.preguntarResto)return esc(tx("¿Quedó saldo?"));if(e.preguntar)return esc(tx("¿Quedó pagada?"));if(e.pagado>=e.total-1)return "✓ "+esc(tx("Pagada"));
   return `${e.dias<0?"⚠ ":""}${esc(tx("Por pagar"))} <b class="n">${clp(e.total-e.pagado)}</b>`}
@@ -3193,8 +3278,8 @@ function cajaEstadoTc(c,e){const fila=(k,v,tot)=>`<div class="tc-fila${tot?" tot
   if(e.conf!=null){f.push(fila(tx("Estado de cuenta"),e.conf,true));f.push(fila(tx("Registrado en Luka"),e.luka))}else{f.push(fila(tx("Facturado según Luka"),e.luka,true));if(det)f.push(det)}
   if(e.pagado>0)f.push(fila(e.ult?tx("Pagaste el {a}",{a:fmtD(e.ult)}):tx("Pagaste"),e.pagado));
   const fm=fmtD(iso(e.vence));let est;
-  if(e.preguntarResto)est=`<div class="tc-preg" role="group" aria-labelledby="tcPregT"><b id="tcPregT">${tx("¿Quedaron {a} sin pagar del estado anterior?",{a:clp(ft.resto)})}</b><p>${tx("Luka no encontró pagos que cubran todo el estado anterior, así que lo suma a este. Si lo pagaste de otra forma, dile que no.")}</p>
-      <div class="tc-preg-btn"><button type="button" class="btn-p" data-tcresto="${esc(e.rKey)}|si">${tx("Sí, quedaron")}</button><button type="button" class="btn-s" data-tcresto="${esc(e.rKey)}|no">${tx("No, lo pagué")}</button></div></div>`;
+  if(e.preguntarResto)est=`<div class="tc-preg" role="group" aria-labelledby="tcPregT"><b id="tcPregT">${tx("¿Quedó saldo del estado anterior?")} <span class="n" style="white-space:nowrap">${clp(ft.resto)}</span></b><p>${tx("Luka no encontró pagos que cubran todo el estado anterior, así que lo suma a este. Si lo pagaste de otra forma, toca «Lo pagué».")}</p>
+      <div class="tc-preg-btn"><button type="button" class="btn-p" data-tcresto="${esc(e.rKey)}|si">${tx("Quedó saldo")}</button><button type="button" class="btn-s" data-tcresto="${esc(e.rKey)}|no">${tx("Lo pagué")}</button></div></div>`;
   else if(e.preguntar)est=`<div class="tc-preg" role="group" aria-labelledby="tcPregT"><b id="tcPregT">${tx("¿El estado de cuenta fue {a}?",{a:clp(e.pagado)})}</b><p>${tx("Luka sumó {a} con lo registrado. La diferencia puede ser una compra sin anotar, intereses o una devolución.",{a:clp(e.luka)})}</p>
       <div class="tc-preg-btn"><button type="button" class="btn-p" data-tcconf="${esc(e.key)}|${e.pagado}">${tx("Sí, fue {a}",{a:clp(e.pagado)})}</button><button type="button" class="btn-s" data-tcconf="${esc(e.key)}|no">${tx("No")}</button></div></div>`;
   else if(e.total>=1&&e.pagado>=e.total-1)est=`<div class="tc-est ok">✓ ${tx("Pagada")}</div>`;
@@ -3815,10 +3900,10 @@ function openForm(id,pre){
   <form class="f" id="gForm" data-nuevo="${id?"":"1"}" ${pre&&pre._gmail?`data-gmail="${esc(pre._gmail)}" data-fecha="${esc(pre._fecha||"")}" data-dig="${esc(pre._dig||"")}"`:""}>
     ${campoMonto("valor",g.valor,g.moneda||base())}
     <label class="full">${tx("Descripción")}<input name="nombre" required value="${esc(g.nombre)}" placeholder="${tx("Ej.: Arriendo, Netflix")}"></label>
-    <label class="full">${tx("Categoría")}<select name="categoria">${CATS.map(c=>`<option value="${esc(c)}" data-c="${CAT_COLOR[c]||CAT_COLOR.Otro||"#999"}" ${c===g.categoria?"selected":""}>${esc(ct(c))}</option>`).join("")}</select></label>
-    <label for="fFechaPago"><span>${id?tx("Fecha de pago{a}",{a:ib("fechapago")}):tx("Primer cobro{a}",{a:ib("fechapago")})}</span><input id="fFechaPago" name="fechaPago" type="date" value="${esc(g.estado==="Pausada"?(g.proximoPago||""):fpAct)}"><span class="hint fp-info" id="fpInfo"></span></label>
-    ${campoMedio(g.cuenta,g.medio,g.cuentaId,pre&&pre._sinMedio).replace('<label class="full">','<label>')}
+    ${campoMedio(g.cuenta,g.medio,g.cuentaId,pre&&pre._sinMedio)}
     ${nuevaCuentaBox()}
+    <label class="lbl-cat">${tx("Categoría")}<select name="categoria">${CATS.map(c=>`<option value="${esc(c)}" data-c="${CAT_COLOR[c]||CAT_COLOR.Otro||"#999"}" ${c===g.categoria?"selected":""}>${esc(ct(c))}</option>`).join("")}</select></label>
+    <label for="fFechaPago"><span>${id?tx("Fecha de pago{a}",{a:ib("fechapago")}):tx("Primer cobro{a}",{a:ib("fechapago")})}</span><input id="fFechaPago" name="fechaPago" type="date" value="${esc(g.estado==="Pausada"?(g.proximoPago||""):fpAct)}"><span class="hint fp-info" id="fpInfo"></span></label>
     ${masOpc(`${campoMoneda(g.moneda||base())}
     <label for="fPer"><span>${tx("Se repite{a}",{a:ib("frecuencia")})}</span><select name="per" id="fPer">${opcRep(pSel,!!id)}</select></label>
     <label id="fPerN"><span>${tx("Cada cuántos meses")}</span>${stepper("perN",pSel==="x"?p:5,2,24)}</label>
@@ -3971,12 +4056,16 @@ function sugerir(inp,fuente,elegir){if(!inp||inp.dataset.sug)return;inp.dataset.
 function descConCategoria(){const m=new Map();historialVars().forEach(v=>{const d=(v.descripcion||"").trim();if(!d)return;const k=sinAcento(d),x=m.get(k)||{v:d,n:0,cat:v.categoria,f:""};x.n++;if((v.fecha||"")>=x.f){x.f=v.fecha||"";x.cat=v.categoria;x.v=d}m.set(k,x)});
   return [...m.values()].sort((a,b)=>b.n-a.n||b.f.localeCompare(a.f)).slice(0,300).map(x=>({v:x.v,s:ct(x.cat),cat:x.cat}))}
 /* 2.5, punto 9: el día de la semana dentro del campo de fecha («dom 11/10/2026») */
-function fechaCorta(d){let w="",f="";try{w=new Intl.DateTimeFormat(LOCD,{weekday:"short"}).format(d).replace(/\.$/,"")}catch(e){}
-  if(LANG==="es")f=String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear();else{try{f=new Intl.DateTimeFormat(LOCD,{day:"2-digit",month:"2-digit",year:"numeric"}).format(d)}catch(e){f=iso(d)}}
+const ICO_CAL=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>`;
+function fechaCorta(d,corta){let w="",f="";if(corta!==2)try{w=new Intl.DateTimeFormat(LOCD,{weekday:"short"}).format(d).replace(/\.$/,"")}catch(e){}
+  if(LANG==="es")f=String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+(corta?String(d.getFullYear()).slice(-2):d.getFullYear());else{try{f=new Intl.DateTimeFormat(LOCD,{day:"2-digit",month:"2-digit",year:corta?"2-digit":"numeric"}).format(d)}catch(e){f=iso(d)}}
   return (w?w+" ":"")+f}
 function mejorarFechas(root){(root||document).querySelectorAll("input[type=date]:not([data-fs])").forEach(i=>{i.dataset.fs="1";const w=document.createElement("span");w.className="fecha-w";i.parentNode.insertBefore(w,i);w.appendChild(i);
   const t=document.createElement("span");t.className="fecha-txt";t.setAttribute("aria-hidden","true");w.appendChild(t);
-  const p=()=>{const d=i.value&&parseD(i.value);t.textContent=d?fechaCorta(d):"";w.classList.toggle("con",!!d)};i.addEventListener("input",p);i.addEventListener("change",p);p()})}
+  w.insertAdjacentHTML("beforeend",`<span class="fecha-ico" aria-hidden="true">${ICO_CAL}</span>`);
+  /* si «vie 27/11/2026» no cabe, queda «vie 27/11/26» y después «27/11/26» */
+  const p=()=>{const d=i.value&&parseD(i.value);t.textContent=d?fechaCorta(d):"";w.classList.toggle("con",!!d);for(let n=1;n<3&&d&&t.clientWidth&&t.scrollWidth>t.clientWidth+1;n++)t.textContent=fechaCorta(d,n)};
+  i.addEventListener("input",p);i.addEventListener("change",p);p();if(window.ResizeObserver)new ResizeObserver(()=>p()).observe(w)})}
 function cambiarGI(a){const fv=$("#vForm"),fg=$("#gForm"),fi=$("#iForm");
   if(a==="ingreso"&&(fv||fg)){const f=fv||fg,fd=new FormData(f);swapDir="sw-l";openIngForm(null,null,fg?"fijo":"ocasional",numIn(fd.get(fv?"monto":"valor"))||"",{nombre:(fd.get(fv?"descripcion":"nombre")||"").trim(),moneda:fd.get("moneda")||"",notas:(fd.get("notas")||"").trim(),_gi:1,_mas:fg?1:0})}
   else if(a==="gasto"&&fi){const fd=new FormData(fi),nom=(fd.get("nombre")||"").trim(),m=numIn(fd.get("monto"))||"",notas=(fd.get("notas")||"").trim();swapDir="sw-r";
@@ -3997,10 +4086,10 @@ function openVarForm(id,mes,plantilla){
   <form class="f" id="vForm" data-nuevo="${id?"":"1"}" ${plantilla?._gmail?`data-gmail="${esc(plantilla._gmail)}" data-dig="${esc(plantilla._dig||"")}"`:""}>
     ${campoMonto("monto",v.monto,v.moneda||baseMon())}
     <label class="full">${tx("Descripción")}<input name="descripcion" autocomplete="off" value="${esc(v.descripcion)}" placeholder="${tx("Ej.: Jumbo, almuerzo, Uber")}"></label>
-    <label class="full"><span>${tx("Categoría")} <span class="cuo-cont" id="sugCat"></span></span><select name="categoria">${VCATS.map(c=>`<option value="${esc(c)}" data-c="${VCAT_COLOR[c]||VCAT_COLOR.Otro||"#999"}" ${c===v.categoria?"selected":""}>${esc(ct(c))}</option>`).join("")}</select></label>
-    <label>${tx("Fecha")}<input name="fecha" type="date" required value="${esc(v.fecha)}" max="${iso(today)}"></label>
-    ${campoMedio(v.cuenta,v.medio,v.cuentaId,plantilla&&plantilla._sinMedio,plantilla&&plantilla._soloCtas).replace('<label class="full">','<label>')}
+    ${campoMedio(v.cuenta,v.medio,v.cuentaId,plantilla&&plantilla._sinMedio,plantilla&&plantilla._soloCtas)}
     ${nuevaCuentaBox()}
+    <label class="lbl-cat"><span>${tx("Categoría")} <span class="cuo-cont" id="sugCat"></span></span><select name="categoria">${VCATS.map(c=>`<option value="${esc(c)}" data-c="${VCAT_COLOR[c]||VCAT_COLOR.Otro||"#999"}" ${c===v.categoria?"selected":""}>${esc(ct(c))}</option>`).join("")}</select></label>
+    <label>${tx("Fecha")}<input name="fecha" type="date" required value="${esc(v.fecha)}" max="${iso(today)}"></label>
     ${masOpc(`${campoMoneda(v.moneda||baseMon())}
       ${id?"":`<label>${tx("Se repite")}<select name="rep">${opcRep(0)}</select></label>`}
       <label class="lbl-cuotas"><span>${tx("Cuotas")} <span class="cuo-cont" id="cuotaInfo">${tx("(Contado)")}</span></span>${stepper("cuotas",nCuotas(v),1,48)}</label>
@@ -4172,7 +4261,11 @@ function vigilarMedio(form){const sel=form.querySelector("[name=mp]"),box=form.q
     if(cuentaExiste(n,tipoSel.value)){toast(tx("Ya tienes una tarjeta o cuenta de ese tipo con ese nombre"));return}
     const c={id:uid("c"),nombre:n,tipo:tipoSel.value,diaFact:tipoSel.value==="credito"?(parseInt(dia.value)||null):null};
     state.cuentas=[...cuentas(),c];store.saveRegistro();refrescarSelect(sel,opcionesMedio("c:"+c.id));prev="c:"+c.id;box.hidden=true;marcarSucio(form);toast(tx("Cuenta agregada"))})}
+/* 2.55, punto 7: si el nombre de la categoría no cabe en media fila, Categoría y Fecha van a todo el ancho */
+function ajustarFilaCat(form){const lc=form.querySelector(".lbl-cat");if(!lc)return;form.classList.remove("cat-full");const t=lc.querySelector(".picker .mnom")||lc.querySelector(".picker span");
+  if(t&&t.scrollWidth>t.clientWidth+1)form.classList.add("cat-full")}
 function prepararControles(form){
+  if(form.querySelector(".lbl-cat")){const aj=()=>ajustarFilaCat(form);requestAnimationFrame(aj);if(document.fonts)document.fonts.ready.then(aj);form.querySelector("[name=categoria]").addEventListener("change",()=>requestAnimationFrame(aj))}
   form.querySelectorAll(".stepper").forEach(st=>{const inp=st.querySelector("input"),mn=Number(st.dataset.min),mx=Number(st.dataset.max);
     st.querySelectorAll("[data-step]").forEach(b=>b.addEventListener("click",()=>{const v=Math.min(mx,Math.max(mn,(parseInt(inp.value)||mn)+Number(b.dataset.step)));if(String(v)!==inp.value){inp.value=v;inp.dispatchEvent(new Event("input",{bubbles:true}))}}))});
   prepararMeses(form);
@@ -4869,7 +4962,7 @@ document.addEventListener("click",e=>{
   if(d.pendok){agregarCompra(d.pendok);return}
   if(d.pendingr){agregarIngresoGm(d.pendingr);return}
   if(d.pagotc){openPagoTc(d.pagotc);return}
-  if(d.tjfrente){girarTj(d.tjfrente);render();return}
+  if(d.tjfrente){const a=pilaAntes();girarTj(d.tjfrente);render();animarPila(a,-1,d.tjfrente);return}
   if(b.hasAttribute("data-catmodo")){ui.catMonto=!catMonto();try{localStorage.setItem("luka-catmonto",ui.catMonto?"1":"")}catch(_){}render();return}
   if(d.pendx){const id=d.pendx,ids=gmIds(gmPend.find(x=>x.id===id)||{id}),pos=posPend();gmMarcar(id,"d",{l:"Descartado"});store.saveRegistro();if($("#pendSheet")){const n=gmPendientes().length;if(n){const li=b.closest("li");if(li)li.remove();const sb=$("#pendSheet .sub");if(sb)sb.textContent=txn(n,"1 movimiento detectado en tu correo","{n} movimientos detectados en tu correo")}else closeSheet()}render();volverPosPend(pos);toastDeshacer(tx("Descartado"),()=>{ids.forEach(i=>delete gmVistos()[i]);gmGuardarPend();gmailRevisar(true);store.saveRegistro();render()});return}
   if(d.csir!=null){const c=$("#view .cs-var"),s=c&&c.children[Number(d.csir)];if(s){ui.csVar=Number(d.csir);c.scrollTo({left:s.offsetLeft-c.firstElementChild.offsetLeft,behavior:sinMov()?"auto":"smooth"});document.querySelectorAll("#view .cs-puntos [data-csir]").forEach(x=>x.setAttribute("aria-current",String(x===b)))}return}if(b.hasAttribute("data-indicab")){ui.indicAb=!ui.indicAb;b.setAttribute("aria-expanded",String(ui.indicAb));const c=$("#indicCont");if(c)c.hidden=!ui.indicAb;return}if(b.hasAttribute("data-pendrevisar")){gmailRevisar(true);return}if(b.hasAttribute("data-pendtodos")){openPendTodos();return}
@@ -4884,9 +4977,9 @@ document.addEventListener("click",e=>{
   if(b.hasAttribute("data-cfgmeta")){openMetaForm();return}
   if(d.histsel!==undefined){ui.histSel=Number(d.histsel);render();return}
   if(d.filter){ui.filter=d.filter;render();return}
-  if(b.hasAttribute("data-fcat")){ui.fcat=!ui.fcat;try{localStorage.setItem("luka-fcat",ui.fcat?"1":"0")}catch(_){}render();return}
+  if(b.hasAttribute("data-fcat")){toggleCat("fcat");return}
   if(d.fcatver!==undefined){openCatFijos(d.fcatver,d.mes);return}
-  if(b.hasAttribute("data-vcat")){ui.vcat=!ui.vcat;try{localStorage.setItem("luka-vcat",ui.vcat?"1":"0")}catch(_){}render();return}
+  if(b.hasAttribute("data-vcat")){toggleCat("vcat");return}
   if(d.vcatver!==undefined){openCatVars(d.vcatver,d.mes);return}
   if(d.verfijos){ui.fmes=mkey(addM(today,1));ui.ftodos=false;irPestana("gastos");return}
   if(d.fmes){const nd=addM(keyToDate(ui.fmes||mkey(today)),Number(d.fmes));if(mkey(nd)<=mkey(addM(today,12))&&mkey(nd)>=mkey(addM(today,-12))){ui.fmes=mkey(nd);render()}return}
