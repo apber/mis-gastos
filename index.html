@@ -1004,6 +1004,10 @@ header.top.con-tit .brand{display:none}
 .gi2 button{border:0;background:transparent;border-radius:999px;min-height:48px;font-weight:600;font-size:calc(15px * var(--ts,1));color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
 .gi2 button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.18);font-weight:700}
 .gi2 svg{width:16px;height:16px;flex:none}.gi2 button[aria-pressed="false"] svg{display:none}
+/* 2.57, punto 9 */
+.gi2 button{flex-direction:column;gap:0;padding:0 6px;line-height:1.15}
+.gi2 .gi-l1{display:flex;align-items:center;justify-content:center;gap:8px}
+.gi2 .gi-fijo{font-size:calc(12px * var(--ts,1));font-weight:600;line-height:1.1;color:var(--primary-txt);letter-spacing:.01em}
 .tit-f{margin:0 0 4px;font-size:calc(20px * var(--ts,1));font-weight:600;text-wrap:balance}
 .tit-sub{font-size:calc(14px * var(--ts,1));color:var(--ink-2);margin:0 0 12px}
 .fijo-tag{display:inline-flex;align-items:center;gap:6px;font-size:calc(13.5px * var(--ts,1));font-weight:600;color:var(--fij);background:var(--fij-sf);border-radius:999px;padding:2px 10px;margin-inline-start:6px;vertical-align:.15em;white-space:nowrap}
@@ -1048,6 +1052,14 @@ form.f#vForm .picker>svg,form.f#gForm .picker>svg,form.f#iForm .picker>svg{displ
 .fecha-w .fecha-ico{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);display:flex;pointer-events:none;color:var(--ink-3)}
 .fecha-w .fecha-txt{inset-inline-end:42px}
 .fp-info{font-weight:500}
+/* 2.57, punto 8: sin texto, la nota bajo la fecha no ocupa lugar */
+.fp-info[hidden]{display:none!important}
+/* 2.57, punto 6 */
+.datos-n{margin:12px 0 0;font-size:calc(15px * var(--ts,1));color:var(--ink-2)}
+/* 2.57, punto 7: en la hoja del fijo, etiqueta compacta (26 px; no es un botón) */
+.detail-top .pill{display:inline-flex;align-items:center;min-height:calc(26px * var(--ts,1));padding:0 10px!important;font-size:calc(13px * var(--ts,1))!important;line-height:1.1;vertical-align:middle;margin-inline-start:4px}
+/* 2.57, punto 7: en «Todos», pausados y cancelados con una marca en la esquina del ícono, como el ✓ de los cobrados */
+.badge.b-est{background:var(--ink-2);color:var(--bg)}
 #fab{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .fab-menu{position:fixed;right:18px;bottom:calc(152px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:40}
 .fab-menu button{min-height:52px;min-width:calc(140px * var(--ts,1));border-radius:999px;border:2px solid var(--surface);background:var(--ink);color:var(--bg);font-weight:700;font-size:calc(16px * var(--ts,1));padding:4px 20px;box-shadow:0 6px 16px rgba(0,0,0,.28);cursor:pointer}
@@ -1174,6 +1186,12 @@ dd{overflow-wrap:anywhere;min-width:0}
 #view .cs-var .card h2{font-size:calc(15px * var(--ts,1));font-weight:600;letter-spacing:0;color:var(--ink-2)}
 .cs-var .card-head{align-items:center}
 .cs-var .fcat{margin:0}
+/* 2.57, punto 4: dentro del carrusel el cuerpo no sale de lo visible (antes cortaba el borde de «Ver montos») */
+.cs-var .fcat-cuerpo{margin-inline:-2px}
+/* 2.57, punto 4: abierto, la mitad del aire bajo «Por categoría · Ocultar» (26 → 13 px); el toque sigue de 48 px con el ::after y el cuerpo queda encima */
+.fcat.abierta .fcat-btn{min-height:0}
+.fcat.abierta .fcat-top{margin-bottom:0}
+.fcat.abierta .fcat-cuerpo{position:relative;margin-top:13px}
 .cs-puntos{display:flex;justify-content:center;gap:0;margin-bottom:-8px}
 .cs-puntos button{width:48px;height:48px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer}
 .cs-puntos i{display:block;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink-2)}
@@ -1293,7 +1311,7 @@ body.teclado .aviso-aj{display:none}
 <script src="jszip.min.js"></script>
 <script>
 (function(){
-const APP_VERSION="2.56";
+const APP_VERSION="2.57";
 /* ---------- 2.4: idiomas (el idioma y el diccionario se eligen en <head>) ---------- */
 const IDIOMAS=window.LUKA_IDIOMAS||{es:"Español"};
 const LANG=window.LUKA_LANG||"es";
@@ -2133,11 +2151,11 @@ function openIngForm(id,mes,tipoIni,montoPrev,pre){
   const tipo=id?(fijo?"fijo":"ocasional"):(tipoIni||"ocasional");
   const cur=fijo?(fijo.vals||[])[(fijo.vals||[]).length-1]||{}:{};
   const v=fijo?{nombre:fijo.nombre,monto:cur.valor,moneda:cur.moneda||base(),desde:fijo.desde||"",notas:fijo.notas||""}:ext?{nombre:ext.nombre,monto:ext.monto,moneda:ext.moneda||base(),fecha:ext.fecha,notas:ext.notas||""}:{nombre:pre?.nombre||"",monto:montoPrev??"",moneda:pre?.moneda||base(),desde:mkey(today),fecha:pre?.fecha||iso(today),notas:pre?.notas||""};
-  openSheet(`${cabForm({gi:!id&&!(pre&&pre._gmail)?"ingreso":"",titulo:id?tx("Editar ingreso"):tx("Nuevo ingreso"),fijo:tipo==="fijo",sub:id?"":tipo==="fijo"?tx("Se repite cada mes."):tx("Se recibe una vez.")})}
+  openSheet(`${cabForm({gi:!id&&!(pre&&pre._gmail)?"ingreso":"",titulo:id?(tipo==="fijo"?tx("Editar ingreso fijo"):tx("Editar ingreso")):tx("Nuevo ingreso"),tituloFijo:tx("Nuevo ingreso fijo"),fijo:tipo==="fijo"&&!id,sub:id?"":tipo==="fijo"?tx("Se repite cada mes."):tx("Se recibe una vez.")})}
   <form class="f" id="iForm" data-tipo="${tipo}">
     ${campoMonto("monto",v.monto,v.moneda)}
     <label class="full">${tx("Nombre")}<input name="nombre" autocomplete="off" value="${esc(v.nombre)}" placeholder="${tipo==="fijo"?tx("Ej.: Sueldo, pensión, arriendo"):tx("Ej.: Bono, venta, devolución")}"></label>
-    ${tipo==="fijo"?campoDesde(v.desde).replace(tx("Lo pago desde"),tx("Lo recibo desde")).replace("<label>",'<label class="full">'):`<label class="full">${tx("Fecha")}<input name="fecha" type="date" required value="${esc(v.fecha)}" max="${iso(today)}"></label>`}
+    ${tipo==="fijo"?campoDesde(v.desde).replace(tx("Lo pago desde"),tx("Primer pago")).replace("<label>",'<label class="full">'):`<label class="full">${tx("Fecha")}<input name="fecha" type="date" required value="${esc(v.fecha)}" max="${iso(today)}"></label>`}
     ${masOpc(`${campoMoneda(v.moneda)}${id?"":`<div data-mfk="rep" ${tipo==="fijo"?`data-val="${esc(tx("Mensual"))}"`:""} hidden></div>`}
     <label class="full">${tx("Notas")}<textarea name="notas" placeholder="${tipo==="fijo"?tx("Empleador, condiciones, recordatorios…"):tx("De qué se trata, a quién se lo vendiste…")}">${esc(v.notas||"")}</textarea></label>`,!!(pre&&pre._mas),defMas(["Moneda",...(id?[]:["se repite"]),"notas"]))}
     ${fijo?`<label class="full check"><input type="checkbox" name="corregir"> ${tx("Corregir también los meses anteriores")}<span class="hint">${tx("Márcalo si el valor estaba mal. Si no, el cambio rige desde {a}.",{a:mesM(today.getMonth())})}</span></label>`:""}
@@ -2917,6 +2935,10 @@ function animarCat(f,a,abrir,it){const b=geomCat(f),bar=abrir?a.bar:b.bar,ring=a
   /* 2.56, punto 4: cada segmento va de su lugar en la barra (medido) a su arco en el anillo; el centro del dibujo se desplaza durante toda la animación */
   const n=it.length,tot=it.reduce((x,y)=>x+y.v,0),R=ring.w*15.9155/42,SW1=ring.w*5.2/42,W0=bar.w,SW0=bar.h,ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,suave=e=>(1-Math.cos(Math.PI*e))/2;
   const RC=[ring.x+ring.w/2,ring.y+ring.h/2],BC=[bar.x+W0/2,bar.y+bar.h/2],sg=(abrir?a:b).segs||[];
+  /* 2.57, punto 4: límites a los lados (lo que se ve de la sección del carrusel, o la tarjeta) y el carrusel que sigue el alto sin difuminar */
+  const cv=f.closest(".cs-var"),fr0=f.getBoundingClientRect(),cr0=(cv||f).getBoundingClientRect();
+  const XL=Math.min(bar.x,ring.x+ring.w*(.5-(15.9155+2.6)/42),cr0.left-fr0.left+1),XR=Math.max(bar.x+W0,ring.x+ring.w*(.5+(15.9155+2.6)/42),cr0.right-fr0.left-1);
+  if(cv)cv._anim=1;
   let acc=0;const fr=it.map((x,i)=>{const sa=acc/tot;acc+=x.v;const sb=acc/tot,fb=sg.length===n?[(sg[i].x-bar.x)/W0,(sg[i].x+sg[i].w-bar.x)/W0]:[sa,sb];return {fb,fa:[sa,Math.max(sa+1e-4,sb-(n>1?.008:0))]}});
   const mk=(tag,at)=>{const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);sv.appendChild(e);return e};
   const fondo=mk("path",{fill:"none",stroke:"var(--surface-2)"});
@@ -2924,19 +2946,22 @@ function animarCat(f,a,abrir,it){const b=geomCat(f),bar=abrir?a.bar:b.bar,ring=a
   const pinta=e=>{const t=ease(e),m=suave(e),L=W0+(2*Math.PI*R-W0)*t,k=t/R,sw=SW0+(SW1-SW0)*t,rc=sw/2*(1-t),s0=rc/L,s1=1-rc/L;
     const pt=s=>{const u=(s-.5)*L;return k<1e-6?[u,0]:[Math.sin(k*u)/k,-(1-Math.cos(k*u))/k]};
     const curva=(a0,a1)=>{const q=[],nn=Math.max(2,Math.ceil((a1-a0)*120));for(let j=0;j<=nn;j++)q.push(pt(a0+(a1-a0)*j/nn));return q};
-    const y0=Math.min(pt(0)[1],k*L/2>Math.PI?-2/k:pt(0)[1]),ox=BC[0]*(1-m)+RC[0]*m,oy=(BC[1]*(1-m)+(RC[1]-R)*m)-y0;
+    const y0=Math.min(pt(0)[1],k*L/2>Math.PI?-2/k:pt(0)[1]);let ox=BC[0]*(1-m)+RC[0]*m;const oy=(BC[1]*(1-m)+(RC[1]-R)*m)-y0;
+    /* 2.57, punto 4: al enrollarse la curva se ensanchaba hacia la izquierda y el carrusel la cortaba: se corre para quedar dentro */
+    const cf=curva(s0,s1);let mx0=1e9,mx1=-1e9,my1=-1e9;cf.forEach(c=>{mx0=Math.min(mx0,c[0]);mx1=Math.max(mx1,c[0]);my1=Math.max(my1,c[1])});
+    if(ox+mx0-sw/2<XL)ox=XL-mx0+sw/2;if(ox+mx1+sw/2>XR)ox=XR-mx1-sw/2;
     const d=q=>"M"+q.map(c=>(c[0]+ox).toFixed(2)+","+(c[1]+oy).toFixed(2)).join("L");
-    fondo.setAttribute("d",d(curva(s0,s1)));fondo.setAttribute("stroke-width",sw.toFixed(2));
+    fondo.setAttribute("d",d(cf));fondo.setAttribute("stroke-width",sw.toFixed(2));
     fr.forEach((x,i)=>{const p=paths[i],a0=Math.max(s0,x.fb[0]*(1-t)+x.fa[0]*t),a1=Math.min(s1,x.fb[1]*(1-t)+x.fa[1]*t);if(a1<=a0){p.setAttribute("d","");return}
       p.setAttribute("d",d(curva(a0,a1)));p.setAttribute("stroke-width",sw.toFixed(2))});
     /* extremos: media elipse que pasa de redonda (la barra) a plana (el anillo) */
     [[capA,s0,-1],[capB,s1,1]].forEach(([c,ss,sg])=>{if(rc<.05){c.setAttribute("d","");return}const q=pt(ss),u=(ss-.5)*L,tx=Math.cos(k*u)*sg,ty=-Math.sin(k*u)*sg,h=sw/2,P=[];
       for(let j=0;j<=12;j++){const th=-Math.PI/2+Math.PI*j/12;P.push([q[0]+ox+(-ty)*h*Math.sin(th)+tx*rc*Math.cos(th),q[1]+oy+tx*h*Math.sin(th)+ty*rc*Math.cos(th)])}
       c.setAttribute("d","M"+P.map(c=>c[0].toFixed(2)+","+c[1].toFixed(2)).join("L")+"Z")});
-    f.style.height=(a.H+(b.H-a.H)*(abrir?e:1-e))+"px";
+    f.style.height=Math.max(a.H+(b.H-a.H)*(abrir?e:1-e),Math.min(HH,my1+oy+sw/2+2))+"px";if(cv)altoSecVar(cv);
     const op=Math.max(0,Math.min(1,(e-.6)/.4));if(abrir){if(ul)ul.style.opacity=op;if(vm)vm.style.opacity=op}if(fan)fan.style.opacity=op;if(lab)lab.style.opacity=Math.max(0,Math.min(1,(e-.8)/.2))};
   const t0=performance.now(),paso=()=>{if(!f.isConnected)return;const now=performance.now(),p=Math.min(1,(now-t0)/CAT_MS);pinta(abrir?p:1-p);if(p<1)requestAnimationFrame(paso);else{
-    sv.remove();if(fan)fan.remove();f.style.height="";f.style.position="";if(dn)dn.style.visibility="";if(br)br.style.visibility="";if(ul)ul.style.opacity="";if(vm)vm.style.opacity="";if(lab)lab.style.opacity=""}};
+    sv.remove();if(fan)fan.remove();f.style.height="";f.style.position="";if(cv){cv._anim=0;altoSecVar(cv)}if(dn)dn.style.visibility="";if(br)br.style.visibility="";if(ul)ul.style.opacity="";if(vm)vm.style.opacity="";if(lab)lab.style.opacity=""}};
   pinta(abrir?0:1);requestAnimationFrame(paso)}
 /* 2.55, punto 10: si la lista no cabe ni con el anillo en su mínimo, el anillo pasa arriba */
 function ajustarCat(){document.querySelectorAll("#view .fcat-cuerpo").forEach(c=>{c.classList.remove("apilada");if(c.scrollWidth>c.clientWidth+1||[...c.querySelectorAll(".fcat-ley button")].some(x=>x.scrollWidth>x.clientWidth+1))c.classList.add("apilada")})}
@@ -2970,10 +2995,15 @@ function cardAvisosAj(){const a=cfgAlzas();
     ${fOn("fAlzas")?opcF(tx("Avisar cuando suba más de"),a.modo==="monto"?(a.monto?clp(a.monto):tx("Definir")):fmtPct(a.pct),"data-cfgalzas"):""}
   </section>`}
 /* Ajustes > Seguridad y datos */
+/* 2.57, punto 6: los conteos en una línea («Tus datos: 128 variables en 9 meses · 22 fijos»), para comprobar que los datos llegaron */
+function lineaDatos(nVar){const nM=Object.values(state.vars).filter(l=>l.length).length,nF=state.gastos.length;
+  const v=nVar?txn(nVar,"1 variable","{n} variables")+" "+txn(nM,"en 1 mes","en {n} meses"):tx("0 variables");
+  return tx("Tus datos: {a} · {b}",{a:v,b:txn(nF,"1 fijo","{n} fijos")})}
 function cardSeguridad(){const nVar=Object.values(state.vars).reduce((a,l)=>a+l.length,0);
   return `<section class="card">${t2(tx("Seguridad y datos"),"seguridad")}
     ${cardBloqueo()}
-    <dl class="kv" style="margin-top:12px"><dt>${tx("Gastos fijos")}</dt><dd>${state.gastos.length}</dd><dt>${tx("Gastos variables")}</dt><dd>${nVar}</dd><dt>${tx("Meses con variables")}</dt><dd>${Object.keys(state.vars).length}</dd><dt>${tx("Versión de la app")}</dt><dd>${APP_VERSION}</dd></dl>
+    <p class="sub datos-n">${esc(lineaDatos(nVar))}</p>
+    <dl class="kv" style="margin-top:4px"><dt>${tx("Versión de la app")}</dt><dd>${APP_VERSION}</dd></dl>
   </section>`}
 function cardFunciones(){const m=metaAhorro();const fila=filaF,opc=opcF;
   return `<section class="card">${t2(tx("Funciones"),"funciones")}<p class="sub" style="margin:2px 0 2px">${tx("Activa solo lo que usas")}</p>
@@ -3271,7 +3301,7 @@ function pilaMedir(el,pr){const r=el.getBoundingClientRect(),f=el.classList.cont
     ex:f?PILA_PZ.extras.map(k=>pz(el.querySelector(k))).filter(Boolean):[]}}
 /* dónde estaba cada tarjeta antes de cambiar el orden (con copias de sus textos, porque el render los reemplaza) */
 function pilaAntes(dx){const p=$("#view .pila-tj"),m=new Map();if(!p)return m;const pr=p.getBoundingClientRect();m.alto=p.offsetHeight;
-  p.querySelectorAll("[data-tj]").forEach(el=>{const g=pilaMedir(el,pr);g.dx=g.front?(dx||0):0;Object.values(g.p).concat(g.ex).forEach(z=>{if(z){z.node=pilaCopia(z.el);delete z.el}});m.set(g.id,g)});return m}
+  p.querySelectorAll("[data-tj]").forEach((el,i)=>{const g=pilaMedir(el,pr);g.ord=i;g.dx=g.front?(dx||0):0;Object.values(g.p).concat(g.ex).forEach(z=>{if(z){z.node=pilaCopia(z.el);delete z.el}});m.set(g.id,g)});return m}
 /* copia de un texto con su letra (las reglas que la daban dependen de dónde estaba) */
 function pilaCopia(e){const c=e.cloneNode(true),cs=getComputedStyle(e);["fontFamily","fontSize","fontWeight","letterSpacing","lineHeight","color","whiteSpace","fontFeatureSettings","fontVariantNumeric","textTransform"].forEach(k=>c.style[k]=cs[k]);
   c.removeAttribute("data-tarjeta");c.removeAttribute("data-tcper");c.removeAttribute("id");return c}
@@ -3291,15 +3321,28 @@ function animarPila(antes,dir,viajero){const p=$("#view .pila-tj");if(!p||!antes
     Object.assign(g.style,{position:"absolute",left:b.left+"px",width:b.w+"px",top:b.top+"px",height:b.h+"px",margin:"0",overflow:"hidden",zIndex:a.front&&!b.front?60:z,transform:"none",transition:"none"});ov.appendChild(g);
     const rad=x=>x.front?"18px":"18px 18px 0 0",sh=x=>x.front?PILA_SOMBRA:"0 0 0 rgba(0,0,0,0)";
     const k0={top:a.top+"px",height:a.h+"px",borderRadius:rad(a),boxShadow:sh(a),transform:`translate(${a.left-b.left}px,0px)`},k1={top:b.top+"px",height:b.h+"px",borderRadius:rad(b),boxShadow:sh(b),transform:"none"};
-    /* la que se desliza (o la franja tocada) pasa por el lado, como en la 2.55 */
-    const kf=vj?[k0,{top:(a.top+b.top)/2+"px",height:(a.h+b.h)/2+"px",transform:`translate(${W*.62*dir}px,0px) scale(.94)`,offset:.45},k1]:[k0,k1];
-    fin.push(g.animate(kf,op));if(a.front&&!b.front)setTimeout(()=>{g.style.zIndex=z},D*.45);
+    /* 2.57, punto 3: la que viaja hace el camino siempre a la vista (la pila ocupa casi todo el ancho, así que «al lado» queda medio fuera de la pantalla):
+       la que se va: sale por el lado desde donde la dejó el dedo → al lado, sube y se achica hasta el alto de su franja (un poco más arriba, para no tapar la franja vecina)
+       → entra de lado → baja a su franja, ya detrás. La que viene hace el camino al revés: sube un poco, ya encima → sale por el lado → baja y crece → entra al frente */
+    const vaSe=vj&&a.front,viene=vj&&b.front,S=`translate(${W*.55*dir}px,0px) scale(.95)`,AL=16,tr=vaSe?[.3,.6]:viene?[.4,.65]:null,s0="0 0 0 rgba(0,0,0,0)";
+    const kf=vaSe?[k0,{top:a.top+"px",height:a.h+"px",borderRadius:rad(a),boxShadow:PILA_SOMBRA,transform:S,offset:.3},{top:b.top-AL+"px",height:b.h+"px",borderRadius:rad(b),boxShadow:PILA_SOMBRA,transform:S,offset:.6},{top:b.top-AL+"px",height:b.h+"px",borderRadius:rad(b),boxShadow:s0,transform:"none",offset:.85},k1]
+      :viene?[k0,{top:a.top-AL+"px",height:a.h+"px",borderRadius:rad(a),boxShadow:s0,transform:"none",offset:.15},{top:a.top-AL+"px",height:a.h+"px",borderRadius:rad(a),boxShadow:PILA_SOMBRA,transform:S,offset:.4},{top:b.top+"px",height:b.h+"px",borderRadius:rad(b),boxShadow:PILA_SOMBRA,transform:S,offset:.65},k1]
+      /* la del frente que pasa a franja cuando otra viene: termina de achicarse antes de que la otra entre por encima */
+      :a.front&&!b.front&&viajero&&antes.get(viajero)&&!antes.get(viajero).front?[k0,{...k1,offset:.6},k1]:[k0,k1];
+    fin.push(g.animate(kf,op));
+    /* capas: cambian cuando no se tapa con ninguna otra tarjeta (por eso el pequeño alzamiento), así no hay saltos */
+    if(viene){g.style.zIndex=a.ord+1;setTimeout(()=>{g.style.zIndex=60},D*.15)}
+    else if(vaSe)setTimeout(()=>{g.style.zIndex=z},D*.85);
+    else if(a.front&&!b.front)setTimeout(()=>{g.style.zIndex=z},D*.45);
+    /* en la que viaja, los textos cambian de lugar solo mientras cambia de tamaño (al lado de la pila) */
+    const ventana=(kk,cruce)=>{if(!tr)return kk;const [o1,o2]=tr,f=kk[0],l=kk[kk.length-1];
+      return cruce?[{...f,offset:0},{...f,offset:o1},{opacity:cruce==="entra"?0:0,offset:o1+(o2-o1)*.3},{...l,offset:o2},{...l,offset:1}]:[{...f,offset:0},{...f,offset:o1},{...l,offset:o2},{...l,offset:1}]};
     /* textos que viajan: nombre, dígitos, «Por pagar» y el monto */
     ["nm","dig","lbl","amt"].forEach(k=>{const A=a.p[k],B=b.p[k];
       if(B){const n=pon(g,pilaCopia(B.el),z,B.x,B.y,B.w);
         if(A){const s=A.fs/B.fs,t0=`translate(${A.x-B.x}px,${A.y-B.y}px) scale(${s})`,mismo=A.txt===B.txt;
-          fin.push(n.animate(mismo?[{transform:t0},{transform:"none"}]:[{transform:t0,opacity:0},{opacity:0,offset:.3},{transform:"none",opacity:1}],op));
-          if(!mismo){const o=pon(g,A.node,z,A.x,A.y,A.w);fin.push(o.animate([{transform:"none",opacity:1},{opacity:0,offset:.55},{transform:`translate(${B.x-A.x}px,${B.y-A.y}px) scale(${B.fs/A.fs})`,opacity:0}],op))}}
+          fin.push(n.animate(mismo?ventana([{transform:t0},{transform:"none"}]):tr?ventana([{transform:t0,opacity:0},{transform:"none",opacity:1}],"entra"):[{transform:t0,opacity:0},{opacity:0,offset:.3},{transform:"none",opacity:1}],op));
+          if(!mismo){const o=pon(g,A.node,z,A.x,A.y,A.w),t1=`translate(${B.x-A.x}px,${B.y-A.y}px) scale(${B.fs/A.fs})`;fin.push(o.animate(tr?[{transform:"none",opacity:1,offset:0},{transform:"none",opacity:1,offset:tr[0]},{opacity:0,offset:tr[0]+(tr[1]-tr[0])*.5},{transform:t1,opacity:0,offset:tr[1]},{transform:t1,opacity:0}]:[{transform:"none",opacity:1},{opacity:0,offset:.55},{transform:t1,opacity:0}],op))}}
         else fin.push(n.animate([{opacity:0},{opacity:0,offset:.6},{opacity:1}],op))}
       else if(A){const o=pon(g,A.node,z,A.x,A.y,A.w);fin.push(o.animate([{opacity:1},{opacity:0,offset:.35},{opacity:0}],op))}});
     /* lo que solo tiene la tarjeta grande: se va al principio o aparece al final */
@@ -3460,7 +3503,7 @@ function carrilSecVar(cats,k){const bc=barraCat(cats,k,"vcat",!!ui.vcat,"data-vc
 function altoSecVar(c,anim){const l=[...c.children];if(!l.length)return;const i=Math.max(0,Math.min(l.length-1,c._csi||0));
   const h=x=>(x.firstElementChild||x).offsetHeight,cs=getComputedStyle(c),pad=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom),H=Math.round(h(l[i])+pad);
   const ant=parseFloat(c.style.height)||0;c.style.transition=anim&&ant&&Math.abs(ant-H)>1&&!sinMov()?"height .26s cubic-bezier(.2,.7,.2,1)":"";c.style.height=H+"px";
-  const vis=H-parseFloat(cs.paddingTop);l.forEach(x=>{const m=h(x)>vis+1?`linear-gradient(to bottom,#000 ${Math.max(0,vis-30)}px,transparent ${vis}px)`:"";if(x.style.maskImage!==m){x.style.maskImage=m;x.style.webkitMaskImage=m}})}
+  const vis=H-parseFloat(cs.paddingTop);l.forEach(x=>{const m=!c._anim&&h(x)>vis+1?`linear-gradient(to bottom,#000 ${Math.max(0,vis-30)}px,transparent ${vis}px)`:"";if(x.style.maskImage!==m){x.style.maskImage=m;x.style.webkitMaskImage=m}})}
 function iniciarSecVar(i0){const c=$("#view .cs-var");if(!c||c._ini)return;c._ini=1;c._csi=i0;const s=c.children[i0];if(s)c.scrollLeft=s.offsetLeft-c.firstElementChild.offsetLeft;
   altoSecVar(c);if(window.ResizeObserver){const ro=new ResizeObserver(()=>{if(c.isConnected)altoSecVar(c);else ro.disconnect()});[...c.children].forEach(x=>ro.observe(x.firstElementChild||x))}
   alDetenerse(c,()=>{const cr=c.getBoundingClientRect();let best=0,bd=1e9;[...c.children].forEach((x,i)=>{const d=Math.abs(x.getBoundingClientRect().left-cr.left);if(d<bd){bd=d;best=i}});
@@ -3539,7 +3582,7 @@ function viewGastos(){
       &&(!ff.comp||(ff.comp==="si")===((g.comparten||[]).length>0||(g.personas||1)>1))&&(!q||(g.nombre+" "+(g.notas||"")+" "+g.categoria).toLowerCase().includes(q));
     const l=state.gastos.filter(pasa).map(g=>({g})).sort(porDia),act=state.gastos.filter(g=>g.estado==="Activa");
     const nP=state.gastos.filter(g=>g.estado==="Pausada").length,nC=state.gastos.filter(g=>g.estado==="Cancelada").length;
-    const fila=x=>rowGasto(x.g).replace('<div class="s">',`<div class="s">${esc(ct(x.g.categoria))} · `);
+    const fila=x=>rowGasto(x.g,{marca:1}).replace('<div class="s">',`<div class="s">${esc(ct(x.g.categoria))} · `);
     const prom=act.reduce((a,g)=>a+calc(g).anual,0)/12;
     const det=[txn(act.length,"{n} activo","{n} activos"),nP?txn(nP,"{n} pausado","{n} pausados"):"",nC?txn(nC,"{n} cancelado","{n} cancelados"):""].filter(Boolean).join(", ");
     return `<div class="vista">${rd}
@@ -3581,11 +3624,14 @@ function barraFijos(){const f=ui.ff,n=[f.cat,f.mp,f.per,f.mon,f.comp].filter(Boo
     <label>${tx("Moneda")}<select id="ffMon"><option value="">${tx("Todas")}</option>${mons.map(m=>`<option value="${m}" ${m===f.mon?"selected":""}>${esc(m)}</option>`).join("")}</select></label>
     <label>${tx("Compartidos")}<select id="ffComp"><option value="">${tx("Todos")}</option><option value="si" ${f.comp==="si"?"selected":""}>${tx("Compartidos")}</option><option value="no" ${f.comp==="no"?"selected":""}>${tx("Solo míos")}</option></select></label>
     ${n?`<div class="full"><button class="linkbtn" type="button" data-ffclear>${tx("Limpiar filtros")}</button></div>`:""}</form>`:""}`}
-function rowGasto(g){const c=calc(g);
+const ICO_PAUSA=`<svg width="10" height="10" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg>`,ICO_X=`<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>`;
+/* o.marca (lista «Todos»): sin etiqueta de estado; pausado o cancelado lo dice una marca en la esquina del ícono */
+function rowGasto(g,o){const c=calc(g),mk=o&&o.marca&&g.estado!=="Activa";
   const vuelve=g.estado==="Pausada"&&g.proximoPago?mesL(parseD(g.proximoPago).getMonth()):"";
   const sub=[vuelve||(per(g)===1?tx("Día ")+(g.dia||"—"):textoPer(g)),g.personas>1?tx("Entre ")+g.personas:""].filter(Boolean).map(esc).join(" · ");
-  return `<li><button class="row btn" data-open="${g.id}">${avG(g)}<div class="mid"><div class="t">${esc(g.nombre)}</div><div class="s">${sub}</div></div>
-  <div class="amt">${clp(c.pp)}<div class="s">${g.estado==="Activa"?(per(g)===1?tx("al mes"):per(g)===12?tx("al año"):tx("por pago")):`<span class="pill ${g.estado}">${dt(g.estado)}</span>`}</div></div></button></li>`}
+  const av=mk?avG(g).replace(/<\/div>$/,`<span class="badge b-est" aria-hidden="true">${g.estado==="Pausada"?ICO_PAUSA:ICO_X}</span></div>`):avG(g);
+  return `<li><button class="row btn" data-open="${g.id}">${av}<div class="mid"><div class="t">${esc(g.nombre)}</div><div class="s">${sub}</div></div>
+  <div class="amt">${clp(c.pp)}<div class="s">${g.estado==="Activa"||mk?(per(g)===1?tx("al mes"):per(g)===12?tx("al año"):tx("por pago")):`<span class="pill ${g.estado}">${dt(g.estado)}</span>`}</div></div></button></li>`}
 function openMesProx(...a){openMesProx_(...a);hojaFn=()=>openMesProx(...a)}
 function openMesProx_(i){
   const d=addM(today,Number(i)),mes=MESES[d.getMonth()],fin=eom(d),ini=new Date(d.getFullYear(),d.getMonth(),1);
@@ -3874,14 +3920,21 @@ let swapDir=null;
 const MORF_MS=320,MORF_EASE="cubic-bezier(.2,.7,.2,1)";
 function morfPiezas(sh){const m=new Map(),f=sh.querySelector("form.f");
   const add=(k,el)=>{if(!k||!el||m.has(k)||el.hidden||!el.getClientRects().length)return;m.set(k,el)};
-  sh.querySelectorAll(".gi2,.tit-f,.fijo-tag,.tit-sub,.frec-f").forEach(el=>add(el.matches(".gi2")?"gi":el.matches(".tit-f")?"tit":el.matches(".fijo-tag")?"tag":el.matches(".tit-sub")?"sub":"frec",el));
+  sh.querySelectorAll(".gi2,.tit-f,.tit-sub,.frec-f").forEach(el=>add(el.matches(".gi2")?"gi":el.matches(".tit-f")?"tit":el.matches(".tit-sub")?"sub":"frec",el));
   if(f)[...f.children].flatMap(el=>el.matches(".avz,.avz-n")?[...el.children]:el.matches(".mas-b")?[el.querySelector(".mas-tit"),...el.querySelectorAll("[data-mf]")]:[el]).forEach(el=>{if(!el||el.matches(".amt-info,.sug,[data-mfk]"))return;let k=null;
     if(el.matches(".actions"))k="act";else if(el.matches(".mas-tit"))k="mastit";else if(el.dataset.mf)k="mf-"+el.dataset.mf;
     else{const n=el.getAttribute("name")?el:el.querySelector("[name]");if(n){const nm=n.getAttribute("name");k="f-"+(({valor:"monto",nombre:"descripcion",fechaPago:"fecha",per:"rep",desde:f.id==="iForm"?"fecha":"desde"})[nm]||nm)}}add(k,el)});
   return m}
-const morfTxt=(k,el)=>k==="tit"?(el.firstChild&&el.firstChild.nodeType===3?el.firstChild.textContent:""):el.textContent.replace(/\s+/g," ").trim();
+const morfTxt=(k,el)=>k==="gi"?[...el.querySelectorAll(".gi-l1")].map(x=>x.textContent).join("|"):k==="tit"?(el.firstChild&&el.firstChild.nodeType===3?el.firstChild.textContent:""):el.textContent.replace(/\s+/g," ").trim();
 function morfAntes(sh){if(sinMov())return null;const m=new Map();morfPiezas(sh).forEach((el,k)=>m.set(k,{r:el.getBoundingClientRect(),t:morfTxt(k,el),c:limpiaClon(el.cloneNode(true)),en:[".mas-fichas",".avz-n",".avz","form.f"].find(q=>el.closest(q))}));
-  return {m,h:sh.getBoundingClientRect().height,top:sh.scrollTop}}
+  const gl=sh.querySelector('.gi2 [aria-pressed="true"] .gi-l1'),gf=sh.querySelector(".gi2 .gi-fijo");
+  return {m,h:sh.getBoundingClientRect().height,top:sh.scrollTop,giL1:gl&&gl.getBoundingClientRect(),giF:gf&&{r:gf.getBoundingClientRect(),c:pilaCopia(gf)}}}
+/* 2.57, punto 9: dentro del segmento elegido, el nombre se corre a su lugar y «fijo» aparece o se va con un fundido corto */
+function morfGI(sh,a,D,sr,st,fin){const gl=sh.querySelector('.gi2 [aria-pressed="true"] .gi-l1'),gf=sh.querySelector(".gi2 .gi-fijo");if(!gl)return;
+  const r=gl.getBoundingClientRect();if(a.giL1&&Math.abs(a.giL1.left-r.left)<1&&Math.abs(a.giL1.top-r.top)>.5)fin.push(gl.animate([{transform:`translateY(${a.giL1.top-r.top}px)`},{transform:"none"}],{duration:D*.6,easing:MORF_EASE}));
+  if(gf&&!a.giF)fin.push(gf.animate([{opacity:0},{opacity:0,offset:.25},{opacity:1}],{duration:D*.75,easing:"ease-out",fill:"backwards"}));
+  if(a.giF&&!gf){const c=a.giF.c;c.classList.add("morf-c");c.setAttribute("aria-hidden","true");Object.assign(c.style,{position:"absolute",left:(a.giF.r.left-sr.left)+"px",top:(a.giF.r.top-sr.top+st)+"px",margin:"0",pointerEvents:"none",zIndex:"2",whiteSpace:"nowrap"});
+    sh.appendChild(c);fin.push(c.animate([{opacity:1},{opacity:0}],{duration:D*.4,easing:"ease-in",fill:"forwards"}))}}
 function morfar(sh,a){if(!sh.isConnected)return;const D=MORF_MS*(window.lukaLento||1),op={duration:D,easing:MORF_EASE,fill:"backwards"};
   sh.scrollTop=a.top;const h1=sh.getBoundingClientRect().height;sh.style.height=a.h+"px";const sr=sh.getBoundingClientRect(),st=sh.scrollTop;sh.style.position="relative";
   const nuevos=morfPiezas(sh),fin=[];
@@ -3893,6 +3946,7 @@ function morfar(sh,a){if(!sh.isConnected)return;const D=MORF_MS*(window.lukaLent
     fin.push(el.animate([{transform:t0,opacity:0},{opacity:0,offset:.3},{transform:"none",opacity:1}],op));
     const c=morfCopia(sh,o,sr,st);fin.push(c.animate([{transform:"none",opacity:1},{opacity:0,offset:.4},{transform:`translate(${-dx}px,${-dy}px)`,opacity:0}],{duration:D,easing:MORF_EASE,fill:"forwards"}))});
   a.m.forEach((o,k)=>{if(nuevos.has(k))return;const c=morfCopia(sh,o,sr,st);fin.push(c.animate([{opacity:1,transform:"none"},{opacity:0,transform:"translateY(-6px) scale(.97)"}],{duration:D*.3,easing:"ease-in",fill:"forwards"}))});
+  morfGI(sh,a,D,sr,st,fin);
   if(Math.abs(h1-a.h)>.5)fin.push(sh.animate([{height:a.h+"px"},{height:h1+"px"}],{duration:D,easing:MORF_EASE}));sh.style.height="";
   Promise.all(fin.map(x=>x.finished.catch(()=>{}))).then(()=>{sh.querySelectorAll(".morf-c").forEach(x=>x.remove());sh.style.position=""})}
 function morfCopia(sh,o,sr,st){const c=o.c;c.classList.add("morf-c");c.setAttribute("aria-hidden","true");c.inert=true;c.hidden=false;
@@ -3969,7 +4023,7 @@ function openForm(id,pre){
   const g=id?state.gastos.find(x=>x.id===id):{...{nombre:"",categoria:ultCatFijo(),periodo:1,moneda:base(),valor:"",descuento:0,personas:1,comparten:[],dia:1,estado:"Activa",medio:"Crédito",cuenta:"",cuotasPagadas:1,cuotasTotal:1,ultimoPago:"",proximoPago:"",notas:""},...(pre||{})};
   const p=per(g),pSel=PERIODOS.some(x=>x[0]===p)?p:"x";const fpAct=id?fechaPagoDe(g):(pre&&pre._fecha)||iso(today);
   const nuevoGI=!id&&!(pre&&pre._gmail);
-  openSheet(`${cabForm({gi:nuevoGI?"gasto":"",titulo:id?tx("Editar gasto fijo"):tx("Nuevo gasto"),fijo:!id,sub:id?"":subFijo(p)})}
+  openSheet(`${cabForm({gi:nuevoGI?"gasto":"",titulo:id?tx("Editar gasto fijo"):tx("Nuevo gasto"),tituloFijo:tx("Nuevo gasto fijo"),fijo:!id,sub:id?"":subFijo(p)})}
   <form class="f" id="gForm" data-nuevo="${id?"":"1"}" ${pre&&pre._gmail?`data-gmail="${esc(pre._gmail)}" data-fecha="${esc(pre._fecha||"")}" data-dig="${esc(pre._dig||"")}"`:""}>
     ${campoMonto("valor",g.valor,g.moneda||base())}
     <label class="full">${tx("Descripción")}<input name="nombre" required value="${esc(g.nombre)}" placeholder="${tx("Ej.: Arriendo, Netflix")}"></label>
@@ -3997,7 +4051,8 @@ function openForm(id,pre){
     const nota=d&&d.getDate()>=29?tx(" En meses más cortos, se considera el último día."):"";
     if(e==="Pausada")inf.textContent=v?`${tx("Pausado: vuelve a cobrarse el {a}.",{a:(LANG==="es"?fechaLarga(v).toLowerCase():fechaLarga(v))})}`:tx("Pausado. Escribe en fecha de pago cuándo vuelve.");
     else if(e==="Cancelada")inf.textContent=tx("Cancelado: ya no se cobra.");
-    else{const f=v&&proxCobroDesde(v,perAct());inf.textContent=f?`${tx("Próximo cobro: {a}.{b}",{a:(LANG==="es"?fechaLarga(iso(f)).toLowerCase():fechaLarga(iso(f))),b:nota})}`:tx("Elige una fecha en que se paga este gasto.")}};
+    else{const f=v&&proxCobroDesde(v,perAct());inf.textContent=f?(iso(f)!==v?`${tx("Próximo cobro: {a}.{b}",{a:(LANG==="es"?fechaLarga(iso(f)).toLowerCase():fechaLarga(iso(f))),b:nota})}`:nota.trim()):tx("Elige una fecha en que se paga este gasto.")}
+    inf.hidden=!inf.textContent};
   const syncPer=()=>{const v=fm.per.value;if(v==="0"&&!id){cambiarTipo("var");return}$("#fPerN").style.display=v==="x"?"":"none";const ts=$(".sheet .tit-sub");if(ts&&!id)ts.textContent=subFijo(perAct());syncFP()};syncPer();fm.per.addEventListener("change",syncPer);
   fm.perN.addEventListener("input",syncFP);fm.perN.addEventListener("change",syncFP);fm.fechaPago.addEventListener("input",syncFP);fm.fechaPago.addEventListener("change",syncFP);
   fm.enCuotas.addEventListener("change",()=>{const on=fm.enCuotas.checked;fm.querySelector(".cuo-campos").hidden=!on;fm.querySelector(".cuo-sin").hidden=on;marcarSucio(fm)});
@@ -4064,8 +4119,11 @@ let lastVar={categoria:"Supermercado",medio:"Débito",cuenta:"",moneda:null};
 /* 2.5: cabecera del formulario (ronda 4): Gasto | Ingreso arriba, título con la marca «Fijo» y una línea que dice a dónde va */
 const ICO_REP=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>`;
 const ICO_ABAJO=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>`;
-const selGI2=act=>`<div class="gi2" role="group" aria-label="${tx("Gasto o ingreso")}"><button type="button" data-gi="gasto" aria-pressed="${act==="gasto"}">${ICO_OK}${tx("Gasto")}</button><button type="button" data-gi="ingreso" aria-pressed="${act==="ingreso"}">${ICO_OK}${tx("Ingreso")}</button></div>`;
-function cabForm(o){return `${o.gi&&fOn("fIngresos")?selGI2(o.gi):""}<h3 class="tit-f">${esc(o.titulo)}${o.fijo?` <span class="fijo-tag">${ICO_REP}${tx("Fijo")}</span>`:""}</h3>${o.sub?`<p class="tit-sub">${esc(o.sub)}</p>`:""}`}
+/* 2.57, punto 9: en el segmento elegido, «fijo» chico debajo del nombre (un indicador, no un control); el selector no cambia de alto */
+const selGI2=(act,fijo)=>{const b=(k,t)=>{const on=act===k,fj=on&&fijo;return `<button type="button" data-gi="${k}" aria-pressed="${on}"${fj?' class="con-fijo"':""}><span class="gi-l1">${ICO_OK}${t}</span>${fj?`<span class="gi-fijo">${tx("fijo")}</span>`:""}</button>`};
+  return `<div class="gi2" role="group" aria-label="${tx("Gasto o ingreso")}">${b("gasto",tx("Gasto"))}${b("ingreso",tx("Ingreso"))}</div>`};
+/* sin el selector a la vista (al editar o con Ingresos desactivado), el título dice que es fijo */
+function cabForm(o){const gi=o.gi&&fOn("fIngresos");return `${gi?selGI2(o.gi,o.fijo):""}<h3 class="tit-f">${esc(o.fijo&&!gi&&o.tituloFijo?o.tituloFijo:o.titulo)}</h3>${o.sub?`<p class="tit-sub">${esc(o.sub)}</p>`:""}`}
 const cadaTxt=p=>p===1?tx("cada mes"):p===12?tx("cada año"):tx("cada {a} meses",{a:p});
 const subFijo=p=>tx("Se repite {a}. Va a la pestaña Fijos.",{a:cadaTxt(p)});
 const listaY=l=>l.length>1?l.slice(0,-1).join(", ")+" "+tx("y")+" "+l[l.length-1]:(l[0]||"");
